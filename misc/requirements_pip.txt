@@ -1,0 +1,7 @@
+blockmatrix==0.2.2
+markerbci==0.0.7
+pyclf-bci==0.0.5
+pyerp==0.0.4
+pylsl==1.16.0
+pyscab==1.0.1
+vg==2.0.0
