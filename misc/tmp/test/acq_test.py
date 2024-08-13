@@ -4,8 +4,8 @@ import mne
 
 #import numpy as np
 from pylsl import StreamInlet, resolve_stream
-import container
-import OnlineDataAcquire
+import acquisition.container as container
+import acquisition.OnlineDataAcquire as OnlineDataAcquire
 import fmt_converter
 
 home_dir = os.path.expanduser('~')
