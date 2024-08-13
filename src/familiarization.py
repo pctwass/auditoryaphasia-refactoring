@@ -302,7 +302,6 @@ def sendMarker_visual(val):
                 spk_showed = False
 
 def main():
-
     if args.visual:
         from multiprocessing import Process, Array
         import time
