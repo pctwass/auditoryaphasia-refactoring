@@ -19,9 +19,9 @@ import matplotlib.pyplot as plt
 import pylsl
 
 import conf_selector
-import container
+import acquisition.container as container
 import fmt_converter
-import OnlineDataAcquire
+import acquisition.OnlineDataAcquire as OnlineDataAcquire
 
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))

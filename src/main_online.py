@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     # open StimulationController as a new Process
     share_audio = Array('i', [0 for m in range(conf_system.len_shared_memory)])
-    import AudioController
+    import audio.AudioController as AudioController
     audio_process = Process(target=AudioController.interface, args=('audio', 'main', False, False, share_audio))
     audio_process.start()
     while share_audio[2] == 0:
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     # open AcquisitionSystemController as a new Process
     share_acq = Array('d', [0 for m in range(conf_system.len_shared_memory)])
-    import AcquisitionSystemController
+    import acquisition.AcquisitionSystemController as AcquisitionSystemController
     acq_process = Process(target=AcquisitionSystemController.interface, args=('acq', 'main', False, False, share_acq))
     acq_process.start()
     while share_acq[0] == 0:
