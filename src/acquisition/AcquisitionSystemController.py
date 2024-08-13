@@ -32,7 +32,7 @@ import temp_new_conf
 import logging
 
 import utils
-import streaming_functionality as streaming
+import LSL_streaming as streaming
 
 logger = logging.getLogger(__name__)
 
