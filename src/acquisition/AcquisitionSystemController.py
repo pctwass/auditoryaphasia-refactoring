@@ -27,10 +27,12 @@ import acquisition.OnlineDataAcquire as OnlineDataAcquire
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
 import conf as conf
 import conf_system as conf_system
+import temp_new_conf
 
 import logging
 
 import utils
+import LSL_streaming as streaming
 
 logger = logging.getLogger(__name__)
 
@@ -208,10 +210,12 @@ class AcquisitionSystemController:
         # find/connect eeg outlet
 
         logger.info("looking for an EEG stream...")
-        self.eeg_stream = pylsl.resolve_stream("type", "EEG")
-        self.eeg_inlet = pylsl.StreamInlet(
-            self.eeg_stream[0], recover=ENABLE_STREAM_INLET_RECOVER
+        
+        self.eeg_stream, self.eeg_inlet = streaming.resolve_stream(
+            temp_new_conf.eeg_acquisition_stream_name,
+            temp_new_conf.eeg_acquisition_stream_type
         )
+
         # self.n_ch = self.eeg_stream[0].channel_count()
         # self.n_ch = fmt_converter.n_ch_convert(self.n_ch)
         self.fs = self.eeg_stream[0].nominal_srate()
@@ -239,19 +243,13 @@ class AcquisitionSystemController:
 
         logger.info("looking for a marker stream...")
         is_searching_marker_stream = True
-        while is_searching_marker_stream:
-            self.marker_stream = pylsl.resolve_stream("type", "Markers")
-            for idx, stream in enumerate(self.marker_stream):
-                if conf_system.marker_stream_keyword in stream.name():
-                    self.marker_inlet = pylsl.StreamInlet(
-                        self.marker_stream[idx],
-                        recover=ENABLE_STREAM_INLET_RECOVER,
-                    )
-                    logger.info(
-                        "Marker Stream : %s" % self.marker_stream[idx].name()
-                    )
-                    is_searching_marker_stream = False
 
+        self.marker_stream, self.marker_inlet = streaming.init_LSL_inlet(
+            temp_new_conf.marker_acquisition_stream_name,
+            temp_new_conf.marker_acquisition_stream_type,
+            await_stream = True,
+            timeout = temp_new_conf.marker_stream_await_timeout_ms
+        )
         logger.info("Configuration Done.")
 
     def main(self):

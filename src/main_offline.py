@@ -10,6 +10,7 @@ import conf_selector
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
 import conf as conf
 import conf_system as conf_system
+import temp_new_conf
 
 import utils
 import pyscab
@@ -79,7 +80,8 @@ if __name__ == '__main__':
     while share_audio[2] == 0:
         time.sleep(0.1)
     logger.info("start recorder")
-    utils.send_cmd_LSL(outlet, 'acq', 'init_recorder', {'session_type':'offline'})
+    if temp_new_conf.init_recorder_locally:
+        utils.send_cmd_LSL(outlet, 'acq', 'init_recorder', {'session_type':'offline'})
     time.sleep(1)
 
     # eyes open close
