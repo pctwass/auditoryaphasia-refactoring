@@ -1,0 +1,7 @@
+numpy==2.1.0
+mne==1.8.0
+scikit-learn==1.5.1
+markerbci==0.0.7
+pylsl==1.16.0
+pyscab==1.0.1
+dareplane-utils==0.0.8
