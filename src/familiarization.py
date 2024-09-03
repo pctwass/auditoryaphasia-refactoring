@@ -1,3 +1,4 @@
+import dependency_resolver
 import utils
 import pyscab
 import os
@@ -9,16 +10,16 @@ import conf_selector
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
 import conf as conf
-import conf_system as conf_systems
+import conf_system
 
-parser = argparse.ArgumentParser()
+familirization_parser = argparse.ArgumentParser()
 
-parser.add_argument('-n', '--n_reps', type=int, default=3)
-parser.add_argument('-v', '--visual', action='store_true')
+familirization_parser.add_argument('-n', '--n_reps', type=int, default=3)
+familirization_parser.add_argument('-v', '--visual', action='store_true')
 
-args = parser.parse_args()
+familirization_args = familirization_parser.parse_args()
 
-NUMBER_OF_REPETITIONS = args.n_reps
+NUMBER_OF_REPETITIONS = familirization_args.n_reps
     
 def gen_plan_play_each_word(word_idx_to_be_played, base_dir, soa=1.5, ch = [1], marker = None, volume = 1):
 
@@ -279,11 +280,11 @@ def gen_plan_play_oddball(soa=1, num_reps=10, volume = 1, ch = [7,8]):
 def sendMarker(val):
     pass
 
-if args.visual:
+if familirization_args.visual:
     outlet = utils.createIntermoduleCommunicationOutlet('main', channel_count=4, id='main')
 spk_showed = False
 def sendMarker_visual(val):
-    if args.visual:
+    if familirization_args.visual:
         global spk_showed
         global outlet
         if val == 210:
@@ -302,7 +303,7 @@ def sendMarker_visual(val):
                 spk_showed = False
 
 def main():
-    if args.visual:
+    if familirization_args.visual:
         from multiprocessing import Process, Array
         import time
         # open VisualFeedbackController as a new Process
@@ -400,7 +401,7 @@ def main():
             stc.close()
         except KeyboardInterrupt:
             share[0] = 2
-            if args.visual:
+            if familirization_args.visual:
                 visual_process.terminate()
             sys.exit()
         except ValueError:
@@ -410,7 +411,7 @@ def main():
             print("ERROR : File was not found")
             main()
     share[0] = 2
-    if args.visual:
+    if familirization_args.visual:
         visual_process.terminate()
     sys.exit()
 

@@ -320,7 +320,7 @@ def set_logger(file=True, stdout=True, level_file = 'debug', level_stdout = 'inf
         root_logger.addHandler(stdout_handler)
 
     if file:
-        log_dir = os.path.join(data_dir, save_folder_name)
+        log_dir = os.path.join(os.getcwd(), "temp", "logging") #os.path.join(data_dir, save_folder_name)
         if not os.path.exists(log_dir):
             os.mkdir(log_dir)
         file_handler = logging.FileHandler(os.path.join(log_dir, log_file_name))
