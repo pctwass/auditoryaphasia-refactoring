@@ -1,0 +1,3 @@
+pyerp==0.0.4
+pyclf-bci==0.0.5
+blockmatrix==0.2.1

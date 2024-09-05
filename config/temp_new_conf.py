@@ -10,3 +10,7 @@ marker_stream_await_timeout_ms : int|float = 1000
 
 # Acquisition recorder suprocess
 init_recorder_locally : bool = False
+
+# Dareplane API Server
+api_ip : str = "127.0.0.1"
+api_port : int = 8001 

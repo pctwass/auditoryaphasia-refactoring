@@ -28,8 +28,7 @@ conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-
+def main():
     # make directory to save files
     isExist = os.path.exists(os.path.join(conf_system.data_dir, conf_system.save_folder_name))
     if not isExist:
@@ -278,3 +277,6 @@ if __name__ == '__main__':
     acq_process.terminate()
     print("all trial ended, terminate process by main module")
     #sys.exit()
+
+if __name__ == '__main__':
+    main()

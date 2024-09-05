@@ -310,52 +310,56 @@ def classify_erp(
             )
             pd.save_html()
 
+def main():
+    marker = list()
+    marker.append([101, "nontarget", "word1"])
+    marker.append([102, "nontarget", "word2"])
+    marker.append([103, "nontarget", "word3"])
+    marker.append([104, "nontarget", "word4"])
+    marker.append([105, "nontarget", "word5"])
+    marker.append([106, "nontarget", "word6"])
+    marker.append([111, "target", "word1"])
+    marker.append([112, "target", "word2"])
+    marker.append([113, "target", "word3"])
+    marker.append([114, "target", "word4"])
+    marker.append([115, "target", "word5"])
+    marker.append([116, "target", "word6"])
+    marker.append([210, "new-trial/disable", ""])
 
-marker = list()
-marker.append([101, "nontarget", "word1"])
-marker.append([102, "nontarget", "word2"])
-marker.append([103, "nontarget", "word3"])
-marker.append([104, "nontarget", "word4"])
-marker.append([105, "nontarget", "word5"])
-marker.append([106, "nontarget", "word6"])
-marker.append([111, "target", "word1"])
-marker.append([112, "target", "word2"])
-marker.append([113, "target", "word3"])
-marker.append([114, "target", "word4"])
-marker.append([115, "target", "word5"])
-marker.append([116, "target", "word6"])
-marker.append([210, "new-trial/disable", ""])
+    ivals = [
+        [0.08, 0.15],
+        [0.151, 0.21],
+        [0.211, 0.28],
+        [0.271, 0.35],
+        [0.351, 0.44],
+        [0.45, 0.56],
+        [0.561, 0.7],
+        [0.701, 0.85],
+        [0.851, 1],
+        [1.001, 1.2],
+    ]
 
-ivals = [
-    [0.08, 0.15],
-    [0.151, 0.21],
-    [0.211, 0.28],
-    [0.271, 0.35],
-    [0.351, 0.44],
-    [0.45, 0.56],
-    [0.561, 0.7],
-    [0.701, 0.85],
-    [0.851, 1],
-    [1.001, 1.2],
-]
+    plot_erp(
+        dir_base,
+        save_dir=save_dir,
+        f_name_prefix=conf_system.f_name_prefix,
+        marker=marker,
+        eog_channel=None,
+        subject_code=subject_code,
+        date=date,
+    )
 
-plot_erp(
-    dir_base,
-    save_dir=save_dir,
-    f_name_prefix=conf_system.f_name_prefix,
-    marker=marker,
-    eog_channel=None,
-    subject_code=subject_code,
-    date=date,
-)
+    classify_erp(
+        dir_base,
+        save_dir=save_dir,
+        f_name_prefix=conf_system.f_name_prefix,
+        marker=marker,
+        eog_channel=None,
+        ivals=ivals,
+        subject_code=subject_code,
+        date=date,
+    )
 
-classify_erp(
-    dir_base,
-    save_dir=save_dir,
-    f_name_prefix=conf_system.f_name_prefix,
-    marker=marker,
-    eog_channel=None,
-    ivals=ivals,
-    subject_code=subject_code,
-    date=date,
-)
+
+if __name__ == '__main__':
+    main()
