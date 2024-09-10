@@ -1,15 +1,16 @@
 import os
 import sys
 import datetime
+import json # for loading conf variables
 from psychopy import core, gui
 
 import logging
 logger = logging.getLogger(__name__)
 
-import conf_selector
+import config.conf_selector
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import conf as conf
+import config.conf as conf
 
 import socket
 computer_name = socket.gethostname().lower()
@@ -157,59 +158,20 @@ def stop_recording():
 # ------------------------------------------------------------------------
 # ERP Classification
 
-filter_order = 2
-filter_freq = [0.5, 8]
-#filter_freq = None
-
-tmin = -0.2
-tmax = 1.2
-baseline = None
-
-labels_binary_classification = {'target':1, 'nontarget':0}
+# load classifier configuration file
+with open(os.path.join(repository_dir_base, 'config', 'conf_clf.json')) as f:
+    conf_clf = json.load(f)
+# load into local variables
+locals().update(conf_clf) 
 
 #eog_channels = ['EOGvu']
 #misc_channels = ['x_EMGl', 'x_GSR', 'x_Respi', 'x_Pulse', 'x_Optic']
 
+# TODO: grab these in new config loader script
 n_channels = len(conf.channel_labels_online)
-
-markers = dict()
-markers['target'] = [111,112,113,114,115,116]
-markers['nontarget'] = [101,102,103,104,105,106]
-markers['new-trial'] = [200,201,202,203,204,205]
-
 n_class = len(conf.words)
 n_stimulus = n_class*conf.number_of_repetitions
-
-show_barplot = True
-
-dynamic_stopping = True
-dynamic_stopping_params = dict()
-dynamic_stopping_params['pvalue'] = 0.05
-dynamic_stopping_params['min_n_stims'] = 42
-
-markers_to_epoch = markers['target'] + markers['nontarget']
-
-ivals = [[0.08, 0.15],
-        [0.151, 0.21],
-        [0.211, 0.28],
-        [0.271, 0.35],
-        [0.351, 0.44],
-        [0.45, 0.56],
-        [0.561, 0.7],
-        [0.701, 0.85],
-        [0.851, 1],
-        [1.001, 1.2]]
-
-from sklearn.pipeline import make_pipeline
-#from toeplitzlda.classification import ToeplitzLDA
-from pyclf.lda.classification import ToeplitzLDA
-clf = make_pipeline(
-        ToeplitzLDA(n_channels=n_channels, unit_w=True),
-    )
-adaptation = True
-adaptation_eta_cov = 0.001
-adaptation_eta_mean = 0.005
-adaptation_clf = clf[0]
+markers_to_epoch = markers['target'] + markers['nontarget'] # loaded from conf_clf
 
 def filter_mne(data, sos):
     # filter function which will be handed to mne.io.Raw.apply_function()
