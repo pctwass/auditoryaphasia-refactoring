@@ -90,7 +90,7 @@ class AcquisitionSystemController:
         self.max_n_stims = max_n_stims
         self.n_class = n_class
 
-        self.share = state_dict
+        self.state_dict = state_dict
 
         self.ch_names = None
         self.channels_to_acquire = None
@@ -308,16 +308,16 @@ class AcquisitionSystemController:
                 os.path.join(conf_system.repository_dir_base, "media", "tmp")
             )
 
-        self.share[5] = 1
+        self.state_dict["acquire_trials"] = True
         self.acq.start()
 
-        while self.share[5] == 1:
+        while self.state_dict["acquire_trials"] is True:
             try:
                 new_trial = self.acq.is_got_new_trial_marker()
                 # logger.info(new_trial)
                 if new_trial is not False:
                     trial_was_done = False
-                    self.share[1] = 0
+                    self.state_dict["trial_completed"] = False
                     label_trial = int(str(new_trial + 1)[-1])
                     logger.info("New Trial Started : %d" % label_trial)
                     labels.append(label_trial)
@@ -565,12 +565,12 @@ class AcquisitionSystemController:
                                     )
                                     acc = accuracy_score(labels, preds)
                                     logger.info("Acc : %.3f" % acc)
-                                    self.share[2] = (
-                                        2  # decoded by dynamic stopping
+                                    self.state_dict["trial_classification_status"] = (
+                                        TrialClassificationStatus.DECODED_EARLY  # decoded by dynamic stopping
                                     )
-                                    self.share[3] = label_trial
-                                    self.share[4] = stimulus_cnt
-                                    self.share[1] = 1
+                                    self.state_dict["trial_label"] = label_trial
+                                    self.state_dict["trial_stimulus_count"] = stimulus_cnt
+                                    self.state_dict["trial_completed"] = True
                                     trial_was_done = True
                                     break
                             dynamic_stopping_stim_num = stimulus_cnt + 1
@@ -609,13 +609,13 @@ class AcquisitionSystemController:
                         logger.info("preds : %s" % str(preds))
                         logger.info("Acc : %.3f" % acc)
                         if pred_trial == label_trial:
-                            self.share[2] = 1  # decoded
+                            self.state_dict["trial_classification_status"] = TrialClassificationStatus.DECODED
                         else:
-                            self.share[2] = 0  # not decoded
+                            self.state_dict["trial_classification_status"] = TrialClassificationStatus.UNDECODED
 
-                        self.share[3] = label_trial
-                        self.share[4] = stimulus_cnt
-                        self.share[1] = 1
+                        self.state_dict["trial_label"] = label_trial
+                        self.state_dict["trial_stimulus_count"] = stimulus_cnt
+                        self.state_dict["trial_completed"] = True
                         trial_was_done = True
 
                 if trial_was_done and self.adaptation_available_new:
@@ -731,7 +731,7 @@ def interface(
                         conf_system.stop_recording()
                     elif data[2].lower() == "start_calibration":
                         asc.calibration(params)
-                        state_dict["active_trial"] = False
+                        state_dict["trial_completed"] = True
                     elif data[2].lower() == "init":
                         asc = init_asc(state_dict=state_dict)
                     elif data[2].lower() == "set":

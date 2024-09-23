@@ -14,7 +14,7 @@ import conf_system as conf_system
 import logging
 logger = logging.getLogger(__name__)
 
-def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, share=None):
+def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, state_dict=None):
     # ==============================================
     # This function is called from main module.
     # It opens LSL and communicate with main module.
@@ -26,7 +26,7 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sha
     #
 
     for m in range(1):
-        share[0] = 0
+        state_dict["LSL_inlet_connected"] = False
 
     #status.value = 0
     #set_logger(file=log_file, stdout=log_stdout)
@@ -39,7 +39,7 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sha
     #vfc.show_speakers()
 
     inlet = utils.getIntermoduleCommunicationInlet(name_main_outlet)
-    share[0] = 1
+    state_dict["LSL_inlet_connected"] = True
     #print('LSL connected, %s' %name)
 
     while True:

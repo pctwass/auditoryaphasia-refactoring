@@ -55,7 +55,7 @@ def main():
     import audio.AudioController as AudioController
     audio_process = Process(target=AudioController.interface, args=('audio', 'main', False, False, audio_state_dict))
     audio_process.start()
-    while audio_state_dict["LSL_inlet_connected"] == False:
+    while audio_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
 
     # open VisualFeedbackController as a new Process
@@ -63,7 +63,7 @@ def main():
     import VisualFeedbackInterface
     visual_process = Process(target=VisualFeedbackInterface.interface, args=('visual', 'main', False, False, visual_fb_state_dict))
     visual_process.start()
-    while visual_fb_state_dict["LSL_inlet_connected"] == False:
+    while visual_fb_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
 
     # open AcquisitionSystemController as a new Process
@@ -71,14 +71,14 @@ def main():
     import acquisition.AcquisitionSystemController as AcquisitionSystemController
     acq_process = Process(target=AcquisitionSystemController.interface, args=('acq', 'main', False, False, acquisition_state_dict))
     acq_process.start()
-    while acquisition_state_dict["LSL_inlet_connected"] == False:
+    while acquisition_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
 
     logger.info("open audio device")
     audio_state_dict["LSL_inlet_connected"] = False
     utils.send_cmd_LSL(outlet, 'audio', 'open')
 
-    while audio_state_dict["LSL_inlet_connected"] == False:
+    while audio_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1)
     logger.info("start recorder")
     if temp_new_conf.init_recorder_locally:
