@@ -13,6 +13,9 @@ import utils
 import logging
 logger = logging.getLogger(__name__)
 
+from process_communication.process_communication_enums import AudioStatus
+
+
 def eyes_open_close(outlet, pre_or_post):
     """
     Parameters
@@ -49,7 +52,7 @@ def eyes_open_close(outlet, pre_or_post):
         elif eyes.lower() == 'n':
             break
 
-def play_oddball(outlet, share_audio, number_of_repetitions = 2):
+def play_oddball(outlet, audio_state_dict, number_of_repetitions = 2):
     while True:
         val = input("Do you want to play oddball? [y]/n : ")
         if val == "" or val.lower() == 'y':
@@ -100,9 +103,9 @@ def play_oddball(outlet, share_audio, number_of_repetitions = 2):
                 utils.send_params_LSL(outlet, 'audio', 'audio_info', audio_info)
                 #utils.send_params_LSL(outlet, 'audio', 'marker', True)
                 utils.send_cmd_LSL(outlet, 'audio', 'play', play_plan)
-                while share_audio[0] != 99:
+                while audio_state_dict["audio_status"] != AudioStatus.TERMINATED:
                     time.sleep(1)
-                share_audio[0] = 0
+                audio_state_dict["audio_status"] = AudioStatus.INITIAL
                 utils.send_cmd_LSL(outlet, 'acq', 'stop_recording')
         elif val.lower() == 'n':
             break

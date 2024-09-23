@@ -34,6 +34,9 @@ import logging
 import utils
 import LSL_streaming as streaming
 
+from process_communication.state_dictionaries import *
+from process_communication.process_communication_enums import *
+
 logger = logging.getLogger(__name__)
 
 
@@ -67,7 +70,7 @@ class AcquisitionSystemController:
         dynamic_stopping=False,
         dynamic_stopping_params=None,
         max_n_stims=None,
-        share=None,
+        state_dict=None,
     ):
 
         self.markers = markers
@@ -87,7 +90,7 @@ class AcquisitionSystemController:
         self.max_n_stims = max_n_stims
         self.n_class = n_class
 
-        self.share = share
+        self.share = state_dict
 
         self.ch_names = None
         self.channels_to_acquire = None
@@ -657,7 +660,7 @@ class AcquisitionSystemController:
         self.acq.stop()
 
 
-def init_asc(share=None):
+def init_asc(state_dict=None):
     # TO DO
     # logging
     asc = AcquisitionSystemController(
@@ -674,14 +677,14 @@ def init_asc(share=None):
         dynamic_stopping=conf_system.dynamic_stopping,
         dynamic_stopping_params=conf_system.dynamic_stopping_params,
         max_n_stims=conf_system.n_stimulus,
-        share=share,
+        state_dict=state_dict,
     )
 
     return asc
 
 
 def interface(
-    name, name_main_outlet="main", log_file=True, log_stdout=True, share=None
+    name, name_main_outlet="main", log_file=True, log_stdout=True, state_dict=None
 ):
     # ==============================================
     # This function is called from main module.
@@ -693,15 +696,15 @@ def interface(
     # name_main_outlet : name of main module's outlet. This module will find the main module with this name.
     #
 
-    for m in range(8):
-        share[m] = 0
+    if state_dict == None:
+        state_dict = init_acquisition_state_dict()
 
     # set_logger(file=log_file, stdout=log_stdout)
     params = dict()  # variable for receive parameters
 
     inlet = utils.getIntermoduleCommunicationInlet(name_main_outlet)
     # print('LSL connected, Acquisition Controller Module')
-    share[0] = 1
+    state_dict["LSL_inlet_connected"] = True
 
     asc = None
 
@@ -728,9 +731,9 @@ def interface(
                         conf_system.stop_recording()
                     elif data[2].lower() == "start_calibration":
                         asc.calibration(params)
-                        share[1] = 1
+                        state_dict["active_trial"] = False
                     elif data[2].lower() == "init":
-                        asc = init_asc(share=share)
+                        asc = init_asc(state_dict=state_dict)
                     elif data[2].lower() == "set":
                         asc.init()
                     elif data[2].lower() == "connect_lsl":

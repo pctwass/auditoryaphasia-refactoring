@@ -22,6 +22,9 @@ conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
 import logging
 logger = logging.getLogger(__name__)
 
+from process_communication.state_dictionaries import *
+from process_communication.process_communication_enums import *
+
 def main():
     # make directory to save files
     isExist = os.path.exists(os.path.join(conf_system.data_dir, conf_system.save_folder_name))
@@ -48,35 +51,34 @@ def main():
     outlet = utils.createIntermoduleCommunicationOutlet('main', channel_count=4, id='auditory_aphasia_main')
 
     # open StimulationController as a new Process
-    share_audio = Array('i', [0 for m in range(conf_system.len_shared_memory)])
+    audio_state_dict = init_audio_state_dict()
     import audio.AudioController as AudioController
-    audio_process = Process(target=AudioController.interface, args=('audio', 'main', True, True, share_audio))
+    audio_process = Process(target=AudioController.interface, args=('audio', 'main', False, False, audio_state_dict))
     audio_process.start()
-    while share_audio[2] == 0:
+    while audio_state_dict["LSL_inlet_connected"] == False:
         time.sleep(0.1) # wait until module is connected
-    #utils.send_cmd_LSL(outlet, 'audio','open')
 
     # open VisualFeedbackController as a new Process
-    share_visual = Array('d', [0 for m in range(conf_system.len_shared_memory)])
+    visual_fb_state_dict = init_visual_fb_state_dict()
     import VisualFeedbackInterface
-    visual_process = Process(target=VisualFeedbackInterface.interface, args=('visual', 'main', True, True, share_visual))
+    visual_process = Process(target=VisualFeedbackInterface.interface, args=('visual', 'main', False, False, visual_fb_state_dict))
     visual_process.start()
-    while share_visual[0] == 0:
+    while visual_fb_state_dict["LSL_inlet_connected"] == False:
         time.sleep(0.1) # wait until module is connected
 
     # open AcquisitionSystemController as a new Process
-    share_acq = Array('d', [0 for m in range(conf_system.len_shared_memory)])
+    acquisition_state_dict = init_acquisition_state_dict()
     import acquisition.AcquisitionSystemController as AcquisitionSystemController
-    acq_process = Process(target=AcquisitionSystemController.interface, args=('acq', 'main', True, True, share_acq))
+    acq_process = Process(target=AcquisitionSystemController.interface, args=('acq', 'main', False, False, acquisition_state_dict))
     acq_process.start()
-    while share_acq[0] == 0:
+    while acquisition_state_dict["LSL_inlet_connected"] == False:
         time.sleep(0.1) # wait until module is connected
 
     logger.info("open audio device")
-    share_audio[2] = 0
+    audio_state_dict["LSL_inlet_connected"] = False
     utils.send_cmd_LSL(outlet, 'audio', 'open')
-    #time.sleep(3)
-    while share_audio[2] == 0:
+
+    while audio_state_dict["LSL_inlet_connected"] == False:
         time.sleep(0.1)
     logger.info("start recorder")
     if temp_new_conf.init_recorder_locally:
@@ -87,7 +89,7 @@ def main():
     common.eyes_open_close(outlet, 'pre')
 
     # oddball
-    common.play_oddball(outlet, share_audio, number_of_repetitions = conf.oddball_n_reps)
+    common.play_oddball(outlet, audio_state_dict, number_of_repetitions = conf.oddball_n_reps)
 
     idx_run_offset = 0
     if conf.initial_run_offline != 1:
@@ -124,7 +126,7 @@ def main():
         utils.send_cmd_LSL(outlet, 'acq','start_recording', f_name)
 
         for word_idx in range(conf_system.number_of_words):
-            share_audio[0] = 0
+            audio_state_dict[0] = 0
             target = targetplan[word_idx]
             plan_trial = utils.generate_plan_trial(audio_files,
                                                    word2spk,
@@ -153,20 +155,20 @@ def main():
             logger.info("plan_trial : %s" %str(plan_trial))
             play_plan = plan_trial['play_plan']
             utils.send_cmd_LSL(outlet, 'audio', 'play', play_plan)
-            marker = int(share_audio[1])
+            marker = int(audio_state_dict["trial_marker"])
             marker = 0
             cnt = 0
             spk_shown = False
             show_speaker_diagram = condition_params.conditions[condition]["show_speaker_diagram"]
             while True:
-                if int(share_audio[1]) != marker and show_speaker_diagram:
-                    marker = int(share_audio[1])
+                if int(audio_state_dict["trial_marker"]) != marker and show_speaker_diagram:
+                    marker = int(audio_state_dict["trial_marker"])
                     if marker in conf_system.markers['new-trial']:  
                         utils.send_cmd_LSL(outlet, 'visual', 'highlight_speaker', {'spk_num':word2spk[marker-200], 'duration':sentence_duration})
                     elif marker == 210:
                         utils.send_cmd_LSL(outlet, 'visual', 'show_speaker')
-                if share_audio[0] == 99:
-                    share_audio[0] = 0
+                if audio_state_dict["audio_status"] == AudioStatus.TERMINATED:
+                    audio_state_dict["audio_status"] = AudioStatus.INITIAL
                     break
                 time.sleep(0.01)
             time.sleep(conf_system.pause_between_trial)
