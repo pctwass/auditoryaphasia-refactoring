@@ -13,7 +13,7 @@ import utils
 import logging
 logger = logging.getLogger(__name__)
 
-from process_communication.process_communication_enums import AudioStatus
+from process_managment.process_communication_enums import AudioStatus
 
 
 def eyes_open_close(outlet, pre_or_post):
