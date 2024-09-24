@@ -34,8 +34,8 @@ import logging
 import utils
 import LSL_streaming as streaming
 
-from process_communication.state_dictionaries import *
-from process_communication.process_communication_enums import *
+from process_managment.state_dictionaries import *
+from process_managment.process_communication_enums import *
 
 logger = logging.getLogger(__name__)
 

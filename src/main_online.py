@@ -28,8 +28,8 @@ conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
 import logging
 logger = logging.getLogger(__name__)
 
-from process_communication.state_dictionaries import *
-from process_communication.process_communication_enums import *
+from process_managment.process_manager import ProcessManager
+from process_managment.process_communication_enums import *
 
 def main():
     # make directory to save files
@@ -52,27 +52,24 @@ def main():
     # open LSL sender for sending commands to stimulation controller
     outlet = utils.createIntermoduleCommunicationOutlet('main', channel_count=4, id='auditory_aphasia_main')
 
+    # create process manager
+    process_manager = ProcessManager()
+
     # open StimulationController as a new Process
-    audio_state_dict = init_audio_state_dict()
-    import audio.AudioController as AudioController
-    audio_process = Process(target=AudioController.interface, args=('audio', 'main', False, False, audio_state_dict))
+    audio_process, audio_state_dict = process_manager.create_aduio_process(args=('audio', 'main', False, False))
     audio_process.start()
     while audio_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
 
     # open VisualFeedbackController as a new Process
-    visual_fb_state_dict = init_visual_fb_state_dict()
-    import VisualFeedbackInterface
-    visual_process = Process(target=VisualFeedbackInterface.interface, args=('visual', 'main', False, False, visual_fb_state_dict))
+    visual_process, visual_fb_state_dict = process_manager.create_visual_fb_process(args=('visual', 'main', False, False))
     visual_process.start()
     while visual_fb_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
 
     # open AcquisitionSystemController as a new Process
-    acquisition_state_dict = init_acquisition_state_dict()
-    import acquisition.AcquisitionSystemController as AcquisitionSystemController
-    acq_process = Process(target=AcquisitionSystemController.interface, args=('acq', 'main', False, False, acquisition_state_dict))
-    acq_process.start()
+    acquisition_process, acquisition_state_dict = process_manager.create_acquisition_process(args=('acq', 'main', False, False))
+    acquisition_process.start()
     while acquisition_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
 
@@ -276,7 +273,7 @@ def main():
 
     audio_process.terminate()
     visual_process.terminate()
-    acq_process.terminate()
+    acquisition_process.terminate()
     print("all trial ended, terminate process by main module")
     #sys.exit()
 

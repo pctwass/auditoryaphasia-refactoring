@@ -22,8 +22,8 @@ conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
 import logging
 logger = logging.getLogger(__name__)
 
-from process_communication.state_dictionaries import *
-from process_communication.process_communication_enums import *
+from process_managment.state_dictionaries import *
+from process_managment.process_communication_enums import *
 
 def main():
     # make directory to save files
