@@ -23,7 +23,7 @@ import src.acquisition.container as container
 import src.fmt_converter
 import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
 
-from src.classifier.ClassifierHandler import ClassifierHandler
+from classifier.ClassifierFactory import ClassifierFactory
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
 import config.conf as conf
@@ -662,7 +662,7 @@ def init_asc(share=None):
     # TO DO
     # logging
 
-    clfh = ClassifierHandler(n_channels=conf_system.n_ch)
+    clfh = ClassifierFactory(n_channels=conf_system.n_ch)
     clf = clfh.getmodel()
 
     asc = AcquisitionSystemController(
@@ -763,7 +763,7 @@ def interface(
 
 if __name__ == "__main__":
     print('Testing AcquisitionSystemController')
-    clfh = ClassifierHandler(n_channels=conf_system.n_ch)
+    clfh = ClassifierFactory(n_channels=conf_system.n_ch)
     clf = clfh.get_model()
 
     testdict = dict(markers=conf_system.markers,
