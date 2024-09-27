@@ -158,6 +158,9 @@ def stop_recording():
 # ------------------------------------------------------------------------
 # ERP Classification
 
+# Plotting 
+show_barplot = True
+
 # load classifier configuration file
 with open(os.path.join(repository_dir_base, 'config', 'conf_clf.json')) as f:
     conf_clf = json.load(f)
