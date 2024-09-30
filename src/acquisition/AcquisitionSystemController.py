@@ -19,21 +19,22 @@ matplotlib.use("tkagg")
 import matplotlib.pyplot as plt
 import pylsl
 
-import conf_selector
-import acquisition.container as container
-import fmt_converter
-import acquisition.OnlineDataAcquire as OnlineDataAcquire
+import config.conf_selector
+import src.acquisition.container as container
+import src.fmt_converter
+import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
 
+from classifier.ClassifierFactory import ClassifierFactory
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import conf as conf
-import conf_system as conf_system
-import temp_new_conf
+import config.conf as conf
+import config.conf_system as conf_system
+import config.temp_new_conf
 
 import logging
 
-import utils
-import LSL_streaming as streaming
+import src.utils
+import src.LSL_streaming as streaming
 
 from process_managment.process_manager import ProcessManager
 from process_managment.state_dictionaries import *
@@ -663,6 +664,10 @@ class AcquisitionSystemController:
 def init_asc(state_dict=None):
     # TO DO
     # logging
+
+    clfh = ClassifierFactory(n_channels=conf_system.n_ch)
+    clf = clfh.getmodel()
+
     asc = AcquisitionSystemController(
         markers=conf_system.markers,
         tmin=conf_system.tmin,
@@ -670,7 +675,7 @@ def init_asc(state_dict=None):
         baseline=conf_system.baseline,
         filter_freq=conf_system.filter_freq,
         filter_order=conf_system.filter_order,
-        clf=conf_system.clf,
+        clf=clf,
         ivals=conf_system.ivals,
         n_class=conf_system.n_class,
         adaptation=conf_system.adaptation,
@@ -757,3 +762,26 @@ def interface(
                     # ------------------------------------
                 else:
                     raise ValueError("Unknown LSL data type received.")
+
+
+if __name__ == "__main__":
+    print('Testing AcquisitionSystemController')
+    clfh = ClassifierFactory(n_channels=conf_system.n_ch)
+    clf = clfh.get_model()
+
+    testdict = dict(markers=conf_system.markers,
+        tmin=conf_system.tmin,
+        tmax=conf_system.tmax,
+        baseline=conf_system.baseline,
+        filter_freq=conf_system.filter_freq,
+        filter_order=conf_system.filter_order,
+        clf=clf,
+        ivals=conf_system.ivals,
+        n_class=conf_system.n_class,
+        adaptation=conf_system.adaptation,
+        dynamic_stopping=conf_system.dynamic_stopping,
+        dynamic_stopping_params=conf_system.dynamic_stopping_params,
+        max_n_stims=conf_system.n_stimulus)
+    
+    for k,v in testdict.items():
+        print(k, v)

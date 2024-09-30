@@ -6,11 +6,11 @@ import re
 
 import numpy as np
 
-import conf_selector
+import config.conf_selector
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import conf as conf
-import conf_system as conf_system
+import config.conf as conf
+import config.conf_system as conf_system
 
 def getIntermoduleCommunicationInlet(target, timeout=None):
     from pylsl import StreamInlet, resolve_stream
