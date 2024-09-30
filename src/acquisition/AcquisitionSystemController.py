@@ -14,6 +14,7 @@ from scipy import stats
 from sklearn.metrics import accuracy_score, get_scorer, roc_auc_score
 from sklearn.model_selection import StratifiedKFold, permutation_test_score
 
+
 matplotlib.use("tkagg")
 import matplotlib.pyplot as plt
 import pylsl
@@ -34,6 +35,7 @@ import logging
 import utils
 import LSL_streaming as streaming
 
+from process_managment.process_manager import ProcessManager
 from process_managment.state_dictionaries import *
 from process_managment.process_communication_enums import *
 
@@ -293,13 +295,10 @@ class AcquisitionSystemController:
 
         if conf_system.show_barplot:
             logger.info("show_barplot is True")
-            share_barplot = Array(
-                "d", [0 for m in range(conf_system.len_shared_memory)]
-            )
-            barplot_process = Process(
-                target=utils.barplot, args=(share_barplot, conf.words)
-            )
-            barplot_process.start()
+    
+            process_manager = ProcessManager()
+            live_barplot_process, live_barplot_state_dict = process_manager.create_live_barplot_process(self.n_class)
+            live_barplot_process.start()
 
         if not os.path.exists(
             os.path.join(conf_system.repository_dir_base, "media", "tmp")
@@ -334,11 +333,12 @@ class AcquisitionSystemController:
                     ]
 
                     # for barplot
-                    share_barplot[self.n_class + 1] = label_trial - 1
+                    label_trial_index = label_trial - 1
+                    live_barplot_state_dict["index_best_class"] = label_trial_index
                     colors = ["tab:blue" for m in range(self.n_class)]
-                    colors[label_trial - 1] = "tab:green"
+                    colors[label_trial_index] = "tab:green"
                     for m in range(self.n_class):
-                        share_barplot[m] = 0
+                        live_barplot_state_dict["mean_classificaiton_values"][m] = 0
 
                     fb_barplot_dir = os.path.join(
                         conf_system.repository_dir_base,
@@ -399,12 +399,12 @@ class AcquisitionSystemController:
                     logger.info("stimulus_cnt : %s" % str(stimulus_cnt))
                     logger.info("scores : %s" % str(scores))
 
-                    for idx, event in enumerate(events):
+                    for index, event in enumerate(events):
                         event_num = int(str(event)[-1])
                         if scores.ndim == 0:
                             distances.append([event_num, scores])
                         else:
-                            distances.append([event_num, scores[idx]])
+                            distances.append([event_num, scores[index]])
 
                     logger.debug("distances : %s" % str(distances))
 
@@ -415,9 +415,9 @@ class AcquisitionSystemController:
                         and stimulus_cnt >= self.n_class
                     ):
                         clf_out = get_distances_class(distances, self.n_class)
-                        for idx, clf_out_class in enumerate(clf_out):
+                        for index, clf_out_class in enumerate(clf_out):
                             # clf_out_mean[idx] = np.mean(clf_out_class)
-                            share_barplot[idx] = np.mean(clf_out_class)
+                            live_barplot_state_dict["mean_classificaiton_values"][index] = np.mean(clf_out_class)
 
                     if (
                         self.dynamic_stopping is True
@@ -439,16 +439,16 @@ class AcquisitionSystemController:
                                 """
                                 # for debugging
                                 if stimulus_cnt >= 42:
-                                    self.share[2] = 2 # decoded by dynamic stopping
-                                    self.share[3] = 1
-                                    self.share[4] = 42
-                                    self.share[1] = 1
+                                    self.state_dict["trial_classification_status"] = TrialClassificationStatus.DECODED_EARLY # decoded by dynamic stopping
+                                    self.state_dict["trial_label"] = 1
+                                    self.state_dict["trial_stimulus_count"] = 42
+                                    self.state_dict[""trial_completed"] = True
                                     trial_was_done = True
                                     break
                                 """
 
-                                for idx, clf_out_class in enumerate(clf_out):
-                                    clf_out_mean[idx] = np.mean(clf_out_class)
+                                for index, clf_out_class in enumerate(clf_out):
+                                    clf_out_mean[index] = np.mean(clf_out_class)
 
                                 logger.info(
                                     "label trial (target) : %s"
@@ -582,8 +582,8 @@ class AcquisitionSystemController:
                         # without dynamic stopping
                         clf_out = get_distances_class(distances, self.n_class)
                         logger.debug("clf_out : %s" % str(clf_out))
-                        for idx, clf_out_class in enumerate(clf_out):
-                            clf_out_mean[idx] = np.mean(clf_out_class)
+                        for index, clf_out_class in enumerate(clf_out):
+                            clf_out_mean[index] = np.mean(clf_out_class)
                         logger.debug("clf_out_mean : %s" % str(clf_out_mean))
 
                         fig_fb = plt.figure(2)

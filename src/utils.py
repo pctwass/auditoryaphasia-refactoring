@@ -499,7 +499,7 @@ def get_ch_names_LSL(inlet):
     
     return ch_names
 
-def barplot(share, words):
+def barplot(state_dict : dict[str, any], words):
     import time
     import matplotlib.pyplot as plt
 
@@ -511,8 +511,9 @@ def barplot(share, words):
     while True:
         #plt.figure(1)
         colors = ['tab:blue' for m in range(n_classes)]
-        colors[int(share[n_classes+1])] = 'tab:green'
-        val = share[0:n_classes]
+        if state_dict["index_best_class"] is not None:
+            colors[int(state_dict["index_best_class"])] = 'tab:green'
+        val = state_dict["mean_classificaiton_values"][0:n_classes] # can probably remove '[0:n_classes]'
         fig.clear()
         plt.bar(words, val, color = colors)
         fig.canvas.draw()

@@ -2,6 +2,7 @@ import multiprocessing
 import multiprocessing.process
 from state_dictionaries import *
 
+import utils
 import audio.AudioController as AudioController
 import visual_feedback.VisualFeedbackInterface as VisualFeedbackInterface
 import acquisition.AcquisitionSystemController as AcquisitionSystemController
@@ -16,7 +17,8 @@ class ProcessManager:
         return multiprocessing.Process(target=target, args=args)
 
 
-    def create_aduio_process(self, args : list = None) -> tuple[multiprocessing.process, dict[str, any]]:
+    def create_audio_process(self, args : list = None) -> tuple[multiprocessing.process, dict[str, any]]:
+        command_array = self._manager.list()
         audio_state_dict = init_audio_state_dict(self._manager)
         if args is None:
             args = [audio_state_dict]
@@ -44,3 +46,13 @@ class ProcessManager:
 
         acquisition_process =  multiprocessing.Process(target=AcquisitionSystemController.interface, args=args)
         return acquisition_process, acquisition_state_dict
+
+
+    def create_live_barplot_process(self, num_classes, args : list = None) -> tuple[multiprocessing.process, dict[str, any]]:
+        live_barplot_state_dict = init_live_barplot_state_dict(self._manager, num_classes)
+        if args is None:
+            args = [live_barplot_state_dict]
+        args.append(live_barplot_state_dict)
+
+        live_barplot_process =  multiprocessing.Process(target=utils.barplot.interface, args=args)
+        return live_barplot_process, live_barplot_state_dict

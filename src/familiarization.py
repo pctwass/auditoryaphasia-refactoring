@@ -1,4 +1,7 @@
 import dependency_resolver
+from process_managment.process_communication_enums import AudioStatus
+from process_managment.process_manager import ProcessManager
+from process_managment.state_dictionaries import init_audio_state_dict
 import utils
 import pyscab
 import os
@@ -306,13 +309,16 @@ def main():
     if familirization_args.visual:
         from multiprocessing import Process, Array
         import time
+
+        # create process manager
+        process_manager = ProcessManager()
+            
         # open VisualFeedbackController as a new Process
-        share_visual = Array('d', [0 for m in range(conf_system.len_shared_memory)])
-        import VisualFeedbackInterface
-        visual_process = Process(target=VisualFeedbackInterface.interface, args=('visual', 'main', False, False, share_visual, False, 0))
+        visual_process, visual_fb_state_dict = process_manager.create_visual_fb_process(args=('visual', 'main', False, False))
         visual_process.start()
-        while share_visual[0] == 0:
+        while visual_fb_state_dict["LSL_inlet_connected"] is False:
             time.sleep(0.1) # wait until module is connected
+
         #utils.send_cmd_LSL(outlet, 'visual', 'show_crosshair')
 
     words = conf.words
@@ -322,13 +328,13 @@ def main():
 
     base_dir = conf_system.repository_dir_base
 
-    share = [0 for m in range(8)]
+    audio_state_dict = init_audio_state_dict()
 
     ahc = pyscab.AudioInterface(device_name = conf_system.device_name,
                                 n_ch = conf_system.n_ch,
                                 format=conf_system.format,
                                 frames_per_buffer = conf_system.frames_per_buffer)
-    stc = pyscab.StimulationController(ahc, marker_send=sendMarker_visual, share=share)
+    stc = pyscab.StimulationController(ahc, marker_send=sendMarker_visual, state_dict=audio_state_dict)
 
     isfamiliarizing = True
 
@@ -400,7 +406,7 @@ def main():
             stc.play(audio_plan, audio_data, time_termination = 'auto', pause=0)
             stc.close()
         except KeyboardInterrupt:
-            share[0] = 2
+            audio_state_dict["audio_status"] = AudioStatus.FINISHED_PLAYING
             if familirization_args.visual:
                 visual_process.terminate()
             sys.exit()
@@ -410,7 +416,7 @@ def main():
         except FileNotFoundError:
             print("ERROR : File was not found")
             main()
-    share[0] = 2
+    audio_state_dict["audio_status"] = AudioStatus.FINISHED_PLAYING
     if familirization_args.visual:
         visual_process.terminate()
     sys.exit()
