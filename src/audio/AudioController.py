@@ -12,6 +12,8 @@ import config.conf_selector
 # exec('import %s as conf' %(conf_selector.conf_file_name))
 # exec('import %s as conf_system' %(conf_selector.conf_system_file_name))
 
+import config.conf_system as conf_system
+
 import pyscab
 import src.utils as utils
 
