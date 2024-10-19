@@ -36,7 +36,8 @@ import logging
 import src.utils as utils
 import src.LSL_streaming as streaming
 
-from src.process_management.process_manager import ProcessManager
+#TODO: figure out alternative for starting live barplot process without ProcessManager circular import
+# from src.process_management.process_manager import ProcessManager
 from src.process_management.state_dictionaries import *
 from src.process_management.process_communication_enums import *
 
@@ -294,12 +295,12 @@ class AcquisitionSystemController:
 
         trial_was_done = False
 
-        if conf_system.show_barplot:
-            logger.info("show_barplot is True")
+        # if conf_system.show_barplot:
+        #     logger.info("show_barplot is True")
     
-            process_manager = ProcessManager()
-            live_barplot_process, live_barplot_state_dict = process_manager.create_live_barplot_process(self.n_class)
-            live_barplot_process.start()
+        #     process_manager = ProcessManager()
+        #     live_barplot_process, live_barplot_state_dict = process_manager.create_live_barplot_process(self.n_class)
+        #     live_barplot_process.start()
 
         if not os.path.exists(
             os.path.join(conf_system.repository_dir_base, "media", "tmp")
