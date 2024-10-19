@@ -8,6 +8,7 @@ reference_module_paths = [
     './media',  
     './misc',  
     './src',  
+    './src/process_managment',  
 ]
 
 for module_path in reference_module_paths:

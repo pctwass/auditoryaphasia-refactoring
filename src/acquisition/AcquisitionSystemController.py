@@ -14,6 +14,7 @@ from scipy import stats
 from sklearn.metrics import accuracy_score, get_scorer, roc_auc_score
 from sklearn.model_selection import StratifiedKFold, permutation_test_score
 
+
 matplotlib.use("tkagg")
 import matplotlib.pyplot as plt
 import pylsl
@@ -34,6 +35,10 @@ import logging
 
 import src.utils
 import src.LSL_streaming as streaming
+
+from process_managment.process_manager import ProcessManager
+from process_managment.state_dictionaries import *
+from process_managment.process_communication_enums import *
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +73,7 @@ class AcquisitionSystemController:
         dynamic_stopping=False,
         dynamic_stopping_params=None,
         max_n_stims=None,
-        share=None,
+        state_dict=None,
     ):
 
         self.markers = markers
@@ -88,7 +93,7 @@ class AcquisitionSystemController:
         self.max_n_stims = max_n_stims
         self.n_class = n_class
 
-        self.share = share
+        self.state_dict = state_dict
 
         self.ch_names = None
         self.channels_to_acquire = None
@@ -291,13 +296,10 @@ class AcquisitionSystemController:
 
         if conf_system.show_barplot:
             logger.info("show_barplot is True")
-            share_barplot = Array(
-                "d", [0 for m in range(conf_system.len_shared_memory)]
-            )
-            barplot_process = Process(
-                target=utils.barplot, args=(share_barplot, conf.words)
-            )
-            barplot_process.start()
+    
+            process_manager = ProcessManager()
+            live_barplot_process, live_barplot_state_dict = process_manager.create_live_barplot_process(self.n_class)
+            live_barplot_process.start()
 
         if not os.path.exists(
             os.path.join(conf_system.repository_dir_base, "media", "tmp")
@@ -306,16 +308,16 @@ class AcquisitionSystemController:
                 os.path.join(conf_system.repository_dir_base, "media", "tmp")
             )
 
-        self.share[5] = 1
+        self.state_dict["acquire_trials"] = True
         self.acq.start()
 
-        while self.share[5] == 1:
+        while self.state_dict["acquire_trials"] is True:
             try:
                 new_trial = self.acq.is_got_new_trial_marker()
                 # logger.info(new_trial)
                 if new_trial is not False:
                     trial_was_done = False
-                    self.share[1] = 0
+                    self.state_dict["trial_completed"] = False
                     label_trial = int(str(new_trial + 1)[-1])
                     logger.info("New Trial Started : %d" % label_trial)
                     labels.append(label_trial)
@@ -332,11 +334,12 @@ class AcquisitionSystemController:
                     ]
 
                     # for barplot
-                    share_barplot[self.n_class + 1] = label_trial - 1
+                    label_trial_index = label_trial - 1
+                    live_barplot_state_dict["index_best_class"] = label_trial_index
                     colors = ["tab:blue" for m in range(self.n_class)]
-                    colors[label_trial - 1] = "tab:green"
+                    colors[label_trial_index] = "tab:green"
                     for m in range(self.n_class):
-                        share_barplot[m] = 0
+                        live_barplot_state_dict["mean_classificaiton_values"][m] = 0
 
                     fb_barplot_dir = os.path.join(
                         conf_system.repository_dir_base,
@@ -397,12 +400,12 @@ class AcquisitionSystemController:
                     logger.info("stimulus_cnt : %s" % str(stimulus_cnt))
                     logger.info("scores : %s" % str(scores))
 
-                    for idx, event in enumerate(events):
+                    for index, event in enumerate(events):
                         event_num = int(str(event)[-1])
                         if scores.ndim == 0:
                             distances.append([event_num, scores])
                         else:
-                            distances.append([event_num, scores[idx]])
+                            distances.append([event_num, scores[index]])
 
                     logger.debug("distances : %s" % str(distances))
 
@@ -413,9 +416,9 @@ class AcquisitionSystemController:
                         and stimulus_cnt >= self.n_class
                     ):
                         clf_out = get_distances_class(distances, self.n_class)
-                        for idx, clf_out_class in enumerate(clf_out):
+                        for index, clf_out_class in enumerate(clf_out):
                             # clf_out_mean[idx] = np.mean(clf_out_class)
-                            share_barplot[idx] = np.mean(clf_out_class)
+                            live_barplot_state_dict["mean_classificaiton_values"][index] = np.mean(clf_out_class)
 
                     if (
                         self.dynamic_stopping is True
@@ -437,16 +440,16 @@ class AcquisitionSystemController:
                                 """
                                 # for debugging
                                 if stimulus_cnt >= 42:
-                                    self.share[2] = 2 # decoded by dynamic stopping
-                                    self.share[3] = 1
-                                    self.share[4] = 42
-                                    self.share[1] = 1
+                                    self.state_dict["trial_classification_status"] = TrialClassificationStatus.DECODED_EARLY # decoded by dynamic stopping
+                                    self.state_dict["trial_label"] = 1
+                                    self.state_dict["trial_stimulus_count"] = 42
+                                    self.state_dict[""trial_completed"] = True
                                     trial_was_done = True
                                     break
                                 """
 
-                                for idx, clf_out_class in enumerate(clf_out):
-                                    clf_out_mean[idx] = np.mean(clf_out_class)
+                                for index, clf_out_class in enumerate(clf_out):
+                                    clf_out_mean[index] = np.mean(clf_out_class)
 
                                 logger.info(
                                     "label trial (target) : %s"
@@ -563,12 +566,12 @@ class AcquisitionSystemController:
                                     )
                                     acc = accuracy_score(labels, preds)
                                     logger.info("Acc : %.3f" % acc)
-                                    self.share[2] = (
-                                        2  # decoded by dynamic stopping
+                                    self.state_dict["trial_classification_status"] = (
+                                        TrialClassificationStatus.DECODED_EARLY  # decoded by dynamic stopping
                                     )
-                                    self.share[3] = label_trial
-                                    self.share[4] = stimulus_cnt
-                                    self.share[1] = 1
+                                    self.state_dict["trial_label"] = label_trial
+                                    self.state_dict["trial_stimulus_count"] = stimulus_cnt
+                                    self.state_dict["trial_completed"] = True
                                     trial_was_done = True
                                     break
                             dynamic_stopping_stim_num = stimulus_cnt + 1
@@ -580,8 +583,8 @@ class AcquisitionSystemController:
                         # without dynamic stopping
                         clf_out = get_distances_class(distances, self.n_class)
                         logger.debug("clf_out : %s" % str(clf_out))
-                        for idx, clf_out_class in enumerate(clf_out):
-                            clf_out_mean[idx] = np.mean(clf_out_class)
+                        for index, clf_out_class in enumerate(clf_out):
+                            clf_out_mean[index] = np.mean(clf_out_class)
                         logger.debug("clf_out_mean : %s" % str(clf_out_mean))
 
                         fig_fb = plt.figure(2)
@@ -607,13 +610,13 @@ class AcquisitionSystemController:
                         logger.info("preds : %s" % str(preds))
                         logger.info("Acc : %.3f" % acc)
                         if pred_trial == label_trial:
-                            self.share[2] = 1  # decoded
+                            self.state_dict["trial_classification_status"] = TrialClassificationStatus.DECODED
                         else:
-                            self.share[2] = 0  # not decoded
+                            self.state_dict["trial_classification_status"] = TrialClassificationStatus.UNDECODED
 
-                        self.share[3] = label_trial
-                        self.share[4] = stimulus_cnt
-                        self.share[1] = 1
+                        self.state_dict["trial_label"] = label_trial
+                        self.state_dict["trial_stimulus_count"] = stimulus_cnt
+                        self.state_dict["trial_completed"] = True
                         trial_was_done = True
 
                 if trial_was_done and self.adaptation_available_new:
@@ -658,7 +661,7 @@ class AcquisitionSystemController:
         self.acq.stop()
 
 
-def init_asc(share=None):
+def init_asc(state_dict=None):
     # TO DO
     # logging
 
@@ -679,14 +682,14 @@ def init_asc(share=None):
         dynamic_stopping=conf_system.dynamic_stopping,
         dynamic_stopping_params=conf_system.dynamic_stopping_params,
         max_n_stims=conf_system.n_stimulus,
-        share=share,
+        state_dict=state_dict,
     )
 
     return asc
 
 
 def interface(
-    name, name_main_outlet="main", log_file=True, log_stdout=True, share=None
+    name, name_main_outlet="main", log_file=True, log_stdout=True, state_dict=None
 ):
     # ==============================================
     # This function is called from main module.
@@ -698,15 +701,15 @@ def interface(
     # name_main_outlet : name of main module's outlet. This module will find the main module with this name.
     #
 
-    for m in range(8):
-        share[m] = 0
+    if state_dict == None:
+        state_dict = init_acquisition_state_dict()
 
     # set_logger(file=log_file, stdout=log_stdout)
     params = dict()  # variable for receive parameters
 
     inlet = utils.getIntermoduleCommunicationInlet(name_main_outlet)
     # print('LSL connected, Acquisition Controller Module')
-    share[0] = 1
+    state_dict["LSL_inlet_connected"] = True
 
     asc = None
 
@@ -733,9 +736,9 @@ def interface(
                         conf_system.stop_recording()
                     elif data[2].lower() == "start_calibration":
                         asc.calibration(params)
-                        share[1] = 1
+                        state_dict["trial_completed"] = True
                     elif data[2].lower() == "init":
-                        asc = init_asc(share=share)
+                        asc = init_asc(state_dict=state_dict)
                     elif data[2].lower() == "set":
                         asc.init()
                     elif data[2].lower() == "connect_lsl":

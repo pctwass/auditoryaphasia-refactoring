@@ -17,13 +17,16 @@ import utils
 
 logger = logging.getLogger(__name__)
 
+from process_managment.state_dictionaries import *
+from process_managment.process_communication_enums import *
+
 def marker_none(val):
     pass
 
 class StimulationController(object):
 
-    def __init__(self, share):
-        self.share = share
+    def __init__(self, state_dict):
+        self.state_dict = state_dict
         self.mrk = None
         self.ahc = None
         self.stc = None
@@ -40,7 +43,7 @@ class StimulationController(object):
                                                 marker_send=self.mrk.sendMarker,
                                                 correct_latency = conf_system.correct_sw_latency,
                                                 correct_hardware_buffer = conf_system.correct_hw_latency,
-                                                share=self.share)
+                                                state_dict=self.state_dict)
         self.stc.open()
         logger.info("Audio Device was opened")
 
@@ -52,7 +55,7 @@ class StimulationController(object):
         self.mrk.close() # close marker device
 
     def play(self, params):
-        #self.p = Process(target=self.play_parallel, args=(params,self.share, log_file, log_stdout))
+        #self.p = Process(target=self.play_parallel, args=(params,self.state_dict, log_file, log_stdout))
         #self.p.start()
 
         #conf.set_logger(file=log_file, stdout=log_stdout)
@@ -71,14 +74,14 @@ class StimulationController(object):
         #time.sleep(1) # for closing marker device properly, just in case.
         #logger.info("Marker Device closed") 
         #logger.info("------------------------ Run ended ------------------------")
-        self.share[0] = 99
+        self.state_dict["audio_status"] = AudioStatus.TERMINATED
 
     #def stop(self, pause=1):
-    #    self.share[0] = 99
+    #    self.state_dict["audio_status"] = AudioStatus.TERMINATED
     #    time.sleep(pause)
     #    #self.p.terminate()
 
-def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, share=None):
+def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, state_dict=None):
     # ==============================================
     # This function is called from main module.
     # It opens LSL and communicate with main module.
@@ -88,29 +91,29 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sha
     #        This name will be given by main module.
     # name_main_outlet : name of main module's outlet. This module will find the main module with this name.
     #
-    # share : value which is shared with main module.
+    # state_dict : value which is state_dictd with main module.
     #          0 : initial
     #          1 : start playing
     #         99 : end
 
     sys.path.append(conf_system.repository_dir_base)
 
-    for m in range(5): # set value of used 3 digits to zero.
-        share[m] = 0
+    if state_dict == None:
+        state_dict = init_audio_state_dict()
     params = dict() # variable for receive parameters
     
 
-    stim_controller = StimulationController(share)
+    stim_controller = StimulationController(state_dict)
 
     inlet = utils.getIntermoduleCommunicationInlet(name_main_outlet)
-    share[2] = 1 # LSL connected
+    state_dict["LSL_inlet_connected"] = True # LSL connected
     logger.info("Audio Controller was connected via LSL.")
 
     while True:
         #print("pyscab : %.2f" %(share_pyscab[0]))
 
-        #share[1] = share_pyscab[1] # share marker from pyscab
-        #share_pyscab[0] = share[3]
+        #state_dict["trial_marker"] = share_pyscab[1] # share marker from pyscab
+        #share_pyscab[0] = state_dict[3] 
 
         data, _ = inlet.pull_sample(timeout=0.01)
         if data is not None:
@@ -120,16 +123,16 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sha
                     # ------------------------------------
                     # command
                     if data[2].lower() == 'play':
-                        share[0] = 0
+                        state_dict["audio_status"] = AudioStatus.INITIAL
                         #share_pyscab[0] = 0
                         params['play_plan'] = json.loads(data[3])
                         if params['play_plan'] is None:
                             raise ValueError("command 'play' requires play plan.")
-                        share[0] = 1
+                        state_dict["audio_status"] = AudioStatus.PLAYING
                         stim_controller.play(params)
                     elif data[2].lower() == 'open':
                         stim_controller.open()
-                        share[2] = 1
+                        state_dict["LSL_inlet_connected"] = True
                     elif data[2].lower() == 'close':
                         stim_controller.close()
                     #elif data[2].lower() == 'stop':
@@ -145,11 +148,12 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sha
                     # ------------------------------------
                 else:
                     raise ValueError("Unknown LSL data type received.")
-        #if share[0] != 99 and share[0] != 0 and share_pyscab[0] == 0:
-        #if int(share[0]) == 1 and int(share_pyscab[0]) == 99:
+                    
+        #if state_dict["audio_status"] != AudioStatus.TERMINATED and state_dict["audio_status"] != AudioStatus.INITIAL and share_pyscab[0] == 0:
+        #if int(state_dict["audio_status"]) == AudioStatus.PLAYING and int(share_pyscab[0]) == 99:
             # pass
-            # share[0] != 99 -> is not already ended
-            # share[0] != 0  -> is not initial state
+            # state_dict["audio_status"] != AudioStatus.TERMINATED -> is not already ended
+            # state_dict["audio_status"] != AudioStatus.INITIAL  -> is not initial state
             # share_pyscab[0] == 0 -> pyscab is already terminated.
 
-            #share[0] = 99
+            #state_dict["audio_status"] = AudioStatus.TERMINATED

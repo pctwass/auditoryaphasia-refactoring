@@ -1,3 +1,4 @@
+from process_managment.state_dictionaries import init_audio_state_dict
 import utils
 import pyscab
 import os
@@ -134,7 +135,8 @@ ahc = pyscab.AudioInterface(device_name = conf.device_name,
                             frames_per_buffer = conf.frames_per_buffer)
 def sendMarker(val):
     pass
-share = [0 for m in range(8)]
-stc = pyscab.StimulationController(ahc, marker_send=sendMarker, share=share)
+    
+audio_state_dict = init_audio_state_dict()
+stc = pyscab.StimulationController(ahc, marker_send=sendMarker, state_dict=audio_state_dict)
 
 stc.play(audio_plan, data, time_termination = 'auto', pause=0)
