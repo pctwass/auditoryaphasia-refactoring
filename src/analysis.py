@@ -4,12 +4,12 @@ import sys
 import mne
 import numpy as np
 
-import conf_selector
+import config.conf_selector
 
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import conf as conf
-import conf_system as conf_system
+import config.conf as conf
+import config.conf_system as conf_system
 
 dir_base = conf_system.data_dir
 save_dir = os.path.join(dir_base, "plots", conf_system.save_folder_name)

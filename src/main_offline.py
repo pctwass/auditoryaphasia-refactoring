@@ -5,26 +5,24 @@ import time
 
 from multiprocessing import Process, Value, Array, Manager
 
-import conf_selector
-# exec("import %s as conf" % (conf_selector.conf_file_name))
-# exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import conf as conf
-import conf_system as conf_system
-import temp_new_conf
+import config.conf_selector
+import config.conf as conf
+import config.conf_system as conf_system
+import config.temp_new_conf as temp_new_conf
 
-import utils
+import src.utils as utils
 import pyscab
-import condition_params
-import common
+import src.condition_params as condition_params
+import src.common as common
 
 conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
 
 import logging
 logger = logging.getLogger(__name__)
 
-from process_managment.process_manager import ProcessManager
-from process_managment.state_dictionaries import *
-from process_managment.process_communication_enums import *
+from src.process_management.process_manager import ProcessManager
+from src.process_management.state_dictionaries import *
+from src.process_management.process_communication_enums import *
 
 def main():
     # make directory to save files

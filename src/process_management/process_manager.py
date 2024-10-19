@@ -1,11 +1,11 @@
 import multiprocessing
 import multiprocessing.process
-from state_dictionaries import *
+from src.process_management.state_dictionaries import *
 
-import utils
-import audio.AudioController as AudioController
-import visual_feedback.VisualFeedbackInterface as VisualFeedbackInterface
-import acquisition.AcquisitionSystemController as AcquisitionSystemController
+import src.utils as utils
+import src.audio.AudioController as AudioController
+import src.visual_feedback.VisualFeedbackInterface as VisualFeedbackInterface
+import src.acquisition.AcquisitionSystemController as AcquisitionSystemController
 
 
 class ProcessManager:

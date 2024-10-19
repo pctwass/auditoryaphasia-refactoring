@@ -1,7 +1,7 @@
 import dependency_resolver
-from process_managment.process_communication_enums import AudioStatus
-from process_managment.process_manager import ProcessManager
-from process_managment.state_dictionaries import init_audio_state_dict
+from process_management.process_communication_enums import AudioStatus
+from process_management.process_manager import ProcessManager
+from process_management.state_dictionaries import init_audio_state_dict
 import utils
 import pyscab
 import os
@@ -9,11 +9,11 @@ import sys
 import argparse
 import condition_params
 
-import conf_selector
+import config.conf_selector
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import conf as conf
-import conf_system
+import config.conf as conf
+import config.conf_system as conf_system
 
 familirization_parser = argparse.ArgumentParser()
 

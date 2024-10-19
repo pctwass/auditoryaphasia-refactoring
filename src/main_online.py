@@ -7,29 +7,29 @@ from multiprocessing import Process, Value, Array, Manager
 import numpy as np
 #from pylsl import StreamInfo, StreamOutlet
 
-import conf_selector
+import config.conf_selector
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import conf as conf
-import conf_system as conf_system
-import temp_new_conf
+import config.cong as conf
+import config.conf_system as conf_system
+import config.temp_new_conf as temp_new_conf
 
 import matplotlib
 matplotlib.use('tkagg')
 
-import utils
+import src.utils as utils
 import pyscab
 
-import common
-import condition_params
+import src.common as common
+import src.condition_params as condition_params
 
 conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
 
 import logging
 logger = logging.getLogger(__name__)
 
-from process_managment.process_manager import ProcessManager
-from process_managment.process_communication_enums import *
+from src.process_management.process_manager import ProcessManager
+from src.process_management.process_communication_enums import *
 
 def main():
     # make directory to save files

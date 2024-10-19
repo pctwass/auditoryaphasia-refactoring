@@ -6,11 +6,11 @@ import os
 import datetime
 import random
 
-import conf_selector
+import config.conf_selector as conf_selector
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import conf as conf
-import conf_system as conf_system
+import config.conf as conf
+import config.conf_system as conf_system
 
 def test_multi_ch(freq = 440,freq_1 = 440*1.2, duration = 0.5, volume = 1, num_rep = 3, soa = 0.7, ch = [1,2,3,4,5,6]):
     data = pyscab.DataHandler()

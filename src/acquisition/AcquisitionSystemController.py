@@ -24,7 +24,7 @@ import src.acquisition.container as container
 import src.fmt_converter
 import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
 
-from classifier.ClassifierFactory import ClassifierFactory
+from src.classifier.ClassifierFactory import ClassifierFactory
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
 import config.conf as conf
@@ -33,12 +33,12 @@ import config.temp_new_conf
 
 import logging
 
-import src.utils
+import src.utils as utils
 import src.LSL_streaming as streaming
 
-from process_managment.process_manager import ProcessManager
-from process_managment.state_dictionaries import *
-from process_managment.process_communication_enums import *
+from src.process_management.process_manager import ProcessManager
+from src.process_management.state_dictionaries import *
+from src.process_management.process_communication_enums import *
 
 logger = logging.getLogger(__name__)
 
