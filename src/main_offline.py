@@ -53,19 +53,19 @@ def main():
     process_manager = ProcessManager()
 
     # open StimulationController as a new Process
-    audio_process, audio_state_dict = process_manager.create_audio_process(args=('audio', 'main', False, False))
+    audio_process, audio_state_dict = process_manager.create_audio_process(args=['audio', 'main', False, False])
     audio_process.start()
     while audio_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
 
     # open VisualFeedbackController as a new Process
-    visual_process, visual_fb_state_dict = process_manager.create_visual_fb_process(args=('visual', 'main', False, False))
+    visual_process, visual_fb_state_dict = process_manager.create_visual_fb_process(args=['visual', 'main', False, False])
     visual_process.start()
     while visual_fb_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
 
     # open AcquisitionSystemController as a new Process
-    acquisition_process, acquisition_state_dict = process_manager.create_acquisition_process(args=('acq', 'main', False, False))
+    acquisition_process, acquisition_state_dict = process_manager.create_acquisition_process(args=['acq', 'main', False, False])
     acquisition_process.start()
     while acquisition_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected

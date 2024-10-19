@@ -20,7 +20,6 @@ computer_name = socket.gethostname().lower()
 # General
 
 repository_dir_base = Path(os.path.abspath(__file__)).parents[1]
-print(repository_dir_base)
 # data_dir = os.path.join('D:/', 'home', 'bbci')
 data_dir = Path('C:\\Users\\dimitar\\data')
 
