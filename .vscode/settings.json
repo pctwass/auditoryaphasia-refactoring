@@ -4,6 +4,7 @@
     },
     "python.analysis.extraPaths": [
         "./config",
-        "./src/visual_feedback"
+        "./src/visual_feedback",
+        "./src"
     ]
 }

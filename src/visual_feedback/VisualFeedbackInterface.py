@@ -32,8 +32,8 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sta
     #set_logger(file=log_file, stdout=log_stdout)
     params = dict() # variable for receive parameters
 
-    import VisualFeedbackController
-    vfc = VisualFeedbackController.VisualFeedbackController(images_dir_base=conf_system.visual_images_dir_base, fullscreen_mode = conf_system.enable_fullscreen, screen=conf.screen_number)
+    from src.visual_feedback.VisualFeedbackController import VisualFeedbackController
+    vfc = VisualFeedbackController(images_dir_base=conf_system.visual_images_dir_base, fullscreen_mode = conf_system.enable_fullscreen, screen=conf.screen_number)
     vfc.show_screen()
     vfc.show_crosshair()
     #vfc.show_speakers()

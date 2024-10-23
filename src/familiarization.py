@@ -1,7 +1,6 @@
-import dependency_resolver
-from process_management.process_communication_enums import AudioStatus
-from process_management.process_manager import ProcessManager
-from process_management.state_dictionaries import init_audio_state_dict
+from src.process_management.process_communication_enums import AudioStatus
+from src.process_management.process_manager import ProcessManager
+from src.process_management.state_dictionaries import init_audio_state_dict
 import utils
 import pyscab
 import os
