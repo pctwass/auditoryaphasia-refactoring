@@ -119,7 +119,10 @@ def main():
         utils.send_params_LSL(outlet, 'audio', 'marker', True)
         
         f_name = utils.gen_eeg_fname(os.path.join(conf_system.data_dir, conf_system.save_folder_name), conf.f_name_prefix, condition, soa, idx_run, 'eeg', session_type = conf.offline_session_type)
-        utils.send_cmd_LSL(outlet, 'acq','start_recording', f_name)
+        
+        # should only be done if recorder is managed locally
+        if temp_new_conf.init_recorder_locally:
+            utils.send_cmd_LSL(outlet, 'acq','start_recording', f_name)
 
         for word_idx in range(conf_system.number_of_words):
             audio_state_dict[0] = 0
@@ -168,7 +171,8 @@ def main():
                     break
                 time.sleep(0.01)
             time.sleep(conf_system.pause_between_trial)
-        utils.send_cmd_LSL(outlet, 'acq', 'stop_recording')
+        if temp_new_conf.init_recorder_locally:
+            utils.send_cmd_LSL(outlet, 'acq', 'stop_recording')
     
     # eyes open close
     common.eyes_open_close(outlet, 'post')
@@ -181,7 +185,7 @@ def main():
     time.sleep(3)
     audio_process.terminate()
     visual_process.terminate()
-    acq_process.terminate()
+    acquisition_process.terminate()
     logger.info("All procceses were terminated. Exit program.")
 
 if __name__ == '__main__':

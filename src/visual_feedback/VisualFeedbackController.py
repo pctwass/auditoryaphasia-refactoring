@@ -6,11 +6,11 @@ import numpy as np
 from psychopy import visual, core
 from psychopy.visual import line, circle
 
-import conf_selector
+import config.conf_selector
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import conf as conf
-import conf_system as conf_system
+import config.conf as conf
+import config.conf_system as conf_system
 
 def show_pics_vert(win, img_1_dir, img_2_dir, img_1_vert_coff):
     """
