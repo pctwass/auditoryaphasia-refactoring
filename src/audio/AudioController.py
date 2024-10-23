@@ -8,17 +8,19 @@ import json
 
 from multiprocessing import Process, Array
 
-import conf_selector
-exec('import %s as conf' %(conf_selector.conf_file_name))
-exec('import %s as conf_system' %(conf_selector.conf_system_file_name))
+import config.conf_selector
+# exec('import %s as conf' %(conf_selector.conf_file_name))
+# exec('import %s as conf_system' %(conf_selector.conf_system_file_name))
+
+import config.conf_system as conf_system
 
 import pyscab
-import utils
+import src.utils as utils
 
 logger = logging.getLogger(__name__)
 
-from process_managment.state_dictionaries import *
-from process_managment.process_communication_enums import *
+from src.process_management.state_dictionaries import *
+from src.process_management.process_communication_enums import *
 
 def marker_none(val):
     pass

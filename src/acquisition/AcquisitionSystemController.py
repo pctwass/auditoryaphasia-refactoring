@@ -24,7 +24,7 @@ import src.acquisition.container as container
 import src.fmt_converter
 import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
 
-from classifier.ClassifierFactory import ClassifierFactory
+from src.classifier.ClassifierFactory import ClassifierFactory
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
 import config.conf as conf
@@ -33,12 +33,13 @@ import config.temp_new_conf
 
 import logging
 
-import src.utils
+import src.utils as utils
 import src.LSL_streaming as streaming
 
-from process_managment.process_manager import ProcessManager
-from process_managment.state_dictionaries import *
-from process_managment.process_communication_enums import *
+#TODO: figure out alternative for starting live barplot process without ProcessManager circular import
+# from src.process_management.process_manager import ProcessManager
+from src.process_management.state_dictionaries import *
+from src.process_management.process_communication_enums import *
 
 logger = logging.getLogger(__name__)
 
@@ -294,12 +295,12 @@ class AcquisitionSystemController:
 
         trial_was_done = False
 
-        if conf_system.show_barplot:
-            logger.info("show_barplot is True")
+        # if conf_system.show_barplot:
+        #     logger.info("show_barplot is True")
     
-            process_manager = ProcessManager()
-            live_barplot_process, live_barplot_state_dict = process_manager.create_live_barplot_process(self.n_class)
-            live_barplot_process.start()
+        #     process_manager = ProcessManager()
+        #     live_barplot_process, live_barplot_state_dict = process_manager.create_live_barplot_process(self.n_class)
+        #     live_barplot_process.start()
 
         if not os.path.exists(
             os.path.join(conf_system.repository_dir_base, "media", "tmp")

@@ -2,18 +2,17 @@ import sys
 import os
 import time
 
-import conf_selector
+import config.conf_selector
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import conf as conf
-import conf_system as conf_system
-
-import utils
+import config.conf as conf
+import config.conf_system as conf_system
+import src.utils as utils
 
 import logging
 logger = logging.getLogger(__name__)
 
-from process_managment.process_communication_enums import AudioStatus
+from src.process_management.process_communication_enums import AudioStatus
 
 
 def eyes_open_close(outlet, pre_or_post):

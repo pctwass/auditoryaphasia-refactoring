@@ -1,15 +1,15 @@
 import os
 import sys
-import utils
+import src.utils as utils
 import datetime
 import json
 import time
 
-import conf_selector
+import config.conf_selector
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import conf as conf
-import conf_system as conf_system
+import config.conf as conf
+import config.conf_system as conf_system
 
 import logging
 logger = logging.getLogger(__name__)

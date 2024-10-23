@@ -7,29 +7,29 @@ from multiprocessing import Process, Value, Array, Manager
 import numpy as np
 #from pylsl import StreamInfo, StreamOutlet
 
-import conf_selector
+import config.conf_selector
 # exec("import %s as conf" % (conf_selector.conf_file_name))
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import conf as conf
-import conf_system as conf_system
-import temp_new_conf
+import config.conf as conf
+import config.conf_system as conf_system
+import config.temp_new_conf as temp_new_conf
 
 import matplotlib
 matplotlib.use('tkagg')
 
-import utils
+import src.utils as utils
 import pyscab
 
-import common
-import condition_params
+import src.common as common
+import src.condition_params as condition_params
 
 conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
 
 import logging
 logger = logging.getLogger(__name__)
 
-from process_managment.process_manager import ProcessManager
-from process_managment.process_communication_enums import *
+from src.process_management.process_manager import ProcessManager
+from src.process_management.process_communication_enums import *
 
 def main():
     # make directory to save files
@@ -56,19 +56,19 @@ def main():
     process_manager = ProcessManager()
 
     # open StimulationController as a new Process
-    audio_process, audio_state_dict = process_manager.create_audio_process(args=('audio', 'main', False, False))
+    audio_process, audio_state_dict = process_manager.create_audio_process(args=['audio', 'main', False, False])
     audio_process.start()
     while audio_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
 
     # open VisualFeedbackController as a new Process
-    visual_process, visual_fb_state_dict = process_manager.create_visual_fb_process(args=('visual', 'main', False, False))
+    visual_process, visual_fb_state_dict = process_manager.create_visual_fb_process(args=['visual', 'main', False, False])
     visual_process.start()
     while visual_fb_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
 
     # open AcquisitionSystemController as a new Process
-    acquisition_process, acquisition_state_dict = process_manager.create_acquisition_process(args=('acq', 'main', False, False))
+    acquisition_process, acquisition_state_dict = process_manager.create_acquisition_process(args=['acq', 'main', False, False])
     acquisition_process.start()
     while acquisition_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
