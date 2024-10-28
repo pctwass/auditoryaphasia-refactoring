@@ -62,13 +62,13 @@ class Marker(object):
         self.marker_duration = marker_duration
 
     def open(self):
-        self._bb = buttonbox.ButtonBoxBci(port=self.port)
+        self._buttonbox = buttonbox.ButtonBoxBci(port=self.port)
 
     def close(self):
-        self._bb.close()
+        self._buttonbox.close()
 
     def sendMarker(self, val):
-        self._bb.sendMarker(val=val)
+        self._buttonbox.sendMarker(val=val)
 
 
 markers = dict()
