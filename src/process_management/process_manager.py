@@ -30,10 +30,11 @@ class ProcessManager:
 
     def create_visual_fb_process(self, kwargs : dict[str,any] = None) -> tuple[multiprocessing.process, dict[str, any]]:
         visual_fb_state_dict = init_visual_fb_state_dict(self._manager)
-        if args is None:
-            args = [visual_fb_state_dict]
+
+        if kwargs is None:
+            kwargs = dict(state_dict=audio_state_dict)
         else:
-            args.append(visual_fb_state_dict)
+            kwargs['state_dict'] = visual_fb_state_dict
 
         visual_fb_process = multiprocessing.Process(target=VisualFeedbackInterface.interface, kwargs=kwargs)
         return visual_fb_process, visual_fb_state_dict

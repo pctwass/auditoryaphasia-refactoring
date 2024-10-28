@@ -40,7 +40,7 @@ class StimulationController(object):
                                         frames_per_buffer = conf_system.frames_per_buffer)
                             
         self.mrk = conf_system.Marker()
-        self.mrk.open()     
+        #self.mrk.open()     
         self.stc = pyscab.StimulationController(self.ahc, 
                                                 marker_send=self.mrk.sendMarker,
                                                 correct_latency = conf_system.correct_sw_latency,
@@ -109,7 +109,7 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sta
 
     inlet = utils.getIntermoduleCommunicationInlet(name_main_outlet)
     state_dict["LSL_inlet_connected"] = True # LSL connected
-    logger.info("Audio Controller was connected via LSL.")
+    logger.info(f"Audio Controller was connected via LSL. (state dict value: {state_dict['LSL_inlet_connected']})")
 
     while True:
         #print("pyscab : %.2f" %(share_pyscab[0]))

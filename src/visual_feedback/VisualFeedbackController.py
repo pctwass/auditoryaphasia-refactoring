@@ -5,8 +5,8 @@ import numpy as np
 from psychopy import visual, core
 
 import config.conf_system as conf_system
-from visual_objects.Crosshair import Crosshair
-from visual_objects.Speaker import Speakers
+from visual_feedback.visual_objects.Crosshair import Crosshair
+from visual_feedback.visual_objects.Speaker import Speakers
 
 
 class VisualFeedbackController(object):
@@ -23,49 +23,49 @@ class VisualFeedbackController(object):
 
 
     def show_screen(self):
-        self.win = visual.Window(self.display_size, color=conf_system.background_color, fullscr=self.fullscreen_mode,
+        self.window = visual.Window(self.display_size, color=conf_system.background_color, fullscr=self.fullscreen_mode,
                                  pos=self.window_position, units=self.window_units, screen=self.screen)
-        self.smiley = visual.ImageStim(win=self.win, size=conf_system.size_smiley)
-        self.barplot = visual.ImageStim(win=self.win)
-        self.eyes_open = visual.ImageStim(win=self.win, image=os.path.join(self.images_dir_base, 'eyesOpen.jpg'),
+        self.smiley = visual.ImageStim(win=self.window, size=conf_system.size_smiley)
+        self.barplot = visual.ImageStim(win=self.window)
+        self.eyes_open = visual.ImageStim(win=self.window, image=os.path.join(self.images_dir_base, 'eyesOpen.jpg'),
                                           size=conf_system.size_eye_open_close)
-        self.eyes_close = visual.ImageStim(win=self.win, image=os.path.join(self.images_dir_base, 'eyesClosed.jpg'),
+        self.eyes_close = visual.ImageStim(win=self.window, image=os.path.join(self.images_dir_base, 'eyesClosed.jpg'),
                                            size=conf_system.size_eye_open_close)
-        self.dancing_gif = visual.ImageStim(win=self.win, size=conf_system.size_dancing_gif)
-        self.crosshair = Crosshair(self.win)
-        self.speakers = Speakers(self.win, highlight_color=conf_system.highlight_color)
+        self.dancing_gif = visual.ImageStim(win=self.window, size=conf_system.size_dancing_gif)
+        self.crosshair = Crosshair(self.window)
+        self.speakers = Speakers(self.window, highlight_color=conf_system.highlight_color)
 
     def hide_screen(self):
-        self.win.close()
+        self.window.close()
 
     def show_barplot_with_smiley(self):
-        self.fb_smiley, self.fb_bar = self._show_pics_vert(win=self.win,
+        self.fb_smiley, self.fb_bar = self._show_pics_vert(win=self.window,
                                             img_1_dir=os.path.join(self.images_dir_base, 'smiley_transparent.png'),
                                             img_2_dir=os.path.join(conf_system.repository_dir_base, 'media', 'tmp', 'fb_barplot.png'),
                                             img_1_vert_coff=0.15)
-        self.win.flip()
+        self.window.flip()
     
     def hide_barplot_with_smiley(self):
         self.fb_smiley.clearTextures()
         self.fb_bar.clearTextures()
-        self.win.flip()
+        self.window.flip()
 
     def show_barplot(self):
-        self.barplot = self._show_pic_by_height(self.win, os.path.join(conf_system.repository_dir_base, 'media', 'tmp', 'fb_barplot.png'))
-        self.win.flip()
+        self.barplot = self._show_pic_by_height(self.window, os.path.join(conf_system.repository_dir_base, 'media', 'tmp', 'fb_barplot.png'))
+        self.window.flip()
 
     def hide_barplot(self):
         self.barplot.clearTextures()
-        self.win.flip()
+        self.window.flip()
 
     def show_smiley(self):
         self.smiley.setImage(os.path.join(self.images_dir_base, 'smiley_transparent.png'))
         self.smiley.draw()
-        self.win.flip()
+        self.window.flip()
 
     def hide_smiley(self):
         self.smiley.clearTextures()
-        self.win.flip()
+        self.window.flip()
 
     def show_eyes_open_close(self, show_eyes:str):
         if show_eyes.lower() == "open":
@@ -75,7 +75,7 @@ class VisualFeedbackController(object):
         else:
             print("Error : Argument of show_eyes_open_close() has to be 'open' or 'close'.")
             sys.exit()
-        self.win.flip()
+        self.window.flip()
 
     def hide_eyes_open_close(self, show_eyes:str):
         if show_eyes.lower() == "open":
@@ -85,7 +85,7 @@ class VisualFeedbackController(object):
         else:
             print("Error : Argument of hide_eyes_open_close() has to be 'open' or 'close'.")
             sys.exit()
-        self.win.flip()
+        self.window.flip()
 
     def show_gif(self, n_times:int=1, n_frames:int=77, sleep_time:float=0.1):
         for i in range(0, n_times):
@@ -93,7 +93,7 @@ class VisualFeedbackController(object):
                 #print(os.path.join(self.images_dir_base, 'dancing_gif', str(file) + '.gif'))
                 self.dancing_gif.setImage(os.path.join(self.images_dir_base, 'dancing_gif', str(file) + '.gif'))
                 self.dancing_gif.draw()
-                self.win.flip()
+                self.window.flip()
                 core.wait(sleep_time)
         self.dancing_gif.clearTextures()
 
