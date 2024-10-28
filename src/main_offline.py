@@ -53,7 +53,7 @@ def main():
     process_manager = ProcessManager()
 
     # open StimulationController as a new Process
-    audio_process, audio_state_dict = process_manager.create_audio_stim_process(kwargs=dict(name='audio', name_main_outlet='main'))
+    audio_process, audio_state_dict = process_manager.create_audio_process(args=['audio', 'main', False, False])
     audio_process.start()
     while audio_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
