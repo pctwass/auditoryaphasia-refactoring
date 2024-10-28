@@ -313,7 +313,7 @@ def main():
         process_manager = ProcessManager()
             
         # open VisualFeedbackController as a new Process
-        visual_process, visual_fb_state_dict = process_manager.create_visual_fb_process(args=('visual', 'main', False, False))
+        visual_process, visual_fb_state_dict = process_manager.create_visual_fb_process(kwargs=dict(name='visual', name_main_outlet='main'))
         visual_process.start()
         while visual_fb_state_dict["LSL_inlet_connected"] is False:
             time.sleep(0.1) # wait until module is connected

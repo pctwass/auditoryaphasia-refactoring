@@ -1,20 +1,17 @@
-import os
-import sys
 import src.utils as utils
-import datetime
 import json
 import time
 
-import config.conf_selector
-# exec("import %s as conf" % (conf_selector.conf_file_name))
-# exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
 import config.conf as conf
 import config.conf_system as conf_system
 
 import logging
 logger = logging.getLogger(__name__)
 
-def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, state_dict=None):
+from src.visual_feedback.VisualFeedbackController import VisualFeedbackController
+
+
+def interface(name:str, name_main_outlet:str='main', state_dict:str=None):
     # ==============================================
     # This function is called from main module.
     # It opens LSL and communicate with main module.
@@ -25,14 +22,11 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sta
     # name_main_outlet : name of main module's outlet. This module will find the main module with this name.
     #
 
-    for m in range(1):
-        state_dict["LSL_inlet_connected"] = False
+    state_dict["LSL_inlet_connected"] = False
 
     #status.value = 0
-    #set_logger(file=log_file, stdout=log_stdout)
     params = dict() # variable for receive parameters
 
-    from src.visual_feedback.VisualFeedbackController import VisualFeedbackController
     vfc = VisualFeedbackController(images_dir_base=conf_system.visual_images_dir_base, fullscreen_mode = conf_system.enable_fullscreen, screen=conf.screen_number)
     vfc.show_screen()
     vfc.show_crosshair()
@@ -47,7 +41,7 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sta
         if data is not None:
             if data[0].lower() == name:
                 if data[1].lower() == 'cmd':
-                    logger.info("cmd '%s' was recieved with param : %s" %(data[2], str(json.loads(data[3]))))
+                    logger.info(f"cmd {data[2]} was recieved with param : {str(json.loads(data[3]))}")
                     # ------------------------------------
                     # command
                     if data[2].lower() == 'show_speaker':
@@ -60,6 +54,7 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sta
                         vfc.unhighlight_speaker()
                         vfc.hide_speaker()
                         vfc.show_crosshair()
+                        
                     elif data[2].lower() == 'show_crosshair':
                         vfc.unhighlight_speaker()
                         vfc.hide_speaker()
@@ -90,6 +85,7 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sta
                         vfc.hide_crosshair
                         vfc.show_gif()
                         vfc.show_crosshair()
+
                     # modify here to add new commands
                     # ------------------------------------                        
 
@@ -97,7 +93,8 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sta
                     # ------------------------------------
                     # parameters
                     params[data[2]] = json.loads(data[3])
-                    logger.info('Param Received : %s, %s' %(str(data[2]), str(params[data[2]])))
+                    logger.info(f"Param Received : {str(data[2])}, {str(params[data[2]])}")
                     # ------------------------------------
+
                 else:
                     raise ValueError("Unknown LSL data type received.")

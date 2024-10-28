@@ -18,23 +18,24 @@ class ProcessManager:
 
 
     def create_audio_process(self, args : list = None) -> tuple[multiprocessing.process, dict[str, any]]:
-        command_array = self._manager.list()
         audio_state_dict = init_audio_state_dict(self._manager)
         if args is None:
             args = [audio_state_dict]
-        args.append(audio_state_dict)
+        else:
+            args.append(audio_state_dict)
 
         audio_process = multiprocessing.Process(target=AudioController.interface, args=args)
         return audio_process, audio_state_dict
 
 
-    def create_visual_fb_process(self, args : list = None) -> tuple[multiprocessing.process, dict[str, any]]:
+    def create_visual_fb_process(self, kwargs : dict[str,any] = None) -> tuple[multiprocessing.process, dict[str, any]]:
         visual_fb_state_dict = init_visual_fb_state_dict(self._manager)
         if args is None:
             args = [visual_fb_state_dict]
-        args.append(visual_fb_state_dict)
+        else:
+            args.append(visual_fb_state_dict)
 
-        visual_fb_process = multiprocessing.Process(target=VisualFeedbackInterface.interface, args=args)
+        visual_fb_process = multiprocessing.Process(target=VisualFeedbackInterface.interface, kwargs=kwargs)
         return visual_fb_process, visual_fb_state_dict
 
 
@@ -42,7 +43,8 @@ class ProcessManager:
         acquisition_state_dict = init_acquisition_state_dict(self._manager)
         if args is None:
             args = [acquisition_state_dict]
-        args.append(acquisition_state_dict)
+        else:
+            args.append(acquisition_state_dict)
 
         acquisition_process =  multiprocessing.Process(target=AcquisitionSystemController.interface, args=args)
         return acquisition_process, acquisition_state_dict
@@ -52,7 +54,8 @@ class ProcessManager:
         live_barplot_state_dict = init_live_barplot_state_dict(self._manager, num_classes)
         if args is None:
             args = [live_barplot_state_dict]
-        args.append(live_barplot_state_dict)
+        else:
+            args.append(live_barplot_state_dict)
 
         live_barplot_process =  multiprocessing.Process(target=utils.barplot.interface, args=args)
         return live_barplot_process, live_barplot_state_dict
