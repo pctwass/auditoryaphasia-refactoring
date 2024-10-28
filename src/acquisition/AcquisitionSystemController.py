@@ -358,6 +358,7 @@ class AcquisitionSystemController:
                     epoch, events = self.epochs.get_new_data()
                     if trial_was_done:
                         continue
+                    
                     logger.info("New epochs was recorded.")
                     logger.debug("epoch.shape : %s" % str(epoch.shape))
                     logger.debug("events : %s" % str(events))

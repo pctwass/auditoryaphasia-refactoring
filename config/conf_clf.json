@@ -57,32 +57,6 @@
     "adaptation": true,
     "adaptation_eta_cov": 0.001,
     "adaptation_eta_mean": 0.005,
-    "markers": {
-        "target": [
-            111,
-            112,
-            113,
-            114,
-            115,
-            116
-        ],
-        "nontarget": [
-            101,
-            102,
-            103,
-            104,
-            105,
-            106
-        ],
-        "new-trial": [
-            200,
-            201,
-            202,
-            203,
-            204,
-            205
-        ]
-    },
     "labels_binary_classification": {
         "target": 1,
         "nontarget": 0
