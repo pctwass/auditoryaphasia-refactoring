@@ -200,11 +200,11 @@ def main():
                         utils.send_cmd_LSL(outlet, 'visual', 'show_speaker')
                 time.sleep(0.01)
 
-            if audio_state_dict["audio_status"] == AudioStatus.PLAYING:
+            if audio_state_dict["audio_status"].value == AudioStatus.PLAYING.value:
                 audio_state_dict["audio_status"] = AudioStatus.FINISHED_PLAYING
             #utils.send_cmd_LSL(outlet, 'audio', 'stop')
             while True: # wait until audio module stop
-                if audio_state_dict["audio_status"] == AudioStatus.TERMINATED:
+                if audio_state_dict["audio_status"].value == AudioStatus.TERMINATED.value:
                     logger.info("status value is 99, terminate")
                     break
                 else:

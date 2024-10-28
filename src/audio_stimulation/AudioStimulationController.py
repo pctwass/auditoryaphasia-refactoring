@@ -65,3 +65,4 @@ class AudioStimulationController(object):
         #logger.info("Marker Device closed") 
         #logger.info("------------------------ Run ended ------------------------")
         self.state_dict["audio_status"] = AudioStatus.TERMINATED
+        logger.debug(f"changed audio status to TERMINATED")

@@ -47,16 +47,19 @@ def interface(name:str, name_main_outlet:str='main', state_dict:dict[str,any]=No
         if data is not None:
             if data[0].lower() == name:
                 if data[1].lower() == 'cmd':
-                    logger.info("cmd '%s' was recieved with param : %s" %(data[2], str(json.loads(data[3]))))
+                    logger.info(f"cmd {data[2]} was recieved with param : {str(json.loads(data[3]))}")
                     # ------------------------------------
                     # command
                     if data[2].lower() == 'play':
                         state_dict["audio_status"] = AudioStatus.INITIAL
                         #share_pyscab[0] = 0
                         params['play_plan'] = json.loads(data[3])
+
                         if params['play_plan'] is None:
                             raise ValueError("command 'play' requires play plan.")
+                        
                         state_dict["audio_status"] = AudioStatus.PLAYING
+                        logger.debug(f"changed audio status to PLAYING")
                         audio_stim_controller.play(params)
 
                     elif data[2].lower() == 'open':
@@ -82,7 +85,7 @@ def interface(name:str, name_main_outlet:str='main', state_dict:dict[str,any]=No
                     raise ValueError("Unknown LSL data type received.")
                     
         #if state_dict["audio_status"] != AudioStatus.TERMINATED and state_dict["audio_status"] != AudioStatus.INITIAL and share_pyscab[0] == 0:
-        #if state_dict["audio_status"] == AudioStatus.PLAYING and int(share_pyscab[0]) == 99:
+        #if state_dict["audio_status"].value == AudioStatus.PLAYING.value and int(share_pyscab[0]) == 99:
             # pass
             # state_dict["audio_status"] != AudioStatus.TERMINATED -> is not already ended
             # state_dict["audio_status"] != AudioStatus.INITIAL  -> is not initial state

@@ -3,9 +3,6 @@ import os
 import json
 import time
 
-from multiprocessing import Process, Value, Array, Manager
-
-import config.conf_selector
 import config.conf as conf
 import config.conf_system as conf_system
 import config.temp_new_conf as temp_new_conf
@@ -166,7 +163,7 @@ def main():
                         utils.send_cmd_LSL(outlet, 'visual', 'highlight_speaker', {'spk_num':word2spk[marker-200], 'duration':sentence_duration})
                     elif marker == 210:
                         utils.send_cmd_LSL(outlet, 'visual', 'show_speaker')
-                if audio_state_dict["audio_status"] == AudioStatus.TERMINATED:
+                if audio_state_dict["audio_status"].value == AudioStatus.TERMINATED.value:
                     audio_state_dict["audio_status"] = AudioStatus.INITIAL
                     break
                 time.sleep(0.01)
