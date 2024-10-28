@@ -144,7 +144,8 @@ def main():
             break
 
         logger.info('plan_run : %s' %str(plan_run))
-        utils.send_cmd_LSL(outlet, 'acq','start_recording', f_name)
+        if temp_new_conf.init_recorder_locally:
+            utils.send_cmd_LSL(outlet, 'acq','start_recording', f_name)
         utils.send_cmd_LSL(outlet, 'acq', 'start')
 
         for idx, trial_num in enumerate(range(1, number_of_words+1)):
@@ -263,7 +264,8 @@ def main():
                 time.sleep(conf_system.pause_between_trial)
 
         acquisition_state_dict["acquire_trials"] = False
-        utils.send_cmd_LSL(outlet, 'acq', 'stop_recording')
+        if temp_new_conf.init_recorder_locally:
+            utils.send_cmd_LSL(outlet, 'acq', 'stop_recording')
 
     # eyes open close
     common.eyes_open_close(outlet, 'post')

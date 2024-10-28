@@ -70,6 +70,13 @@ class Marker(object):
     def sendMarker(self, val):
         self._bb.sendMarker(val=val)
 
+
+markers = dict()
+markers['target'] = [111,112,113,114,115,116]
+markers['nontarget'] = [101,102,103,104,105,106]
+markers['new-trial'] = [200,201,202,203,204,205]
+
+
 # ------------------------------------------------------------------------
 # LSL settings
 enable_stream_inlet_recover = False
