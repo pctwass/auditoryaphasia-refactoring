@@ -1,10 +1,12 @@
-from src.process_management.state_dictionaries import init_audio_state_dict
-import utils
 import pyscab
 import os
-import sys
 import argparse
 import conf
+
+from src.common.sudoku_matrix import SudokuMarix
+from src.process_management.state_dictionaries import init_audio_state_dict
+from src.plans.stimulation_plan import generate_stimulation_plan
+
 
 parser = argparse.ArgumentParser()
 
@@ -80,7 +82,7 @@ pause_between_sentence_and_subtrial = 3.5
 pause_before_trial_completion = 2
 number_of_repetitions = NUMBER_OF_REPETITIONS
 
-sudoku = utils.Sudoku()
+sudoku = SudokuMarix()
 word_to_speak = sudoku.generate_matrix(1, 6)[0]
 #word_to_speak = [1, 2, 3, 4, 5, 6]
 targetplan = sudoku.generate_matrix(1, 6)[0]
@@ -92,7 +94,7 @@ time_plan = 0
 time_plan += offset_start
 for trial_idx in range(6):
     target = targetplan[trial_idx]
-    wordplan = utils.generate_stimulation_plan(6, number_of_repetitions)
+    wordplan = generate_stimulation_plan(6, number_of_repetitions)
 
     if condition == 'mono' or condition == 'stereo-pitch':
         audio_plan.append([time_plan, 100, [7,8], 210])

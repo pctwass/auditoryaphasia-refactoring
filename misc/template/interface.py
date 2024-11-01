@@ -1,3 +1,8 @@
+import json
+
+import src.process_management.intermodule_communication as intermodule_comm
+
+
 def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, share=None):
     # ==============================================
     # This function is called from main module.
@@ -9,10 +14,8 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sha
     # name_main_outlet : name of main module's outlet. This module will find the main module with this name.
     #
     # share : instance of multiprocessing.Array, shared with parent module.
-    import utils
-    import json
 
-    inlet = utils.getIntermoduleCommunicationInlet(name_main_outlet)
+    inlet = intermodule_comm.getIntermoduleCommunicationInlet(name_main_outlet)
     print('LSL connected, %s' %name)
 
     params = dict() # variable for receive parameters

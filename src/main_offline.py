@@ -8,16 +8,17 @@ from pylsl import StreamOutlet
 import config.conf as conf
 import config.conf_system as conf_system
 import config.temp_new_conf as temp_new_conf
+import common.utils as utils
 import src.condition_params as condition_params
+import src.process_management.intermodule_communication as intermodule_comm
 
-from src.common.main_process_utils import *
+from src.common.main_process_functions import *
 from src.common.eyes_open_close import run_eyes_open_close
 from src.common.oddball import run_oddball
 from src.process_management.process_communication_enums import *
-from utils import *
+from common.utils import *
 
 conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -39,14 +40,14 @@ def main():
     # start stimulation
 
     # set up intermodule communication LSL, subprocess modules, and open the audio device
-    intermodule_comm_outlet = createIntermoduleCommunicationOutlet('main', channel_count=4, id='auditory_aphasia_main')
+    intermodule_comm_outlet = intermodule_comm.createIntermoduleCommunicationOutlet('main', channel_count=4, id='auditory_aphasia_main')
     audio_stim_process, visual_fb_process, acquisition_process, audio_stim_state_dict, _, _ = create_and_start_subprocesses()
     open_audio_device(intermodule_comm_outlet, audio_stim_state_dict)
 
     # initiate recorder if managed locally
     if temp_new_conf.init_recorder_locally:
         logger.info("starting recorder")
-        utils.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'init_recorder', {'session_type':'offline'})
+        intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'init_recorder', {'session_type':'offline'})
     time.sleep(1)
 
     # eyes open close, pre
@@ -80,7 +81,7 @@ def main():
         run_eyes_open_close(intermodule_comm_outlet, 'post')
 
     # close audio device
-    utils.send_cmd_LSL(intermodule_comm_outlet, 'audio','close')
+    intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'audio','close')
     time.sleep(3)
 
     # terminate subprocesses
@@ -124,13 +125,13 @@ def execute_run_for_each_condition(
         word_to_speak = plan_run['word_to_speak']
         target_plan = plan_run['targetplan']
 
-        utils.send_params_LSL(intermodule_comm_outlet, 'audio', 'audio_info', audio_info)
-        utils.send_params_LSL(intermodule_comm_outlet, 'audio', 'marker', True)
+        intermodule_comm.send_params_LSL(intermodule_comm_outlet, 'audio', 'audio_info', audio_info)
+        intermodule_comm.send_params_LSL(intermodule_comm_outlet, 'audio', 'marker', True)
         
         f_name = utils.gen_eeg_fname(os.path.join(conf_system.data_dir, conf_system.save_folder_name), conf.f_name_prefix, condition, soa, idx_run, 'eeg', session_type = conf.offline_session_type)
         
         if temp_new_conf.init_recorder_locally:
-            utils.send_cmd_LSL(intermodule_comm_outlet, 'acq','start_recording', f_name)
+            intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'acq','start_recording', f_name)
 
         execute_trial_for_each_word(
             intermodule_comm_outlet,
@@ -144,7 +145,7 @@ def execute_run_for_each_condition(
         )
 
         if temp_new_conf.init_recorder_locally:
-            utils.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'stop_recording')
+            intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'stop_recording')
 
 
 def execute_trial_for_each_word(
@@ -189,7 +190,7 @@ def execute_trial_for_each_word(
 
         logger.info("plan_trial : %s" %str(plan_trial))
         play_plan = plan_trial['play_plan']
-        utils.send_cmd_LSL(intermodule_comm_outlet, 'audio', 'play', play_plan)
+        intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'audio', 'play', play_plan)
 
         marker = int(audio_stim_state_dict["trial_marker"])
         marker = 0
@@ -200,9 +201,9 @@ def execute_trial_for_each_word(
             if int(audio_stim_state_dict["trial_marker"]) != marker and show_speaker_diagram:
                 marker = int(audio_stim_state_dict["trial_marker"])
                 if marker in conf_system.markers['new-trial']:  
-                    utils.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'highlight_speaker', {'spk_num':word_to_speak[marker-200], 'duration':sentence_duration})
+                    intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'highlight_speaker', {'spk_num':word_to_speak[marker-200], 'duration':sentence_duration})
                 elif marker == 210:
-                    utils.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'show_speaker')
+                    intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'show_speaker')
 
             if audio_stim_state_dict["audio_status"].value == AudioStatus.TERMINATED.value:
                 audio_stim_state_dict["audio_status"] = AudioStatus.INITIAL

@@ -1,5 +1,9 @@
-from multiprocessing import Process, Value
 import hid
+import json
+
+from multiprocessing import Process, Value
+
+import src.process_management.intermodule_communication as intermodule_comm
 
 class WiiController(object):
     # Get information of pressed button from wii controller
@@ -119,12 +123,11 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, arr
     # name_main_outlet : name of main module's outlet. This module will find the main module with this name.
     #
     # array : instance of multiprocessing.Array, shared with parent module. length of array should be 16.
-    import utils
-    import json
+
     print(name)
     print(name_main_outlet)
 
-    inlet = utils.getIntermoduleCommunicationInlet(name_main_outlet)
+    inlet = intermodule_comm.getIntermoduleCommunicationInlet(name_main_outlet)
     print('LSL connected, %s' %name)
 
     params = dict() # variable for receive parameters

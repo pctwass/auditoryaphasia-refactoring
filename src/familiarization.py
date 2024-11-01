@@ -1,18 +1,19 @@
-from src.process_management.process_communication_enums import AudioStatus
-from src.process_management.process_manager import ProcessManager
-from src.process_management.state_dictionaries import init_audio_state_dict
-import utils
 import pyscab
 import os
 import sys
 import argparse
 import condition_params
 
-import config.conf_selector
-# exec("import %s as conf" % (conf_selector.conf_file_name))
-# exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
 import config.conf as conf
 import config.conf_system as conf_system
+import src.process_management.intermodule_communication as intermodule_comm
+
+from src.common.sudoku_matrix import SudokuMarix
+from src.process_management.process_communication_enums import AudioStatus
+from src.process_management.process_manager import ProcessManager
+from src.process_management.state_dictionaries import init_audio_state_dict
+from src.plans.stimulation_plan import generate_stimulation_plan
+
 
 familirization_parser = argparse.ArgumentParser()
 
@@ -82,7 +83,7 @@ def gen_plan_spk_fam(base_dir, condition, soa=1, volume = 1):
 
     data = pyscab.DataHandler()
 
-    sudoku = utils.Sudoku()
+    sudoku = SudokuMarix()
     #word_to_speak = [1, 2, 3, 4, 5, 6]
     targetplan = sudoku.generate_matrix(1, 6)[0]
     word_to_speak = sudoku.generate_matrix(1, 6)[0]
@@ -143,7 +144,7 @@ def gen_plan_spk_fam(base_dir, condition, soa=1, volume = 1):
     time_plan += offset_start
     for trial_idx in range(6):
         target = targetplan[trial_idx]
-        wordplan = utils.generate_stimulation_plan(6, number_of_repetitions)
+        wordplan = generate_stimulation_plan(6, number_of_repetitions)
 
         audio_plan.append([time_plan, 100, [1], 210])
         time_plan += data.get_length_by_id(100)
@@ -220,7 +221,7 @@ def gen_plan_hp_fam(base_dir, condition, soa=1, volume = 1, ch = [7,8]):
     pause_before_trial_completion = 2
     number_of_repetitions = NUMBER_OF_REPETITIONS
 
-    sudoku = utils.Sudoku()
+    sudoku = SudokuMarix()
     word_to_speak = sudoku.generate_matrix(1, 6)[0]
     #word_to_speak = [1, 2, 3, 4, 5, 6]
     targetplan = sudoku.generate_matrix(1, 6)[0]
@@ -232,7 +233,7 @@ def gen_plan_hp_fam(base_dir, condition, soa=1, volume = 1, ch = [7,8]):
     time_plan += offset_start
     for trial_idx in range(6):
         target = targetplan[trial_idx]
-        wordplan = utils.generate_stimulation_plan(6, number_of_repetitions)
+        wordplan = generate_stimulation_plan(6, number_of_repetitions)
 
         audio_plan.append([time_plan, 100, ch, 210])
         time_plan += data.get_length_by_id(100)
@@ -267,7 +268,7 @@ def gen_plan_play_oddball(soa=1, num_reps=10, volume = 1, ch = [7,8]):
     #number_of_repetitions_oddball = 1 # 50->5min
 
     play_plan = list()
-    stimplan = utils.generate_stimulation_plan(6, num_reps)
+    stimplan = generate_stimulation_plan(6, num_reps)
     time_plan = 0
     for stim in stimplan:
         if stim == 1:
@@ -283,25 +284,25 @@ def sendMarker(val):
     pass
 
 if familirization_args.visual:
-    outlet = utils.createIntermoduleCommunicationOutlet('main', channel_count=4, id='main')
+    outlet = intermodule_comm.createIntermoduleCommunicationOutlet('main', channel_count=4, id='main')
 spk_showed = False
 def sendMarker_visual(val):
     if familirization_args.visual:
         global spk_showed
         global outlet
         if val == 210:
-            utils.send_cmd_LSL(outlet, 'visual', 'show_speaker')
+            intermodule_comm.send_cmd_LSL(outlet, 'visual', 'show_speaker')
             spk_showed = True
         
         if val >= 200 and val <= 205:
             spk_showed = True
             spk_num = str(val)
             spk_num = int(spk_num[-1])+1
-            utils.send_cmd_LSL(outlet, 'visual', 'highlight_speaker', spk_num)
+            intermodule_comm.send_cmd_LSL(outlet, 'visual', 'highlight_speaker', spk_num)
 
         if val >= 101 and val <= 116:
             if spk_showed:
-                utils.send_cmd_LSL(outlet, 'visual', 'show_crosshair')
+                intermodule_comm.send_cmd_LSL(outlet, 'visual', 'show_crosshair')
                 spk_showed = False
 
 def main():
@@ -318,7 +319,7 @@ def main():
         while visual_fb_state_dict["LSL_inlet_connected"] is False:
             time.sleep(0.1) # wait until module is connected
 
-        #utils.send_cmd_LSL(outlet, 'visual', 'show_crosshair')
+        #intermodule_comm.send_cmd_LSL(outlet, 'visual', 'show_crosshair')
 
     words = conf.words
 

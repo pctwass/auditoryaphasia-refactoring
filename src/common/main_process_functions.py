@@ -9,7 +9,8 @@ from pylsl import StreamOutlet
 
 import config.conf as conf
 import config.conf_system as conf_system
-import utils
+import common.utils as utils
+import src.process_management.intermodule_communication as intermodule_comm
 
 from process_management.process_manager import ProcessManager
 
@@ -58,7 +59,7 @@ def open_audio_device(
 ):
     logger.info("open audio device")
     audio_stim_state_dict["LSL_inlet_connected"] = False
-    utils.send_cmd_LSL(intermodule_comm_outlet, 'audio', 'open')
+    intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'audio', 'open')
 
     while audio_stim_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1)
@@ -69,9 +70,42 @@ def launch_acquisition(
         condition : str,
         soa : float
 ):
-    utils.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'init')
-    utils.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'connect_LSL')
-    utils.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'set')
+    intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'init')
+    intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'connect_LSL')
+    intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'set')
 
-    utils.send_params_LSL(intermodule_comm_outlet, 'acq', 'condition', condition)
-    utils.send_params_LSL(intermodule_comm_outlet, 'acq', 'soa', soa)
+    intermodule_comm.send_params_LSL(intermodule_comm_outlet, 'acq', 'condition', condition)
+    intermodule_comm.send_params_LSL(intermodule_comm_outlet, 'acq', 'soa', soa)
+
+
+def gen_eeg_fname(
+        dir_base : str, 
+        f_name_prefix : str, 
+        condition : str, 
+        soa : float, 
+        idx_run : int, 
+        extension : str, 
+        session_type : str = None
+):
+    """
+    Parameters
+    ==========
+    session_type : str, 'pre' or 'post', Default = None
+        specify presession or postsession if it's offline session
+        None is corresponding to online session
+
+    """
+    if session_type is None:
+        f_name = os.path.join(dir_base,
+                            f_name_prefix + "_" + condition + "_" + str(int(soa*1000)) + "_" + str(idx_run+1).zfill(4))
+    elif session_type == 'pre':
+        f_name = os.path.join(dir_base,
+                            f_name_prefix + "_pre_" + condition + "_" + str(int(soa*1000)) + "_" + str(idx_run+1).zfill(4))
+    elif session_type == 'post':
+        f_name = os.path.join(dir_base,
+                            f_name_prefix + "_post_" + condition + "_" + str(int(soa*1000)) + "_" + str(idx_run+1).zfill(4))
+    else:
+        raise ValueError("Unknown session type : %s" %str(session_type))
+    
+    f_name = utils.check_file_exists_on_extenstion(f_name, extension)
+    return f_name

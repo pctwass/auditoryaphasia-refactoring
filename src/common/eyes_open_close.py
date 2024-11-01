@@ -3,7 +3,8 @@ import time
 
 import config.conf as conf
 import config.conf_system as conf_system
-import utils
+import common.utils as utils
+import src.process_management.intermodule_communication as intermodule_comm
 
 import logging
 logger = logging.getLogger(__name__)
@@ -31,15 +32,15 @@ def run_eyes_open_close(outlet, pre_or_post):
         if not os.path.exists(f_save_eye):
             os.makedirs(f_save_eye)
         input("Press Any Key to Start Eyes Open Recording (%ds)" %time_rec)
-        f_name = utils.check_file_exists(os.path.join(f_save_eye, 'eyes_open'), 'eeg')
-        utils.send_cmd_LSL(outlet, 'acq','start_recording', f_name)
+        f_name = utils.check_file_exists_on_extenstion(os.path.join(f_save_eye, 'eyes_open'), 'eeg')
+        intermodule_comm.send_cmd_LSL(outlet, 'acq','start_recording', f_name)
         time.sleep(time_rec)
-        utils.send_cmd_LSL(outlet, 'acq', 'stop_recording')
+        intermodule_comm.send_cmd_LSL(outlet, 'acq', 'stop_recording')
         input("Press Any Key to Start Eyes Close Recording (%ds)" %time_rec)
-        f_name = utils.check_file_exists(os.path.join(f_save_eye, 'eyes_close'), 'eeg')
-        utils.send_cmd_LSL(outlet, 'acq','start_recording', f_name)
+        f_name = utils.check_file_exists_on_extenstion(os.path.join(f_save_eye, 'eyes_close'), 'eeg')
+        intermodule_comm.send_cmd_LSL(outlet, 'acq','start_recording', f_name)
         time.sleep(time_rec)
-        utils.send_cmd_LSL(outlet, 'acq', 'stop_recording')
+        intermodule_comm.send_cmd_LSL(outlet, 'acq', 'stop_recording')
 
         # ask the user if they want to repeat the procedure (default choice: 'yes')
         user_input_repeat_procedure = input("Do you want to record eyes open closed again? [y]/n : ")

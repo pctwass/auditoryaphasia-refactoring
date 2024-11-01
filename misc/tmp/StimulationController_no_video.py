@@ -1,17 +1,18 @@
 import logging
 import argparse
-from pylsl import StreamInfo, StreamOutlet
-import utils
 import pyscab
 import pyencoder
 import sys
-import warnings
 import time
 import datetime
 import os
 from markerbci import buttonbox
 from threading import Thread
 #from psychopy.visual import Window
+
+import src.process_management.intermodule_communication as intermodule_comm
+from src.plans.stimulation_plan import generate_stimulation_plan
+
 
 logger = logging.getLogger("StimulationController." + __name__)
 
@@ -175,7 +176,7 @@ def play(transformation):
     if '6D' in transformation:
         for trial_idx in range(6):
             target = targetplan[trial_idx]
-            wordplan = utils.generate_stimulation_plan(6, number_of_repetitions)
+            wordplan = generate_stimulation_plan(6, number_of_repetitions)
 
             audio_plan.append([time_plan, 100, [1], 210])
             time_plan += afh.get_length_by_id(100)
@@ -196,7 +197,7 @@ def play(transformation):
             time_plan += afh.get_length_by_id(101)
             time_plan += pause_between_trial
     elif 'oddball' in transformation:
-        stimplan = common.generate_stimulation_plan(6, number_of_repetitions)
+        stimplan = generate_stimulation_plan(6, number_of_repetitions)
         for stim in stimplan:
             if stim == 1:
                 audio_plan.append([time_plan, dev_id, ch_condition, 21])
@@ -206,7 +207,7 @@ def play(transformation):
     else:
         for trial_idx in range(6):
             target = targetplan[trial_idx]
-            wordplan = utils.generate_stimulation_plan(6, number_of_repetitions)
+            wordplan = generate_stimulation_plan(6, number_of_repetitions)
 
             logger.debug("wordplan No.%s:%s", str(trial_idx+1), pyencoder.list2str(wordplan))
 
@@ -296,7 +297,7 @@ def main_debug():
 def main_LSL():
     set_logger(file=True, stdout=True)
     logger.debug("process started.")
-    intermodule_inlet = utils.getIntermoduleCommunicationInlet('matlab', timeout=None)
+    intermodule_inlet = intermodule_comm.getIntermoduleCommunicationInlet('matlab', timeout=None)
     logger.debug("Lab Streaming Layer Connected.")
     while True:
         try:
