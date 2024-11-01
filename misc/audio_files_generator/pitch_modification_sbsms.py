@@ -4,7 +4,7 @@ import shutil
 
 import librosa
 import soundfile as sf
-from utils import pitch_shift
+from common import pitch_shift
 
 cmd = "dir"
 returned_value = os.system(cmd)  # returns the exit code in unix

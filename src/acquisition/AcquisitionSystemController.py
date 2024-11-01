@@ -34,7 +34,7 @@ import config.temp_new_conf
 
 import logging
 
-import src.utils as utils
+import utils
 import src.LSL_streaming as streaming
 
 #TODO: figure out alternative for starting live barplot process without ProcessManager circular import

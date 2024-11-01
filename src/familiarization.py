@@ -83,15 +83,15 @@ def gen_plan_spk_fam(base_dir, condition, soa=1, volume = 1):
     data = pyscab.DataHandler()
 
     sudoku = utils.Sudoku()
-    #word2spk = [1, 2, 3, 4, 5, 6]
+    #word_to_speak = [1, 2, 3, 4, 5, 6]
     targetplan = sudoku.generate_matrix(1, 6)[0]
-    word2spk = sudoku.generate_matrix(1, 6)[0]
+    word_to_speak = sudoku.generate_matrix(1, 6)[0]
 
     for idx, word in enumerate(conf.words):
         if condition_params.conditions[condition]['single_file']:
             f_name = '1.wav'
         else:
-            f_name = '%d.wav' %(word2spk[idx])
+            f_name = '%d.wav' %(word_to_speak[idx])
 
         word_dir = os.path.join(base_dir,
                                 'media',
@@ -148,16 +148,16 @@ def gen_plan_spk_fam(base_dir, condition, soa=1, volume = 1):
         audio_plan.append([time_plan, 100, [1], 210])
         time_plan += data.get_length_by_id(100)
         time_plan += pause_after_start_sound
-        audio_plan.append([time_plan, target+10, [word2spk[target-1]], 200 + target])
+        audio_plan.append([time_plan, target+10, [word_to_speak[target-1]], 200 + target])
         time_plan += data.get_length_by_id(target+10)
         time_plan += pause_between_sentence_and_subtrial
         for m in range(0, len(wordplan)):
             if wordplan[m] == target:
                 time_plan += soa
-                audio_plan.append([time_plan, wordplan[m], [word2spk[wordplan[m]-1]], 110 + target])
+                audio_plan.append([time_plan, wordplan[m], [word_to_speak[wordplan[m]-1]], 110 + target])
             else:
                 time_plan += soa
-                audio_plan.append([time_plan, wordplan[m], [word2spk[wordplan[m]-1]], 100 + wordplan[m]])
+                audio_plan.append([time_plan, wordplan[m], [word_to_speak[wordplan[m]-1]], 100 + wordplan[m]])
         time_plan += data.get_length_by_id(wordplan[m])
         time_plan += pause_before_trial_completion
         audio_plan.append([time_plan, 101, [1], 0])
@@ -221,8 +221,8 @@ def gen_plan_hp_fam(base_dir, condition, soa=1, volume = 1, ch = [7,8]):
     number_of_repetitions = NUMBER_OF_REPETITIONS
 
     sudoku = utils.Sudoku()
-    word2spk = sudoku.generate_matrix(1, 6)[0]
-    #word2spk = [1, 2, 3, 4, 5, 6]
+    word_to_speak = sudoku.generate_matrix(1, 6)[0]
+    #word_to_speak = [1, 2, 3, 4, 5, 6]
     targetplan = sudoku.generate_matrix(1, 6)[0]
 
     offset_start = 1

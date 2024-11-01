@@ -171,7 +171,7 @@ def generate_plan_run(audio_files_dir_base, words, condition, condition_params, 
     # generating stimulation plan
 
     sudoku = Sudoku()
-    word2spk = sudoku.generate_matrix(1, number_of_words)[0]
+    word_to_speak = sudoku.generate_matrix(1, number_of_words)[0]
     targetplan = sudoku.generate_matrix(1, number_of_words)[0]
 
     #----------------------------------------------------------------------
@@ -212,7 +212,7 @@ def generate_plan_run(audio_files_dir_base, words, condition, condition_params, 
                             'sentences',
                             condition,
                             words[m-1],
-                            "%d.wav" %word2spk[m-1])
+                            "%d.wav" %word_to_speak[m-1])
         audio_files.load(10+m, dir, volume=master_volume)
         audio_info.append([10+m, dir, master_volume])
 
@@ -229,19 +229,19 @@ def generate_plan_run(audio_files_dir_base, words, condition, condition_params, 
                 'words',
                 condition,
                 words[m-1],
-                "%d.wav" %word2spk[m-1])
+                "%d.wav" %word_to_speak[m-1])
         audio_info.append([m, dir, master_volume])
 
     plan = dict()
     plan['audio_info'] = audio_info
     plan['audio_files'] = audio_files
-    plan['word2spk'] = word2spk
+    plan['word_to_speak'] = word_to_speak
     plan['targetplan'] = targetplan
 
     return plan
 
 def generate_plan_trial(audio_files,
-                        word2spk,
+                        word_to_speak,
                         target,
                         condition,
                         soa,
@@ -269,7 +269,7 @@ def generate_plan_trial(audio_files,
     #
     # for compatibility, python implementation is also follow this marker configuration.
     if condition_params['output'] == 'speaker':
-        play_plan.append([time_plan, target+10, [ch_speaker[word2spk[target-1]-1]], 200+target-1])
+        play_plan.append([time_plan, target+10, [ch_speaker[word_to_speak[target-1]-1]], 200+target-1])
     elif condition_params['output'] == 'headphone':
         play_plan.append([time_plan, target+10, ch_headphone, 200+target-1]) # play sentence
 
@@ -280,7 +280,7 @@ def generate_plan_trial(audio_files,
     for word_num in word_plan:
         time_plan += soa
         if condition_params['output'] == 'speaker':
-            spk = [ch_speaker[word2spk[word_num-1]-1]]
+            spk = [ch_speaker[word_to_speak[word_num-1]-1]]
         elif condition_params['output'] == 'headphone':
             spk = ch_headphone
         
@@ -416,7 +416,7 @@ def gen_eeg_fname(dir_base, f_name_prefix, condition, soa, idx_run, extension, s
         f_name = os.path.join(dir_base,
                             f_name_prefix + "_post_" + condition + "_" + str(int(soa*1000)) + "_" + str(idx_run+1).zfill(4))
     else:
-        raise ValueError("Unknown session type : %s" %str(session))
+        raise ValueError("Unknown session type : %s" %str(session_type))
     f_name = check_file_exists(f_name, extension)
     return f_name
 
