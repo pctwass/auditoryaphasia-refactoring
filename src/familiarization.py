@@ -284,7 +284,7 @@ def sendMarker(val):
     pass
 
 if familirization_args.visual:
-    outlet = intermodule_comm.createIntermoduleCommunicationOutlet('main', channel_count=4, id='main')
+    outlet = intermodule_comm.createIntermoduleCommunicationOutlet('main', channel_count=4, source_id='main')
 spk_showed = False
 def sendMarker_visual(val):
     if familirization_args.visual:

@@ -47,7 +47,7 @@ def main():
     # start stimulation
 
     # set up intermodule communication LSL, subprocess modules, and open the audio device
-    intermodule_comm_outlet = intermodule_comm.createIntermoduleCommunicationOutlet('main', channel_count=4, id='auditory_aphasia_main')
+    intermodule_comm_outlet = intermodule_comm.createIntermoduleCommunicationOutlet('main', channel_count=4, source_id='auditory_aphasia_main')
     audio_stim_process, visual_fb_process, acquisition_process, audio_stim_state_dict, _, acquisition_state_dict = create_and_start_subprocesses()
     open_audio_device(intermodule_comm_outlet, audio_stim_state_dict)
 
@@ -130,7 +130,7 @@ def execute_runs(
 
         n_runs = 1
         while True:
-            #f_name = utils.gen_eeg_fname(os.path.join(conf.data_dir, conf.save_folder_name), conf.f_name_prefix, condition, soa, idx_run)
+            #f_name = gen_eeg_fname(os.path.join(conf.data_dir, conf.save_folder_name), conf.f_name_prefix, condition, soa, idx_run)
             f_name = os.path.join(conf_system.data_dir,
                                   conf_system.save_folder_name,
                                   "%s_%s_%s_%s.%s" %(conf.f_name_prefix, condition, str(int(soa*1000)), str(n_runs).zfill(4), 'eeg'))

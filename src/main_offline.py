@@ -16,9 +16,11 @@ from src.common.main_process_functions import *
 from src.common.eyes_open_close import run_eyes_open_close
 from src.common.oddball import run_oddball
 from src.process_management.process_communication_enums import *
-from common.utils import *
+from plans.run_plan import generate_run_plan
+from plans.trial_plan import generate_trial_plan
+# from common.utils import *
 
-conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
+# conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
 import logging
 logger = logging.getLogger(__name__)
 
@@ -40,7 +42,7 @@ def main():
     # start stimulation
 
     # set up intermodule communication LSL, subprocess modules, and open the audio device
-    intermodule_comm_outlet = intermodule_comm.createIntermoduleCommunicationOutlet('main', channel_count=4, id='auditory_aphasia_main')
+    intermodule_comm_outlet = intermodule_comm.createIntermoduleCommunicationOutlet('main', channel_count=4, source_id='auditory_aphasia_main')
     audio_stim_process, visual_fb_process, acquisition_process, audio_stim_state_dict, _, _ = create_and_start_subprocesses()
     open_audio_device(intermodule_comm_outlet, audio_stim_state_dict)
 
@@ -112,7 +114,7 @@ def execute_run_for_each_condition(
         logger.debug("new run started, %d out of %d" %(idx_run+1, len(conf.condition_offline)))
         logger.debug("condition of run : %s" %condition)
         
-        plan_run = utils.generate_plan_run(
+        plan_run = generate_run_plan(
             audio_files_dir_base,
             words,
             condition,
@@ -128,7 +130,7 @@ def execute_run_for_each_condition(
         intermodule_comm.send_params_LSL(intermodule_comm_outlet, 'audio', 'audio_info', audio_info)
         intermodule_comm.send_params_LSL(intermodule_comm_outlet, 'audio', 'marker', True)
         
-        f_name = utils.gen_eeg_fname(os.path.join(conf_system.data_dir, conf_system.save_folder_name), conf.f_name_prefix, condition, soa, idx_run, 'eeg', session_type = conf.offline_session_type)
+        f_name = gen_eeg_fname(os.path.join(conf_system.data_dir, conf_system.save_folder_name), conf.f_name_prefix, condition, soa, idx_run, 'eeg', session_type = conf.offline_session_type)
         
         if temp_new_conf.init_recorder_locally:
             intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'acq','start_recording', f_name)
@@ -162,7 +164,7 @@ def execute_trial_for_each_word(
         audio_stim_state_dict[0] = 0
         target = target_plan[word_idx]
 
-        plan_trial = utils.generate_plan_trial(audio_files,
+        plan_trial = generate_trial_plan(audio_files,
                                                 word_to_speak,
                                                 target,
                                                 condition,

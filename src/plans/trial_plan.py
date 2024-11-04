@@ -1,4 +1,4 @@
-import conf_system
+import config.conf_system as conf_system
 
 from src.plans.stimulation_plan import generate_stimulation_plan
 
