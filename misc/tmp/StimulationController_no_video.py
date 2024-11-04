@@ -297,7 +297,7 @@ def main_debug():
 def main_LSL():
     set_logger(file=True, stdout=True)
     logger.debug("process started.")
-    intermodule_inlet = intermodule_comm.getIntermoduleCommunicationInlet('matlab', timeout=None)
+    intermodule_inlet = intermodule_comm.get_intermodule_communication_inlet('matlab', timeout=None)
     logger.debug("Lab Streaming Layer Connected.")
     while True:
         try:

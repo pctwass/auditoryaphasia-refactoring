@@ -20,7 +20,7 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True):
     params = dict() # variable for receive parameters
     hid_ctrl = HIDController.WiiController()
 
-    inlet = intermodule_comm.getIntermoduleCommunicationInlet(name_main_outlet)
+    inlet = intermodule_comm.get_intermodule_communication_inlet(name_main_outlet)
     print('LSL connected, %s' %name)
     while True:
         data, _ = inlet.pull_sample(timeout=0.01)

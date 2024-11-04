@@ -47,7 +47,7 @@ def main():
     # start stimulation
 
     # set up intermodule communication LSL, subprocess modules, and open the audio device
-    intermodule_comm_outlet = intermodule_comm.createIntermoduleCommunicationOutlet('main', channel_count=4, source_id='auditory_aphasia_main')
+    intermodule_comm_outlet = intermodule_comm.create_intermodule_communication_outlet('main', channel_count=4, source_id='auditory_aphasia_main')
     audio_stim_process, visual_fb_process, acquisition_process, audio_stim_state_dict, _, acquisition_state_dict = create_and_start_subprocesses()
     open_audio_device(intermodule_comm_outlet, audio_stim_state_dict)
 

@@ -1,10 +1,9 @@
-from pylsl import StreamInfo, StreamOutlet
+import time
+import json
+from pylsl import StreamInfo, StreamOutlet, StreamInlet, resolve_stream
 
 
-def getIntermoduleCommunicationInlet(target_module:str, timeout:float=None):
-    from pylsl import StreamInlet, resolve_stream
-    import time
-
+def get_intermodule_communication_inlet(target_module:str, timeout:float=None):
     if timeout is None:
         timeout = float('inf')
 
@@ -24,7 +23,7 @@ def getIntermoduleCommunicationInlet(target_module:str, timeout:float=None):
         raise ValueError("Stream 'IntermoduleCommunication' was not found.")
 
 
-def createIntermoduleCommunicationOutlet(
+def create_intermodule_communication_outlet(
     module_name:str, 
     type:str='Markers', 
     channel_count:int=1, 
@@ -47,7 +46,6 @@ def send_cmd_LSL(
     if outlet.channel_count != 4:
         raise ValueError("channel_count of LSL outlet have to be 4.")
     
-    import json
     params = json.dumps(params)
     outlet.push_sample([target_module, 'cmd', cmd, params])
 
@@ -61,6 +59,5 @@ def send_params_LSL(
     if outlet.channel_count != 4:
         raise ValueError("channel_count of LSL outlet have to be 4.")
     
-    import json
     params = json.dumps(params)
     outlet.push_sample([target_module, 'params', var_name, params])

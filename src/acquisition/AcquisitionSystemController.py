@@ -24,7 +24,7 @@ import config.conf_system as conf_system
 import config.temp_new_conf as temp_new_conf
 import common.utils as utils
 import fmt_converter
-import src.LSL_streaming as streaming
+import common.LSL_streaming as streaming
 import src.acquisition.container as container
 import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
 import src.process_management.intermodule_communication as intermodule_comm
@@ -706,7 +706,7 @@ def interface(
     # set_logger(file=log_file, stdout=log_stdout)
     params = dict()  # variable for receive parameters
 
-    inlet = intermodule_comm.getIntermoduleCommunicationInlet(name_main_outlet)
+    inlet = intermodule_comm.get_intermodule_communication_inlet(name_main_outlet)
     # print('LSL connected, Acquisition Controller Module')
     state_dict["LSL_inlet_connected"] = True
 

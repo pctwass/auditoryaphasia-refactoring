@@ -34,7 +34,7 @@ def interface(name:str, name_main_outlet:str='main', state_dict:dict[str,any]=No
 
     audio_stim_controller = AudioStimulationController(state_dict)
 
-    inlet = intermodule_comm.getIntermoduleCommunicationInlet(name_main_outlet)
+    inlet = intermodule_comm.get_intermodule_communication_inlet(name_main_outlet)
     state_dict["LSL_inlet_connected"] = True # LSL connected
     logger.info(f"Audio Controller was connected via LSL.")
 
