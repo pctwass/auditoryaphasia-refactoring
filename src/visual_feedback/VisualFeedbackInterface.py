@@ -1,9 +1,9 @@
-import utils
 import json
 import time
 
 import config.conf as conf
 import config.conf_system as conf_system
+import src.process_management.intermodule_communication as intermodule_comm
 
 import logging
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ def interface(name:str, name_main_outlet:str='main', state_dict:str=None):
     vfc.show_crosshair()
     #vfc.show_speakers()
 
-    inlet = utils.getIntermoduleCommunicationInlet(name_main_outlet)
+    inlet = intermodule_comm.getIntermoduleCommunicationInlet(name_main_outlet)
     state_dict["LSL_inlet_connected"] = True
     #print('LSL connected, %s' %name)
 

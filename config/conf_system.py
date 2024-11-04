@@ -200,7 +200,7 @@ def filter_mne(data, sos):
     return r
 
 def get_calibration_data(params):
-    import utils
+    import common.utils as utils
     import mne
     from scipy import signal
     import numpy as np
@@ -219,7 +219,7 @@ def get_calibration_data(params):
                                                             extension = 'vhdr',
                                                             soa_ms = int(soa*1000),
                                                             condition = condition,
-                                                            f_name_prefix = conf.f_name_prefix,
+                                                            file_name_prefix = conf.f_name_prefix,
                                                             th_soa_ms = 350)
 
     logger.info("files_for_calibration : %s" %str(files_for_calibration))

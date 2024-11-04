@@ -17,7 +17,7 @@ def init_LSL_inlet(stream_name : str, stream_type : str = None, await_stream : b
     return inlet, stream
 
 
-def resolve_stream(stream_name : str, stream_type : str = None) -> pylsl.StreamInfo:
+def resolve_stream(stream_name : str, stream_type : str = None) -> tuple[pylsl.StreamInfo, pylsl.StreamInlet]:
     if stream_type is None or stream_type.strip() == "":
         streams = pylsl.resolve_stream('name', stream_name)
     else:

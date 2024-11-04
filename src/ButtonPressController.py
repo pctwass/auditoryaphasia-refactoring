@@ -1,7 +1,8 @@
 import json
 
-import utils
 import HIDController
+import src.process_management.intermodule_communication as intermodule_comm
+
 
 def interface(name, name_main_outlet='main', log_file=True, log_stdout=True):
     # ==============================================
@@ -19,7 +20,7 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True):
     params = dict() # variable for receive parameters
     hid_ctrl = HIDController.WiiController()
 
-    inlet = utils.getIntermoduleCommunicationInlet(name_main_outlet)
+    inlet = intermodule_comm.getIntermoduleCommunicationInlet(name_main_outlet)
     print('LSL connected, %s' %name)
     while True:
         data, _ = inlet.pull_sample(timeout=0.01)

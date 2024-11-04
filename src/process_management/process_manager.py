@@ -1,11 +1,13 @@
 import multiprocessing
 import multiprocessing.process
-from src.process_management.state_dictionaries import *
 
-import utils
+import common.utils as utils
 import audio_stimulation.AudioStimulationInterface as AudioStimulationInterface
 import src.visual_feedback.VisualFeedbackInterface as VisualFeedbackInterface
 import src.acquisition.AcquisitionSystemController as AcquisitionSystemController
+
+from src.process_management.state_dictionaries import *
+from src.barplot import barplot
 
 
 class ProcessManager:
@@ -59,5 +61,5 @@ class ProcessManager:
         else:
             args.append(live_barplot_state_dict)
 
-        live_barplot_process =  multiprocessing.Process(target=utils.barplot.interface, args=args)
+        live_barplot_process =  multiprocessing.Process(target=barplot, args=args)
         return live_barplot_process, live_barplot_state_dict

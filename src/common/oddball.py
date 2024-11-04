@@ -2,14 +2,15 @@ import os
 import time
 import pyscab
 
-import config.conf as conf
-import config.conf_system as conf_system
-import utils
-
 import logging
 logger = logging.getLogger(__name__)
 
+import config.conf as conf
+import config.conf_system as conf_system
+import src.process_management.intermodule_communication as intermodule_comm
+
 from src.process_management.process_communication_enums import AudioStatus
+from src.plans.stimulation_plan import generate_stimulation_plan
 
 
 def run_oddball(
@@ -42,7 +43,7 @@ def run_oddball(
         logger.debug("oddball number of repetitions : %s", str(number_of_repetitions_oddball))
 
         play_plan = list()
-        stimplan = utils.generate_stimulation_plan(6, number_of_repetitions_oddball)
+        stimplan = generate_stimulation_plan(6, number_of_repetitions_oddball)
 
         time_plan = 0
         for stim in stimplan:
@@ -66,14 +67,14 @@ def run_oddball(
 
             logger.debug("oddball_%d will be saved in : %s" %(oddball_run_idx, str(f_dir)))
             
-            utils.send_cmd_LSL(outlet, 'acq','start_recording', f_dir)
-            utils.send_params_LSL(outlet, 'audio', 'audio_info', audio_info)
-            #utils.send_params_LSL(outlet, 'audio', 'marker', True)
-            utils.send_cmd_LSL(outlet, 'audio', 'play', play_plan)
+            intermodule_comm.send_cmd_LSL(outlet, 'acq','start_recording', f_dir)
+            intermodule_comm.send_params_LSL(outlet, 'audio', 'audio_info', audio_info)
+            #intermodule_comm.send_params_LSL(outlet, 'audio', 'marker', True)
+            intermodule_comm.send_cmd_LSL(outlet, 'audio', 'play', play_plan)
             while audio_state_dict["audio_status"] != AudioStatus.TERMINATED:
                 time.sleep(1)
             audio_state_dict["audio_status"] = AudioStatus.INITIAL
-            utils.send_cmd_LSL(outlet, 'acq', 'stop_recording')
+            intermodule_comm.send_cmd_LSL(outlet, 'acq', 'stop_recording')
 
         # ask the user if they want to repeat the procedure (default choice: 'yes')
         user_input_repeat_procedure = input("Do you want to play oddball again? [y]/n : ")

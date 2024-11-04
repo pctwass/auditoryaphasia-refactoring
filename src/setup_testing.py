@@ -1,9 +1,5 @@
-import logging
-import utils
 import pyscab
-import sys
 import os
-import datetime
 import random
 
 import config.conf_selector as conf_selector
@@ -11,6 +7,9 @@ import config.conf_selector as conf_selector
 # exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
 import config.conf as conf
 import config.conf_system as conf_system
+
+from src.plans.stimulation_plan import generate_stimulation_plan
+
 
 def test_multi_ch(freq = 440,freq_1 = 440*1.2, duration = 0.5, volume = 1, num_rep = 3, soa = 0.7, ch = [1,2,3,4,5,6]):
     data = pyscab.DataHandler()
@@ -67,8 +66,8 @@ def spk_volume_adjust(base_dir, words, volume = 1, num_rep = 10, soa = 0.35, con
         sentence_dir = os.path.join(base_dir, 'sentences', condition, words[m], '%s.wav'%(str(1)))
         data.load(m+1+10, sentence_dir, volume = volume)
 
-    wordplan = utils.generate_stimulation_plan(6, num_rep)
-    word_to_speak_rnd = utils.generate_stimulation_plan(6, num_rep)
+    wordplan = generate_stimulation_plan(6, num_rep)
+    word_to_speak_rnd = generate_stimulation_plan(6, num_rep)
 
     audio_plan = list()
     for m in range(0, len(wordplan)):

@@ -3,12 +3,13 @@ import json
 import os
 import sys
 import traceback
-from multiprocessing import Array, Process
-
 import matplotlib
 import mne
 import numpy as np
 import pylsl
+import logging
+
+from multiprocessing import Array, Process
 from pyclf.lda.classification import EpochsVectorizer
 from scipy import stats
 from sklearn.metrics import accuracy_score, get_scorer, roc_auc_score
@@ -18,24 +19,19 @@ matplotlib.use("tkagg")
 import matplotlib.pyplot as plt
 import pylsl
 
-import config.conf_selector
-import config.temp_new_conf
-
-import src.acquisition.container as container
-import fmt_converter
-import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
-
-from src.classifier.ClassifierFactory import ClassifierFactory
-# exec("import %s as conf" % (conf_selector.conf_file_name))
-# exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
 import config.conf as conf
 import config.conf_system as conf_system
-import config.temp_new_conf
-
-import logging
-
-import utils
+import config.temp_new_conf as temp_new_conf
+import common.utils as utils
+import fmt_converter
 import src.LSL_streaming as streaming
+import src.acquisition.container as container
+import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
+import src.process_management.intermodule_communication as intermodule_comm
+
+from src.classifier.ClassifierFactory import ClassifierFactory
+from src.common.pandas_save_utility import PandasSaveUtility
+
 
 #TODO: figure out alternative for starting live barplot process without ProcessManager circular import
 # from src.process_management.process_manager import ProcessManager
@@ -227,7 +223,7 @@ class AcquisitionSystemController:
         # self.n_ch = self.eeg_stream[0].channel_count()
         # self.n_ch = fmt_converter.n_ch_convert(self.n_ch)
         self.fs = self.eeg_stream[0].nominal_srate()
-        self.ch_names = utils.get_ch_names_LSL(self.eeg_inlet)
+        self.ch_names = utils.get_channel_names_LSL(self.eeg_inlet)
 
         channels_to_acquire = list()
         for idx, ch in enumerate(self.ch_names):
@@ -272,11 +268,11 @@ class AcquisitionSystemController:
             )
             if os.path.exists(calibration_dir) is False:
                 os.mkdir(calibration_dir)
-            ps = utils.pandas_save(
-                file_dir=os.path.join(calibration_dir, "calibration_log")
+            pandas_save_utility = PandasSaveUtility(
+                file_path=os.path.join(calibration_dir, "calibration_log")
             )
             columns = ["w", "b", "cl_mean", "Cov_inv", "classes", "time"]
-            ps.add(
+            pandas_save_utility.add(
                 data=[
                     [
                         conf_system.adaptation_clf.coef_,
@@ -288,7 +284,7 @@ class AcquisitionSystemController:
                     ]
                 ],
                 columns=columns,
-                html=True,
+                save_as_html=True,
             )
 
         labels = list()
@@ -626,7 +622,7 @@ class AcquisitionSystemController:
                     # overwrite w and b with new set.
                     conf_system.adaptation_clf.apply_adaptation()
                     logger.info("classifier was updated.")
-                    ps.add(
+                    pandas_save_utility.add(
                         data=[
                             [
                                 conf_system.adaptation_clf.coef_,
@@ -640,7 +636,7 @@ class AcquisitionSystemController:
                             ]
                         ],
                         columns=columns,
-                        html=True,
+                        save_as_html=True,
                     )
                     self.adaptation_available_new = False
 
@@ -710,7 +706,7 @@ def interface(
     # set_logger(file=log_file, stdout=log_stdout)
     params = dict()  # variable for receive parameters
 
-    inlet = utils.getIntermoduleCommunicationInlet(name_main_outlet)
+    inlet = intermodule_comm.getIntermoduleCommunicationInlet(name_main_outlet)
     # print('LSL connected, Acquisition Controller Module')
     state_dict["LSL_inlet_connected"] = True
 
