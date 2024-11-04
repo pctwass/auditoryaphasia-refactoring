@@ -21,14 +21,14 @@ class Marker(object):
         self.marker_duration = marker_duration
 
     def open(self):
-        self._bb = buttonbox.ButtonBoxBci(port=self.port)
+        self._button_box = buttonbox.ButtonBoxBci(port=self.port)
 
     def close(self):
-        self._bb.close()
+        self._button_box.close()
 
     def sendMarker_6D(self, val):
         if val != 0:
-            self._bb.sendMarker(val=val)
+            self._button_box.sendMarker(val=val)
             logger.debug("sent marker:%s", str(val))
             if val == 210:
                 pass
@@ -45,7 +45,7 @@ class Marker(object):
 
     def sendMarker(self, val):
         if val != 0:
-            self._bb.sendMarker(val=val)
+            self._button_box.sendMarker(val=val)
             logger.debug("sent marker:%s", str(val))
         else:
             logger.debug("sent no marker (relax sentence played)")
@@ -56,9 +56,9 @@ class Marker(object):
         marker_thread.start()
 
     def _send_buttonbox_thread(self, marker):
-        self._bb.sendMarker(val=marker)
+        self._button_box.sendMarker(val=marker)
         time.sleep(self.marker_duration)
-        self._bb.sendMarker(val=0)
+        self._button_box.sendMarker(val=0)
 
 def play(transformation):
 

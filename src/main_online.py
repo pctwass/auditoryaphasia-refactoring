@@ -56,7 +56,7 @@ def main():
     process_manager = ProcessManager()
 
     # open StimulationController as a new Process
-    audio_process, audio_state_dict = process_manager.create_audio_process(args=['audio', 'main', False, False])
+    audio_process, audio_state_dict = process_manager.create_audio_stim_process(kwargs=dict(name='audio', name_main_outlet='main'))
     audio_process.start()
     while audio_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
@@ -200,11 +200,11 @@ def main():
                         utils.send_cmd_LSL(outlet, 'visual', 'show_speaker')
                 time.sleep(0.01)
 
-            if audio_state_dict["audio_status"] == AudioStatus.PLAYING:
+            if audio_state_dict["audio_status"].value == AudioStatus.PLAYING.value:
                 audio_state_dict["audio_status"] = AudioStatus.FINISHED_PLAYING
             #utils.send_cmd_LSL(outlet, 'audio', 'stop')
             while True: # wait until audio module stop
-                if audio_state_dict["audio_status"] == AudioStatus.TERMINATED:
+                if audio_state_dict["audio_status"].value == AudioStatus.TERMINATED.value:
                     logger.info("status value is 99, terminate")
                     break
                 else:

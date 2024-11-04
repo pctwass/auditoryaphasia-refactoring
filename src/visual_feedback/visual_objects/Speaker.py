@@ -2,7 +2,7 @@ import numpy as np
 
 from psychopy import visual
 from psychopy.visual import circle
-from visual_objects.Crosshair import Crosshair
+from visual_feedback.visual_objects.Crosshair import Crosshair
 
 
 class Speakers(object):

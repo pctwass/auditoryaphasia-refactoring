@@ -3,7 +3,7 @@ import multiprocessing.process
 from src.process_management.state_dictionaries import *
 
 import src.utils as utils
-import src.audio.AudioController as AudioController
+import audio_stimulation.AudioStimulationInterface as AudioStimulationInterface
 import src.visual_feedback.VisualFeedbackInterface as VisualFeedbackInterface
 import src.acquisition.AcquisitionSystemController as AcquisitionSystemController
 
@@ -17,23 +17,25 @@ class ProcessManager:
         return multiprocessing.Process(target=target, args=args)
 
 
-    def create_audio_process(self, args : list = None) -> tuple[multiprocessing.process, dict[str, any]]:
-        audio_state_dict = init_audio_state_dict(self._manager)
-        if args is None:
-            args = [audio_state_dict]
-        else:
-            args.append(audio_state_dict)
+    def create_audio_stim_process(self, kwargs : dict[str,any] = None) -> tuple[multiprocessing.process, dict[str, any]]:
+        audio_stim_state_dict = init_audio_state_dict(self._manager)
 
-        audio_process = multiprocessing.Process(target=AudioController.interface, args=args)
-        return audio_process, audio_state_dict
+        if kwargs is None:
+            kwargs = dict(state_dict=audio_stim_state_dict)
+        else:
+            kwargs['state_dict'] = audio_stim_state_dict
+
+        audio_process = multiprocessing.Process(target=AudioStimulationInterface.interface, kwargs=kwargs)
+        return audio_process, audio_stim_state_dict
 
 
     def create_visual_fb_process(self, kwargs : dict[str,any] = None) -> tuple[multiprocessing.process, dict[str, any]]:
         visual_fb_state_dict = init_visual_fb_state_dict(self._manager)
-        if args is None:
-            args = [visual_fb_state_dict]
+
+        if kwargs is None:
+            kwargs = dict(state_dict=audio_state_dict)
         else:
-            args.append(visual_fb_state_dict)
+            kwargs['state_dict'] = visual_fb_state_dict
 
         visual_fb_process = multiprocessing.Process(target=VisualFeedbackInterface.interface, kwargs=kwargs)
         return visual_fb_process, visual_fb_state_dict

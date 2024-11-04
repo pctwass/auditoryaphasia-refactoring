@@ -14,14 +14,15 @@ from scipy import stats
 from sklearn.metrics import accuracy_score, get_scorer, roc_auc_score
 from sklearn.model_selection import StratifiedKFold, permutation_test_score
 
-
 matplotlib.use("tkagg")
 import matplotlib.pyplot as plt
 import pylsl
 
 import config.conf_selector
+import config.temp_new_conf
+
 import src.acquisition.container as container
-import src.fmt_converter
+import fmt_converter
 import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
 
 from src.classifier.ClassifierFactory import ClassifierFactory
