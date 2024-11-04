@@ -68,11 +68,11 @@ def spk_volume_adjust(base_dir, words, volume = 1, num_rep = 10, soa = 0.35, con
         data.load(m+1+10, sentence_dir, volume = volume)
 
     wordplan = utils.generate_stimulation_plan(6, num_rep)
-    word2spk_rnd = utils.generate_stimulation_plan(6, num_rep)
+    word_to_speak_rnd = utils.generate_stimulation_plan(6, num_rep)
 
     audio_plan = list()
     for m in range(0, len(wordplan)):
-        audio_plan.append([m*soa, wordplan[m], [word2spk_rnd[m]], 1])
+        audio_plan.append([m*soa, wordplan[m], [word_to_speak_rnd[m]], 1])
     
     ################# HACK DEMO #######################################################
     # t = 0
@@ -80,7 +80,7 @@ def spk_volume_adjust(base_dir, words, volume = 1, num_rep = 10, soa = 0.35, con
     #     audio_plan.append([t+2, s+13, [1,2,3,4,5,6], 1])
     #     t+=6
     #     for m in range(0, len(wordplan)):
-    #         audio_plan.append([t, wordplan[m], [word2spk_rnd[m]], 1])
+    #         audio_plan.append([t, wordplan[m], [word_to_speak_rnd[m]], 1])
     #         t+=soa
     # print('audio', audio_plan)
     # print('data', data)

@@ -34,7 +34,7 @@ class Marker(object):
                 pass
             elif int(val/100) == 2:
                 word = int(str(val)[-1])
-                speaker = word2spk[word-1]
+                speaker = word_to_speak[word-1]
                 logger.debug("speaker No.%s was highlighted.", str(speaker))
             else:
                 pass
@@ -62,9 +62,9 @@ class Marker(object):
 
 def play(transformation):
 
-    sudoku = utils.Sudoku()
-    global word2spk
-    word2spk = sudoku.generate_matrix(1, 6)[0]
+    sudoku = common.Sudoku()
+    global word_to_speak
+    word_to_speak = sudoku.generate_matrix(1, 6)[0]
     targetplan = sudoku.generate_matrix(1, 6)[0]
 
     mrk = Marker(port="COM4")
@@ -82,7 +82,7 @@ def play(transformation):
     # load audio files
     #
 
-    logger.debug("word_to_speaker_mapping:%s", pyencoder.list2str(word2spk))
+    logger.debug("word_to_speaker_mapping:%s", pyencoder.list2str(word_to_speak))
     logger.debug("targetplan:%s", pyencoder.list2str(targetplan))
     logger.debug("transformation:%s", transformation)
     
@@ -95,13 +95,13 @@ def play(transformation):
     if 'Stereo' in transformation:
         ch_condition = [7,8]
         for m in range(0,6):
-            idx = word2spk[m]
+            idx = word_to_speak[m]
             word_dir = base_dir + "words_database_stereo/" + transformation + "/" + words[m] + "/" + str(idx) + ".wav"
             afh.load(m+1, word_dir, volume = volume)
             logger.debug("word loaded, id:%s, dir:%s, volume:%s", m+1, word_dir, volume)
 
         for m in range(0,6):
-            idx = word2spk[m]    
+            idx = word_to_speak[m]    
             sentence_dir =  base_dir + "sentences_database_stereo/" + transformation + "/" + words[m] + "/" + str(idx) + ".wav"
             afh.load(m+1+10, sentence_dir, volume = volume)
             logger.debug("sentence loaded, id:%s, dir:%s, volume:%s", m+1, sentence_dir, volume)
@@ -118,14 +118,14 @@ def play(transformation):
             logger.debug("sentence loaded, id:%s, dir:%s, volume:%s", m+1, sentence_dir, volume)
     elif '6D_Pitch' == transformation:
         for m in range(0,6):
-            idx = word2spk[m]
+            idx = word_to_speak[m]
             #word_dir = base_dir + "words_database" + "/Dutch_6D_Pitch/" + str(m+1) + ".wav"
             word_dir = base_dir + "words_database" + "/Dutch_6D_Pitch/" + words[m] + "/" + str(idx) + ".wav"
             afh.load(m+1, word_dir, volume = volume)
             logger.debug("word loaded, id:%s, dir:%s, volume:%s", m+1, word_dir, volume)
 
         for m in range(0,6):
-            idx = word2spk[m]
+            idx = word_to_speak[m]
             sentence_dir =  base_dir + "sentences_database" + "/Dutch_6D_Pitch/" + words[m] + "/" + str(idx) + ".wav"
             afh.load(m+1+10, sentence_dir, volume = volume)
             logger.debug("sentence loaded, id:%s, dir:%s, volume:%s", m+1, sentence_dir, volume)
@@ -180,23 +180,23 @@ def play(transformation):
             audio_plan.append([time_plan, 100, [1], 210])
             time_plan += afh.get_length_by_id(100)
             time_plan += pause_after_start_sound
-            audio_plan.append([time_plan, target+10, [word2spk[target-1]], 200 + target])
+            audio_plan.append([time_plan, target+10, [word_to_speak[target-1]], 200 + target])
             time_plan += afh.get_length_by_id(target+10)
             time_plan += pause_between_sentence_and_subtrial
             for m in range(0, len(wordplan)):
                 if wordplan[m] == target:
                     time_plan += soa
-                    audio_plan.append([time_plan, wordplan[m], [word2spk[wordplan[m]-1]], 110 + target])
+                    audio_plan.append([time_plan, wordplan[m], [word_to_speak[wordplan[m]-1]], 110 + target])
                 else:
                     time_plan += soa
-                    audio_plan.append([time_plan, wordplan[m], [word2spk[wordplan[m]-1]], 100 + wordplan[m]])
+                    audio_plan.append([time_plan, wordplan[m], [word_to_speak[wordplan[m]-1]], 100 + wordplan[m]])
             time_plan += afh.get_length_by_id(wordplan[m])
             time_plan += pause_before_trial_completion
             audio_plan.append([time_plan, 101, [1], 0])
             time_plan += afh.get_length_by_id(101)
             time_plan += pause_between_trial
     elif 'oddball' in transformation:
-        stimplan = utils.generate_stimulation_plan(6, number_of_repetitions)
+        stimplan = common.generate_stimulation_plan(6, number_of_repetitions)
         for stim in stimplan:
             if stim == 1:
                 audio_plan.append([time_plan, dev_id, ch_condition, 21])
@@ -302,10 +302,10 @@ def main_LSL():
         try:
             sample, timestamp = intermodule_inlet.pull_sample(timeout=0.5)
             if sample is not None:
-                if sample[0] == 'word2spk':
-                    word2spk = pyencoder.decode_list(sample[1])
-                    logger.debug("parameter word2spk received via LSL.")
-                    #is_received_word2spk = True
+                if sample[0] == 'word_to_speak':
+                    word_to_speak = pyencoder.decode_list(sample[1])
+                    logger.debug("parameter word_to_speak received via LSL.")
+                    #is_received_word_to_speak = True
                 elif sample[0] == 'transformation':
                     transformation = sample[1]
                     logger.debug("parameter 'transformation' received via LSL.")
@@ -318,7 +318,7 @@ def main_LSL():
                     if sample[1] == 'play':
                         logger.debug("start playing")
                         play(transformation)
-                        word2spk = None
+                        word_to_speak = None
                         transformation = None
                         targetplan = None
         except KeyboardInterrupt:

@@ -3,9 +3,10 @@ import logging
 import json
 
 import config.conf_system as conf_system
-import utils as utils
+import utils
 
 from audio_stimulation.AudioStimulationController import AudioStimulationController
+
 
 logger = logging.getLogger(__name__)
 

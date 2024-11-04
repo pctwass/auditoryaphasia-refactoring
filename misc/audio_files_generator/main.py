@@ -1,7 +1,6 @@
 import os
 import sys
 import shutil
-
 import utils
 
 home_dir = os.path.expanduser('~')
