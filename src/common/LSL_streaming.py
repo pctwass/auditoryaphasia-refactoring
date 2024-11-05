@@ -43,3 +43,15 @@ def resolve_stream_awaited(stream_name : str, stream_type : str = None, timeout 
             time_passed = (time.time() - start_time) * 1000 # convert to ms
             if time_passed > timeout:
                 raise
+
+
+def get_LSL_channel_names(inlet : pylsl.StreamInlet) -> enumerate[str]:
+    channel_names = list()
+
+    info = inlet.info()
+    ch = info.desc().child("channels").child("channel")
+    for k in range(info.channel_count()):
+        channel_names.append(ch.child_value('label'))
+        ch = ch.next_sibling()
+    
+    return channel_names

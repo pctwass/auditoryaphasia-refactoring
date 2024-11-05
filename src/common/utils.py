@@ -4,7 +4,7 @@ import json
 import pylsl
 
 
-def check_file_exists_on_extenstion(f_dir:str, extension:str) -> str:
+def check_file_exists_on_extenstion(file_path:str, extension:str) -> str:
     """
     Parameters
     ----------
@@ -14,12 +14,12 @@ def check_file_exists_on_extenstion(f_dir:str, extension:str) -> str:
     extension : str
         don't include .(dot)
     """
-    f_name = f_dir + '.' + extension
+    f_name = file_path + '.' + extension
     if os.path.exists(f_name):
         idx = 1
         while True:
             idx += 1
-            f_name = f_dir + '_%d.%s' %(idx, extension)
+            f_name = file_path + '_%d.%s' %(idx, extension)
             if not os.path.exists(f_name):
                 break
 
@@ -100,19 +100,6 @@ def get_files_for_calibration(
         pass
 
     return _sort_list(files_for_calibration)
-
-
-# used only for acquisition
-def get_channel_names_LSL(inlet : pylsl.StreamInlet) -> enumerate[str]:
-    channel_names = list()
-
-    info = inlet.info()
-    ch = info.desc().child("channels").child("channel")
-    for k in range(info.channel_count()):
-        channel_names.append(ch.child_value('label'))
-        ch = ch.next_sibling()
-    
-    return channel_names
 
 
 def _sort_list(data : enumerate) -> enumerate|dict:

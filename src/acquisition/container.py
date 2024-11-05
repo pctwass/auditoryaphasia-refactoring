@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Epochs():
-    def __init__(self, n_ch, fs, markers_to_epoch, tmin, tmax, baseline=None, ch_names=None, ch_types='eeg'):
+    def __init__(self, n_ch, fs, markers_to_epoch, tmin, tmax, baseline=None, channel_names=None, channel_types='eeg'):
         """
         Parameters
         ----------
@@ -26,13 +26,13 @@ class Epochs():
         self.baseline = baseline
         self.data = None
         self.events = None
-        self.ch_types = ch_types
-        if ch_names == None:
+        self.ch_types = channel_types
+        if channel_names == None:
             self.ch_names = list()
             for m in range(n_ch):
                 self.ch_names.append("ch" + str(m+1))
         else:
-            self.ch_names = ch_names
+            self.ch_names = channel_names
         #self.info = mne.create_info(self.ch_names, self.fs, ch_types=self.ch_types)
 
         self.length_epoch = np.floor(fs*(range_epoch[1]-range_epoch[0])).astype(np.int64)+1

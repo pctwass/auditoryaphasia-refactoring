@@ -80,8 +80,8 @@ def main():
                             EPOCH_T_MIN,
                             EPOCH_T_MAX,
                             EPOCH_BASELINE,
-                            ch_names=None,
-                            ch_types='eeg')
+                            channel_names=None,
+                            channel_types='eeg')
 
     acq = OnlineDataAcquire.OnlineDataAcquire(
                             epochs,
@@ -102,9 +102,9 @@ def main():
 
     while True:
         try:
-            new_trial = acq.is_got_new_trial_marker()
-            if new_trial != False:
-                pass
+            new_trial_marker = self.acq.get_new_trial_marker()
+            if new_trial_marker is not None:
+                acq.clear_new_trial_marker()
 
             if epochs.has_new_data():
                 epoch = epochs.get_new_data()

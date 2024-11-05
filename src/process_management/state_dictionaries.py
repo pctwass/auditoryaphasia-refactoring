@@ -50,6 +50,7 @@ def init_live_barplot_state_dict(manager : multiprocessing.Manager, num_classes 
     else :
         live_barplot_state_dict = manager.dict()
     
+    live_barplot_state_dict["display_barplot"] = False
     live_barplot_state_dict["mean_classificaiton_values"] = multiprocessing.Array(
                 "d", [0 for m in range(num_classes)])
     live_barplot_state_dict["index_best_class"] = None

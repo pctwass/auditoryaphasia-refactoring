@@ -55,7 +55,7 @@ class OnlineDataAcquire(object):
 
         self.is_running = False
 
-        self.got_new_trial_marker = False
+        self.new_trial_marker = None
         self.got_end_marker = False
 
         logger.info("Online Data Aquire module was initialized.")
@@ -136,7 +136,7 @@ class OnlineDataAcquire(object):
                     if self.new_trial_markers is not None:
                         for new_trial_marker in  self.new_trial_markers:
                             if new_trial_marker in marker.data_chunk:
-                                self.got_new_trial_marker = new_trial_marker
+                                self.new_trial_marker = new_trial_marker
                     if self.end_markers is not None:
                         for end_marker in self.end_markers:
                             if end_marker in marker.data_chunk:
@@ -149,11 +149,10 @@ class OnlineDataAcquire(object):
     def get_marker_data(self):
         return self.marker
 
-    def is_got_new_trial_marker(self):
-        if self.got_new_trial_marker != False:
-            marker = self.got_new_trial_marker
-            self.got_new_trial_marker = False
-            return marker
-        else:
-            return False
+
+    def get_new_trial_marker(self) -> int | None:
+        return self.new_trial_marker
+    
+    def clear_new_trial_marker(self):
+        self.new_trial_marker = None
         

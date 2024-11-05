@@ -28,7 +28,7 @@ def generate_meta_file(session_type:str):
         json.dump(meta, f, indent=4)
 
 
-def create_and_start_subprocesses() -> tuple[multiprocessing.Process, multiprocessing.Process, multiprocessing.Process, dict[str, any], dict[str, any], dict[str, any]]:
+def create_and_start_subprocesses() -> tuple[multiprocessing.Process, multiprocessing.Process, multiprocessing.Process, multiprocessing.Process, dict[str, any], dict[str, any], dict[str, any]]:
     # create process manager
     process_manager = ProcessManager()
 
@@ -45,12 +45,13 @@ def create_and_start_subprocesses() -> tuple[multiprocessing.Process, multiproce
         time.sleep(0.1) # wait until module is connected
 
     # open AcquisitionSystemController as a new Process
-    acquisition_process, acquisition_state_dict = process_manager.create_acquisition_process(args=['acq', 'main', False, False])
+    acquisition_process, acquisition_state_dict, live_barplot_process = process_manager.create_acquisition_process(kwargs=dict(name='acq', name_main_outlet='main'))
     acquisition_process.start()
+    live_barplot_process.start()
     while acquisition_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
 
-    return audio_stim_process, visual_fb_process, acquisition_process, audio_stim_state_dict, visual_fb_state_dict, acquisition_state_dict
+    return audio_stim_process, visual_fb_process, acquisition_process, live_barplot_process, audio_stim_state_dict, visual_fb_state_dict, acquisition_state_dict
 
 
 def open_audio_device(
@@ -71,8 +72,6 @@ def launch_acquisition(
         soa : float
 ):
     intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'init')
-    intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'connect_LSL')
-    intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'acq', 'set')
 
     intermodule_comm.send_params_LSL(intermodule_comm_outlet, 'acq', 'condition', condition)
     intermodule_comm.send_params_LSL(intermodule_comm_outlet, 'acq', 'soa', soa)

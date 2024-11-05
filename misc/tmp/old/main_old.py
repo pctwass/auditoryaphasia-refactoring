@@ -113,7 +113,7 @@ def main():
     marker_stream = resolve_stream('type', 'Markers')
     marker_inlet = StreamInlet(marker_stream[0], recover=ENABLE_STREAM_INLET_RECOVER)
 
-    epochs = container.Epochs(n_ch, fs, MARKERS_TO_EPOCH, EPOCH_T_MIN, EPOCH_T_MAX, EPOCH_BASELINE, ch_names=None, ch_types='eeg')
+    epochs = container.Epochs(n_ch, fs, MARKERS_TO_EPOCH, EPOCH_T_MIN, EPOCH_T_MAX, EPOCH_BASELINE, channel_names=None, channel_types='eeg')
     acq = OnlineDataAcquire.OnlineDataAcquire(
                             epochs,
                             eeg_inlet,
@@ -133,9 +133,9 @@ def main():
     try:
         while True:
 
-            new_trial = acq.is_got_new_trial_marker()
+            new_trial = acq.is_new_trial()
             #print(new_trial)
-            if new_trial != False:
+            if new_trial:
                 pass
                 #print(new_trial)
 
