@@ -1,5 +1,6 @@
 import time
 import json
+
 from pylsl import StreamInfo, StreamOutlet, StreamInlet, resolve_stream
 
 

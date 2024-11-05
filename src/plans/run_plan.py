@@ -1,4 +1,5 @@
 import os
+import pyscab
 
 from common.sudoku_matrix import SudokuMarix
 
@@ -27,7 +28,6 @@ def generate_run_plan(audio_files_dir_base, words, condition, condition_params, 
     # sentence n (idx starts from 1) : 10+n
     #
 
-    import pyscab
     audio_info = list()
     audio_files = pyscab.DataHandler()
 
