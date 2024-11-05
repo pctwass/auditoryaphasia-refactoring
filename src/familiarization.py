@@ -260,7 +260,6 @@ def main():
     else:
         hp_ch = [7,8]
 
-
     is_familiarizing = True
     while is_familiarizing:
         try:
