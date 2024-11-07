@@ -7,6 +7,7 @@ import numpy as np
 import pylsl
 import logging
 
+from sklearn.base import accuracy_score
 from sklearn.pipeline import Pipeline
 from pyclf.lda.classification import EpochsVectorizer
 from scipy import stats
@@ -20,7 +21,7 @@ import config.conf_system as conf_system
 import config.temp_new_conf as temp_new_conf
 import fmt_converter
 import common.LSL_streaming as streaming
-import src.acquisition.container as container
+import acquisition.epoch_container as epoch_container
 import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
 
 from src.classifier.ClassifierFactory import ClassifierFactory
@@ -48,7 +49,7 @@ class AcquisitionSystemController:
         tmax : float,
         baseline : str,
         filter_freq : enumerate[float],
-        filter_order : int | float,
+        filter_order : int|float,
         ivals : enumerate[enumerate[float]],
         n_class : int,
         adaptation : bool = False,
@@ -69,36 +70,34 @@ class AcquisitionSystemController:
         self.n_class = n_class
 
         # below function sets: 
-        # self.eeg_stream
-        # self.eeg_inlet
-        # self.sampling_freq
-        # self.channel_names
-        # self.channels_to_acquire
-        # self.n_channels
+        # - self.eeg_stream
+        # - self.eeg_inlet
+        # - self.sampling_freq
+        # - self.channel_names
+        # - self.channels_to_acquire
+        # - self.n_channels
         self._connect_LSL_acquisition_inlet()
 
-        self.epochs = container.Epochs(
+        self.epochs = epoch_container.EpochContainer(
             self.n_channels,
             self.sampling_freq,
             self.markers["target"] + self.markers["nontarget"],
             tmin,
             tmax,
-            baseline,
-            channel_names=self.channel_names,
-            channel_types="eeg",
+            baseline
         )
 
         self.acq = OnlineDataAcquire.OnlineDataAcquire(
             self.epochs,
             self.eeg_inlet,
+            self.marker_inlet,
             self.channels_to_acquire,
             self.n_channels,
             self.sampling_freq,
-            self.marker_inlet,
-            filter_freq,
-            filter_order,
             fmt_converter.eeg_format_convert,
             fmt_converter.marker_format_convert,
+            filter_freq=filter_freq,
+            filter_order=filter_order,
             new_trial_markers=self.markers["new-trial"],
         )
 
@@ -278,7 +277,7 @@ class AcquisitionSystemController:
                             raise ValueError("Unknown event")
 
                     vectorized_epoch = self.vectorizer.transform(epoch)
-                    self.streaming_outlet_manager.push_features_to_lsl(vectorized_epoch, true_class_labels)
+                    self.streaming_outlet_manager.push_features_to_lsl(vectorized_epoch, true_class_labels, self.incrementing_idx)
 
                     if conf_system.adaptation:
                         # this function will calclate new set of w and b.
@@ -305,7 +304,7 @@ class AcquisitionSystemController:
                             distances.append([event_number, classification_scores[index]])
 
                     logger.debug("distances : %s" % str(distances))
-                    self.streaming_outlet_manager.push_distances_to_lsl(distances)
+                    self.streaming_outlet_manager.push_distances_to_lsl(distances, self.incrementing_idx)
 
                     if (
                         conf_system.show_barplot

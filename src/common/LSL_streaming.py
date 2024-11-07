@@ -1,5 +1,4 @@
 import pylsl
-import logging
 import time
 
 ENABLE_STREAM_INLET_RECOVER = True

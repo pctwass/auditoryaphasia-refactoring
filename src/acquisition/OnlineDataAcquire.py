@@ -1,40 +1,38 @@
-import sys
 import traceback
 import threading
-from logging import getLogger
+import pylsl
 import numpy as np
+
 from scipy import signal
+from pylsl.pylsl import LostError
+
+from common.LSL_data_chunk import LSLDataStruct
+from acquisition.epoch_container import EpochContainer
+from logging import getLogger
 
 logger = getLogger(__name__)
 
-class DataStruct:
-    data = np.array([])
-    time = np.array([])
-    data_chunk = list()
-    time_chunk = list()
-    time_correction = list()
 
 class OnlineDataAcquire(object):
-
     def __init__(
             self,
-            epochs,
-            eeg_inlet,
-            channels_to_acquire,
-            nch_eeg=None,
-            fs_eeg=None,
-            marker_inlet=None,
-            filter_freq=None,
-            filter_order=None,
-            format_convert_eeg_func=None,
-            format_convert_marker_func=None,
-            new_trial_markers=None,
-            end_markers=None):
+            epoch_container : EpochContainer,
+            eeg_inlet : pylsl.StreamInlet,
+            marker_inlet : pylsl.StreamInlet,
+            channels_to_acquire : np.array[list[int]],
+            n_eeg_channels : int,
+            sample_freq_eeg : float,
+            format_convert_eeg_func : function,
+            format_convert_marker_func : function,
+            filter_freq : float|None = None,
+            filter_order : int|float|None = None,
+            new_trial_markers : int|list[int]|None = None,
+            end_markers : int|list[int]|None = None):
 
-        self.epochs = epochs
+        self.epochs_container = epoch_container
         self.eeg_inlet = eeg_inlet
-        self.nch_eeg = nch_eeg
-        self.fs_eeg = fs_eeg
+        self.n_eeg_channels = n_eeg_channels
+        self.sample_freq_eeg = sample_freq_eeg
         self.marker_inlet = marker_inlet
         self.filter_freq = filter_freq
         self.filter_order = filter_order
@@ -60,38 +58,40 @@ class OnlineDataAcquire(object):
 
         logger.info("Online Data Aquire module was initialized.")
 
+
     def start(self):
         logger.info("Online Data Acquire module was started.")
         self.thread = threading.Thread(target=self.main_thread)
         self.is_running = True
         self.thread.start()
 
+
     def stop(self):
         logger.info("Online Data Acquire module was stopped.")
         self.is_running = False
 
-    def main_thread(self):
 
+    def main_thread(self):
         # ------------------------------------------------------------------------------------------------
         # online filter
-        if self.filter_freq is not None:
-            sos = signal.butter(self.filter_order, np.array(self.filter_freq)/(self.fs_eeg/2), 'bandpass', output='sos')
-            z = np.zeros((self.filter_order, self.nch_eeg, 2))
+        if self.filter_freq is not None and self.filter_order is not None:
+            sos = signal.butter(self.filter_order, np.array(self.filter_freq)/(self.sample_freq_eeg/2), 'bandpass', output='sos')
+            z = np.zeros((self.filter_order, self.n_eeg_channels, 2))
             # Shape of initial Z should be (filter_order, number_of_eeg_channel, 2)
             # or
             # z = signal.sosfilt_zi(sos) # shape of the returned object will be (filter_order, 2)
 
         # ------------------------------------------------------------------------------------------------
 
-        eeg = DataStruct()
-        eeg.data = np.empty((self.nch_eeg, 0))
+        eeg = LSLDataStruct()
+        eeg.data = np.empty((self.n_eeg_channels, 0))
 
-        marker = DataStruct()
+        marker = LSLDataStruct()
         marker.data = np.empty((0), dtype=np.int64)
 
         #Epoch = data_structure.Epoch(n_ch, fs_eeg, MARKERS_TO_EPOCH, EPOCH_RANGE, EPOCH_BASELINE)
         # 'epochs' is passed from parent
-        self.epochs.set(eeg, marker) # push by reference
+        self.epochs_container.set(eeg, marker) # push by reference
 
         logger.info("start receiving data.")
         try:
@@ -102,14 +102,15 @@ class OnlineDataAcquire(object):
                     eeg.time_correction = self.eeg_inlet.time_correction()
                     marker.time_correction = self.marker_inlet.time_correction()
                 except Exception as e:
-                    from pylsl.pylsl import LostError
                     if type(e) == LostError:
                         logger.error("Error : \n%s" %(traceback.format_exc()))
                         break
 
+                # if any eeg data was pulled from the outlet
                 if eeg.time_chunk:                
                     for idx in range(len(eeg.time_chunk)):
                         eeg.time_chunk[idx] += eeg.time_correction
+
                     eeg.data_chunk = np.array(eeg.data_chunk) # has shape of (n_samples, n_ch)
                     #eeg.data_chunk = np.transpose(eeg.data_chunk) # now it's shape of (n_ch, n_samples)
                     eeg.data_chunk = self.format_convert_eeg_func(eeg.data_chunk)
@@ -118,41 +119,56 @@ class OnlineDataAcquire(object):
                     eeg.data = np.concatenate((eeg.data, eeg.data_chunk), axis=1)
                     eeg.time = np.append(eeg.time, eeg.time_chunk)
                     eeg.time_chunk = list()
-                    self.epochs.update()
+
+                    self.epochs_container.update()
 
                     if self.got_end_marker:
-                        if len(self.epochs.epoched_marker) == sum(self.epochs.epoched_marker):
+                        if len(self.epochs_container.epoched_marker) == sum(self.epochs_container.epoched_marker):
                             self.is_running = False
 
+                # if any markers were pulled from the outlet
                 if marker.time_chunk:
                     for idx in range(len(marker.time_chunk)):
                         marker.time_chunk[idx] += marker.time_correction
+                        
                     marker.data_chunk = self.format_convert_marker_func(marker.data_chunk)
-                    logger.info(np.unique(marker.data_chunk))
                     marker.data = np.append(marker.data, marker.data_chunk)
                     marker.time = np.append(marker.time, marker.time_chunk)
+                    logger.info(np.unique(marker.data_chunk))
+                    
                     marker.time_chunk = list()
-                    self.epochs.update()
-                    if self.new_trial_markers is not None:
-                        for new_trial_marker in  self.new_trial_markers:
-                            if new_trial_marker in marker.data_chunk:
-                                self.new_trial_marker = new_trial_marker
-                    if self.end_markers is not None:
-                        for end_marker in self.end_markers:
-                            if end_marker in marker.data_chunk:
-                                self.got_end_marker = True
+                    self.epochs_container.update()
+
+                    self._check_for_and_set_new_trial_marker(marker)
+                    self._check_for_and_flag_end_marker(marker)
         except:
             logger.error("Error : \n%s" %(traceback.format_exc()))
 
         logger.info("stop receiving data.")
 
+
     def get_marker_data(self):
         return self.marker
-
 
     def get_new_trial_marker(self) -> int | None:
         return self.new_trial_marker
     
     def clear_new_trial_marker(self):
         self.new_trial_marker = None
+
+
+    # set the current new trial marker if there is a new trial marker in the marker data
+    def _check_for_and_set_new_trial_marker(self, marker:LSLDataStruct):
+        if self.new_trial_markers is not None:
+                for new_trial_marker in  self.new_trial_markers:
+                    if new_trial_marker in marker.data_chunk:
+                        self.new_trial_marker = new_trial_marker
+
+                        
+    # flag if there is an end marker in the marker data
+    def _check_for_and_flag_end_marker(self, marker:LSLDataStruct):
+        if self.end_markers is not None:
+            for end_marker in self.end_markers:
+                if end_marker in marker.data_chunk:
+                    self.got_end_marker = True
         
