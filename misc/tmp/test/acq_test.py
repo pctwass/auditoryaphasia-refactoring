@@ -4,7 +4,7 @@ import mne
 
 #import numpy as np
 from pylsl import StreamInlet, resolve_stream
-import acquisition.container as container
+import acquisition.epoch_container as epoch_container
 import acquisition.OnlineDataAcquire as OnlineDataAcquire
 import fmt_converter
 
@@ -46,13 +46,13 @@ def main():
         print("looking for an EEG stream...")
         eeg_stream = resolve_stream('type', 'EEG')
         eeg_inlet = StreamInlet(eeg_stream[0], recover=ENABLE_STREAM_INLET_RECOVER)
-        n_ch = eeg_stream[0].channel_count()
-        n_ch = fmt_converter.n_ch_convert(n_ch)
+        n_channels = eeg_stream[0].channel_count()
+        n_channels = fmt_converter.n_ch_convert(n_channels)
 
-        fs = eeg_stream[0].nominal_srate()
+        sampling_freq = eeg_stream[0].nominal_srate()
         info = eeg_inlet.info()
         ch_names = list()
-        for m in range(n_ch):
+        for m in range(n_channels):
             ch_names.append(info.desc().child("channels").child("channel").child_value("label"))
             
         #print(info.desc().child("channels").child("channel").child_value("label"))
@@ -73,26 +73,24 @@ def main():
         if ans == False:
             raise ValueError("EEG stream could not found.")
 
-    epochs = container.Epochs(
-                            n_ch,
-                            fs,
+    epochs = epoch_container.EpochContainer(
+                            n_channels,
+                            sampling_freq,
                             MARKERS_TO_EPOCH,
                             EPOCH_T_MIN,
                             EPOCH_T_MAX,
-                            EPOCH_BASELINE,
-                            ch_names=None,
-                            ch_types='eeg')
+                            EPOCH_BASELINE)
 
     acq = OnlineDataAcquire.OnlineDataAcquire(
                             epochs,
                             eeg_inlet,
-                            n_ch,
-                            fs,
                             marker_inlet,
-                            FILTER_FREQ,
-                            FILTER_ORDER,
+                            n_channels,
+                            sampling_freq,
                             fmt_converter.eeg_format_convert,
                             fmt_converter.marker_format_convert,
+                            filter_freq=FILTER_FREQ,
+                            filter_order=FILTER_ORDER,
                             new_trial_markers=None,
                             end_markers=[255])
     acq.start()
@@ -102,9 +100,9 @@ def main():
 
     while True:
         try:
-            new_trial = acq.is_got_new_trial_marker()
-            if new_trial != False:
-                pass
+            new_trial_marker = self.acq.get_new_trial_marker()
+            if new_trial_marker is not None:
+                acq.clear_new_trial_marker()
 
             if epochs.has_new_data():
                 epoch = epochs.get_new_data()

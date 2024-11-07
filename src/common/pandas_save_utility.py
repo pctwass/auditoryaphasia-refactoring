@@ -3,7 +3,7 @@ import pandas as pd
 
 
 class PandasSaveUtility(object):
-    def __init__(self, file_path : str):
+    def __init__(self, file_path : str, default_columns:list[str]=None):
         file_path_without_extension = self._get_file_path_without_extension(file_path)
         file_path = file_path_without_extension
         idx = 1
@@ -17,6 +17,8 @@ class PandasSaveUtility(object):
 
         self._file_path = file_path + '.pkl'
         self.df = None
+        self.default_columns=default_columns
+
 
 
     # 'columns' parameter is ignored when the dataframe already exists as a .pkl file.
@@ -34,6 +36,8 @@ class PandasSaveUtility(object):
             df_add = pd.DataFrame(data=data, columns=columns, index=index)
             df = pd.concat([df, df_add])
         else:
+            if columns is None:
+                columns = self.default_columns
             df = pd.DataFrame(data=data, index=index, columns=columns)
             self.is_exists = True
 

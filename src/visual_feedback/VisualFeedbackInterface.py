@@ -32,7 +32,7 @@ def interface(name:str, name_main_outlet:str='main', state_dict:str=None):
     vfc.show_crosshair()
     #vfc.show_speakers()
 
-    inlet = intermodule_comm.getIntermoduleCommunicationInlet(name_main_outlet)
+    inlet = intermodule_comm.get_intermodule_communication_inlet(name_main_outlet)
     state_dict["LSL_inlet_connected"] = True
     #print('LSL connected, %s' %name)
 

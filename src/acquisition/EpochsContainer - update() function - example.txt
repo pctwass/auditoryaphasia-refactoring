@@ -1,0 +1,65 @@
+Example of how a set of eeg and marker data/timestamps would proceed in the EpochsContainer.update() function.
+
+======================================================================================================
+markers_to_epoch = [101, 112, 113, 114, 115]
+sample_freq = 50 samples/sec = 0.02 sec/sample
+epoch_range = [-0.1, 1.0]
+length_epoch_in_samples = 55
+
+marker.data = [0, .0. , 201, .0. , 101, .0., 112, .0., 113, .0., 114, .0., 115, .0., 0]
+marker.times = [0.00, ..., 1.10, ..., 1.20, ..., 1.70, ..., 2.20, ..., 2.70, ..., 3.20, ..., 4.22]
+
+eeg.data = [....]
+ee.time = [0.00, 0.02, 0.04, ... , 4.20, 4.22]
+
+
+n_new_markers = 212
+new_markers_data = [0, .0. , 201, .0. , 101, .0., 112, .0., 113, .0., 114, .0., 115, .0., 0]
+markers_to_epoch = [0, .0., 0]
+
+markers_to_epoch = [1, .1., 0, .1., 0, .1., 0, .1., 0, .1., 0] (0s at indices: [60, 85, 110, 135, 160])
+self.epoched_marker = [1, .1., 0, .1., 0, .1., 0, .1., 0, .1., 0, .1., 1]
+
+unepoched_markers_indices = [60, 85, 110, 135, 160]
+
+indices_matched_epoch_start_times = []
+
+-- first loop --
+unepoched_marker_idx = 1
+
+unepoched_marker_timestamp = [1.2]
+unepoched_marker_timestamp_eeg_onset_adjusted = [1.1]
+
+indices_eeg_time_range_after_marker = [55, 56, ... , 211] (1.11, 1.13, ... , 4.22)
+
+idx_epoch_start_time = 55 (1.1)
+idx_epoch_start_time = 110 (2.2)
+indices_matched_epoch_start_times = [110]
+
+-- final loop --
+indices_matched_epoch_start_times [110, 135, 160, 185, 210] 
+
+
+-- first loop --
+idx_epoch_start_time = 110
+self.__marker.time[idx_epoch_start_time] = 2.2
+idx_range_epoch_markers = [2.1, 3.2]
+
+indices_eeg_times_during_epoch = [111, ..., 211] (2.22, ..., 4.22)
+idx_eeg_time_epoch_start = 111
+idx_eeg_time_epoch_end = 166
+
+idx_range_epoch = [111, 221]
+marker_timestamp_epoch_start = 2.22
+indices_eeg_after_epoch_start_marker = [112, ..., 211] (2.24, ..., 4.22)
+idx_first_eeg_timestamp_after_marker = [112]
+
+-- final loop --
+idx_range_epoch = [211, 321]
+marker_timestamp_epoch_start = 4.22
+indices_eeg_after_epoch_start_marker = [212, ..., 211] (4.24, ..., 4.22)
+idx_first_eeg_timestamp_after_marker = [212]
+
+
+
+

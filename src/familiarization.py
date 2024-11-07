@@ -1,315 +1,232 @@
 import pyscab
 import os
 import sys
+import time
 import argparse
 import condition_params
 
 import config.conf as conf
 import config.conf_system as conf_system
 import src.process_management.intermodule_communication as intermodule_comm
+import src.common.directory_navigator as dir_navigator
 
 from src.common.sudoku_matrix import SudokuMarix
 from src.process_management.process_communication_enums import AudioStatus
 from src.process_management.process_manager import ProcessManager
 from src.process_management.state_dictionaries import init_audio_state_dict
+from src.plans.audio_plan import generate_audio_plan
 from src.plans.stimulation_plan import generate_stimulation_plan
 
 
-familirization_parser = argparse.ArgumentParser()
-
-familirization_parser.add_argument('-n', '--n_reps', type=int, default=3)
-familirization_parser.add_argument('-v', '--visual', action='store_true')
-
-familirization_args = familirization_parser.parse_args()
-
-NUMBER_OF_REPETITIONS = familirization_args.n_reps
-    
-def gen_plan_play_each_word(word_idx_to_be_played, base_dir, soa=1.5, ch = [1], marker = None, volume = 1):
-
-    word_dir = os.path.join(base_dir,
-                            'media',
-                            'audio',
-                            conf.language,
-                            'words',
-                            '6d',
-                            conf.words[word_idx_to_be_played-1],
-                            '1.wav')
-
-    plan = list()
-    for m in range(NUMBER_OF_REPETITIONS):
-        plan.append([m*soa, 1, ch, marker])
-
-    data = pyscab.DataHandler()
-    data.load(1, word_dir, volume = volume)
-        
-    return plan, data
-
-def gen_plan_sentence_and_word(ahc, word_idx_to_be_played, base_dir, pause_between_sentence_and_subtrial=1.5, ch = [1], marker = None, volume = 1):
-    import time
-    word_dir = os.path.join(base_dir,
-                            'media',
-                            'audio',
-                            conf.language,
-                            'words',
-                            '6d',
-                            conf.words[word_idx_to_be_played-1],
-                            '1.wav')
-
-    sentence_dir = os.path.join(base_dir,
-                            'media',
-                            'audio',
-                            conf.language,
-                            'sentences',
-                            '6d',
-                            conf.words[word_idx_to_be_played-1],
-                            '1.wav')
-
-    data = pyscab.DataHandler()
-    data.load(1, sentence_dir, volume = volume)
-    data.load(2, word_dir, volume = volume)
-
-    sentence_data = data.get_data_by_id(1)
-    word_data = data.get_data_by_id(2)
-    
-    ahc.open()
-    ahc.play(sentence_data, ch)
-    time.sleep(data.get_length_by_id(1))
-    input("Press Any Key to Play Word : %s" %(conf.words[word_idx_to_be_played-1]))
-    ahc.play(word_data, ch)
-    time.sleep(data.get_length_by_id(2)*1.05)
-    ahc.close()
-
-def gen_plan_spk_fam(base_dir, condition, soa=1, volume = 1):
-
-    data = pyscab.DataHandler()
-
-    sudoku = SudokuMarix()
-    #word_to_speak = [1, 2, 3, 4, 5, 6]
-    targetplan = sudoku.generate_matrix(1, 6)[0]
-    word_to_speak = sudoku.generate_matrix(1, 6)[0]
-
-    for idx, word in enumerate(conf.words):
-        if condition_params.conditions[condition]['single_file']:
-            f_name = '1.wav'
-        else:
-            f_name = '%d.wav' %(word_to_speak[idx])
-
-        word_dir = os.path.join(base_dir,
-                                'media',
-                                'audio',
-                                conf.language,
-                                'words',
-                                condition,
-                                word,
-                                f_name)
-
-        sentence_dir = os.path.join(base_dir,
-                                'media',
-                                'audio',
-                                conf.language,
-                                'sentences',
-                                condition,
-                                word,
-                                f_name)
-
-        data.load(idx+1, word_dir, volume = volume)
-        data.load(idx+1+10, sentence_dir, volume = volume)
-
-    restart_dir = os.path.join(base_dir,
-                            'media',
-                            'audio',
-                            conf.language,
-                            'misc',
-                            'restart.wav')
-    data.load(100, restart_dir, volume = volume)
-
-    relax_dir = os.path.join(base_dir,
-                            'media',
-                            'audio',
-                            conf.language,
-                            'misc',
-                            'relax.wav')
-    data.load(101, relax_dir, volume = volume)
-
-    pause_between_trial = 5
-    pause_after_start_sound = 2
-    pause_between_sentence_and_subtrial = 3.5
-    pause_before_trial_completion = 2
-    number_of_repetitions = NUMBER_OF_REPETITIONS
-
-    offset_start = 1
-    audio_plan = list()
-
-    time_plan = 0
-    time_plan += offset_start
-    for trial_idx in range(6):
-        target = targetplan[trial_idx]
-        wordplan = generate_stimulation_plan(6, number_of_repetitions)
-
-        audio_plan.append([time_plan, 100, [1], 210])
-        time_plan += data.get_length_by_id(100)
-        time_plan += pause_after_start_sound
-        audio_plan.append([time_plan, target+10, [word_to_speak[target-1]], 200 + target])
-        time_plan += data.get_length_by_id(target+10)
-        time_plan += pause_between_sentence_and_subtrial
-        for m in range(0, len(wordplan)):
-            if wordplan[m] == target:
-                time_plan += soa
-                audio_plan.append([time_plan, wordplan[m], [word_to_speak[wordplan[m]-1]], 110 + target])
-            else:
-                time_plan += soa
-                audio_plan.append([time_plan, wordplan[m], [word_to_speak[wordplan[m]-1]], 100 + wordplan[m]])
-        time_plan += data.get_length_by_id(wordplan[m])
-        time_plan += pause_before_trial_completion
-        audio_plan.append([time_plan, 101, [1], 0])
-        time_plan += data.get_length_by_id(101)
-        time_plan += pause_between_trial
-
-    return audio_plan, data
-
-def gen_plan_hp_fam(base_dir, condition, soa=1, volume = 1, ch = [7,8]):
-
-    data = pyscab.DataHandler()
-
-    for idx, word in enumerate(conf.words):
-
-        if condition_params.conditions[condition]['single_file']:
-            f_name = '1.wav'
-        else:
-            f_name = '%d.wav' %(idx+1)
-
-        word_dir = os.path.join(base_dir,
-                                'media',
-                                'audio',
-                                conf.language,
-                                'words',
-                                condition,
-                                word,
-                                f_name)
-
-        sentence_dir = os.path.join(base_dir,
-                                'media',
-                                'audio',
-                                conf.language,
-                                'sentences',
-                                condition,
-                                word,
-                                f_name)
-
-        data.load(idx+1, word_dir, volume = volume)
-        data.load(idx+1+10, sentence_dir, volume = volume)
-
-    restart_dir = os.path.join(base_dir,
-                            'media',
-                            'audio',
-                            conf.language,
-                            'misc',
-                            'restart.wav')
-    data.load(100, restart_dir, volume = volume)
-
-    relax_dir = os.path.join(base_dir,
-                            'media',
-                            'audio',
-                            conf.language,
-                            'misc',
-                            'relax.wav')
-    data.load(101, relax_dir, volume = volume)
-
-    pause_between_trial = 5
-    pause_after_start_sound = 2
-    pause_between_sentence_and_subtrial = 3.5
-    pause_before_trial_completion = 2
-    number_of_repetitions = NUMBER_OF_REPETITIONS
-
-    sudoku = SudokuMarix()
-    word_to_speak = sudoku.generate_matrix(1, 6)[0]
-    #word_to_speak = [1, 2, 3, 4, 5, 6]
-    targetplan = sudoku.generate_matrix(1, 6)[0]
-
-    offset_start = 1
-    audio_plan = list()
-
-    time_plan = 0
-    time_plan += offset_start
-    for trial_idx in range(6):
-        target = targetplan[trial_idx]
-        wordplan = generate_stimulation_plan(6, number_of_repetitions)
-
-        audio_plan.append([time_plan, 100, ch, 210])
-        time_plan += data.get_length_by_id(100)
-        time_plan += pause_after_start_sound
-        audio_plan.append([time_plan, target+10, ch, 200 + target])
-        time_plan += data.get_length_by_id(target+10)
-        time_plan += pause_between_sentence_and_subtrial
-        for m in range(0, len(wordplan)):
-            if wordplan[m] == target:
-                time_plan += soa
-                audio_plan.append([time_plan, wordplan[m], ch, 110 + target])
-            else:
-                time_plan += soa
-                audio_plan.append([time_plan, wordplan[m], ch, 100 + wordplan[m]])
-        time_plan += data.get_length_by_id(wordplan[m])
-        time_plan += pause_before_trial_completion
-        audio_plan.append([time_plan, 101, ch, 0])
-        time_plan += data.get_length_by_id(101)
-        time_plan += pause_between_trial
-
-    return audio_plan, data
-
-def gen_plan_play_oddball(soa=1, num_reps=10, volume = 1, ch = [7,8]):
+def gen_plan_play_oddball(
+        soa : float = 1, 
+        num_reps : int = 10,
+        volume : float = 1
+) -> tuple[list[any], pyscab.DataHandler]:
     oddball_base = os.path.join(conf_system.repository_dir_base, 'media', 'audio', 'oddball')
-    nT_id = 1
-    T_id = 21
+    
+    non_target_id = 1
+    target_id = 21
+
     audio_files = pyscab.DataHandler()
-    audio_files.load(nT_id, os.path.join(oddball_base, conf_system.oddball_non_target), volume=conf.master_volume)
-    audio_files.load(T_id, os.path.join(oddball_base, conf_system.oddball_target), volume=conf.master_volume)
+    audio_files.load(non_target_id, os.path.join(oddball_base, conf_system.oddball_non_target), volume=volume)
+    audio_files.load(target_id, os.path.join(oddball_base, conf_system.oddball_target), volume=volume)
     
     #soa_oddball = 1.0
     #number_of_repetitions_oddball = 1 # 50->5min
 
     play_plan = list()
-    stimplan = generate_stimulation_plan(6, num_reps)
+    stim_plan = generate_stimulation_plan(6, num_reps)
     time_plan = 0
-    for stim in stimplan:
+    for stim in stim_plan:
         if stim == 1:
-            play_plan.append([time_plan, T_id, [1], 21])
+            play_plan.append([time_plan, target_id, [1], 21])
         else:
-            play_plan.append([time_plan, nT_id, [1], 1])
+            play_plan.append([time_plan, non_target_id, [1], 1])
         time_plan += soa
 
     return play_plan, audio_files
 
 
-def sendMarker(val):
-    pass
+def gen_plan_play_word(
+        word_idx_to_be_played : int, 
+        repo_base_dir : str, 
+        soa : float = 1.5, 
+        channel : enumerate[int] = [1], 
+        marker : int = None, 
+        volume : float = 1
+) -> tuple[list[any], pyscab.DataHandler]:
+    data = pyscab.DataHandler()
+    condition = '6d'
+    words_to_speak = [conf.words[word_idx_to_be_played-1]]
 
-if familirization_args.visual:
-    outlet = intermodule_comm.createIntermoduleCommunicationOutlet('main', channel_count=4, source_id='main')
-spk_showed = False
-def sendMarker_visual(val):
-    if familirization_args.visual:
-        global spk_showed
-        global outlet
-        if val == 210:
-            intermodule_comm.send_cmd_LSL(outlet, 'visual', 'show_speaker')
-            spk_showed = True
+    load_audio_data(data, repo_base_dir, condition, words_to_speak, volume, load_sentences = False)
+
+    plan = list()
+    for m in range(number_of_repetitions):
+        plan.append([m*soa, 1, channel, marker])
         
-        if val >= 200 and val <= 205:
-            spk_showed = True
-            spk_num = str(val)
-            spk_num = int(spk_num[-1])+1
-            intermodule_comm.send_cmd_LSL(outlet, 'visual', 'highlight_speaker', spk_num)
+    return plan, data
 
-        if val >= 101 and val <= 116:
-            if spk_showed:
-                intermodule_comm.send_cmd_LSL(outlet, 'visual', 'show_crosshair')
-                spk_showed = False
+
+def gen_plan_sentence_and_word(
+        pyscab_audio_interface : pyscab.AudioInterface, 
+        word_idx_to_be_played : int, 
+        repo_base_dir : str, 
+        channel : enumerate[int] = [1], 
+        volume : float = 1
+):
+    data = pyscab.DataHandler()
+    condition = '6d'
+    words_to_speak = [conf.words[word_idx_to_be_played-1]]
+
+    load_audio_data(data, repo_base_dir, condition, words_to_speak, volume)
+    
+    word_data = data.get_data_by_id(1)
+    sentence_data = data.get_data_by_id(11)
+    
+    # execute plan
+    # --------------------------------------------------------------------------------
+    pyscab_audio_interface.open()
+    pyscab_audio_interface.play(sentence_data, channel)
+    time.sleep(data.get_length_by_id(11))
+
+    input("Press Any Key to Play Word : %s" %(conf.words[word_idx_to_be_played-1]))
+    pyscab_audio_interface.play(word_data, channel)
+    time.sleep(data.get_length_by_id(1)*1.05)
+
+    pyscab_audio_interface.close()
+
+
+def gen_plan_spk_fam(
+        repo_base_dir : str, 
+        condition : str, 
+        soa : float = 1, 
+        volume : float = 1
+) -> tuple[list[any], pyscab.DataHandler]:
+    data = pyscab.DataHandler()
+
+    sudoku = SudokuMarix()
+    #words_to_speak = [1, 2, 3, 4, 5, 6]
+    words_to_speak = sudoku.generate_matrix(1, 6)[0]
+
+    load_audio_data(data, repo_base_dir, condition, words_to_speak, volume, load_restat=True, load_relax=True)
+    audio_plan = generate_audio_plan(
+        data,
+        soa,
+        words_to_speak,
+        number_of_repetitions=number_of_repetitions,
+        pause_between_trial = None
+    )
+
+    return audio_plan, data
+
+
+def gen_plan_hp_fam(
+        repo_base_dir : str, 
+        condition : str, 
+        soa : float = 1, 
+        volume : float = 1,
+        channel : enumerate[int] = [7,8], 
+):
+    data = pyscab.DataHandler()
+
+    sudoku = SudokuMarix()
+    #words_to_speak = [1, 2, 3, 4, 5, 6]
+    words_to_speak = sudoku.generate_matrix(1, 6)[0]
+
+    load_audio_data(data, repo_base_dir, condition, words_to_speak, volume, load_restat=True, load_relax=True)
+    audio_plan = generate_audio_plan(
+        data,
+        soa,
+        words_to_speak,
+        number_of_repetitions=number_of_repetitions,
+        start_sound_channel=channel,
+        channel=channel
+    )
+
+    return audio_plan, data
+
+
+def parse_familirization_arguments():
+    familirization_parser = argparse.ArgumentParser()
+    familirization_parser.add_argument('-n', '--n_reps', type=int, default=3)
+    familirization_parser.add_argument('-v', '--visual', action='store_true')
+    return familirization_parser.parse_args()
+    
+
+def set_globals(familirization_args):
+    global is_visual
+    global speaker_showed
+    global number_of_repetitions
+    global intermodule_comm_outlet
+
+    is_visual = familirization_args.visual
+    speaker_showed = False
+    number_of_repetitions = familirization_args.n_reps
+
+    if is_visual:
+        intermodule_comm_outlet = intermodule_comm.create_intermodule_communication_outlet('main', channel_count=4, source_id='main')
+
+
+def send_marker_visual(marker : int):
+    global is_visual
+    if is_visual:
+        global speaker_showed
+        global intermodule_comm_outlet
+        if marker == 210:
+            intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'show_speaker')
+            speaker_showed = True
+        
+        if marker >= 200 and marker <= 205:
+            speaker_showed = True
+            spk_num = str(marker)
+            spk_num = int(spk_num[-1])+1
+            intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'highlight_speaker', spk_num)
+
+        if marker >= 101 and marker <= 116:
+            if speaker_showed:
+                intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'show_crosshair')
+                speaker_showed = False
+
+
+def load_audio_data(
+        data : pyscab.DataHandler, 
+        repo_base_dir : str, 
+        condition : str, 
+        words_to_speak : str, 
+        volume : float, 
+        load_sentences : bool = True, 
+        load_restat : bool = False, 
+        load_relax : bool = False
+):
+    for idx, word in enumerate(conf.words):
+        if condition_params.conditions[condition]['single_file']:
+            file_name = '1.wav'
+        else:
+            file_name = f'{words_to_speak[idx]}.wav'
+
+        word_file_path = dir_navigator.get_word_audio_file_path(repo_base_dir, condition, word, file_name)
+        data.load(idx+1, word_file_path, volume = volume)
+        
+        if load_sentences:
+            sentence_file_path = dir_navigator.get_sentence_audio_file_path(repo_base_dir, condition, word, file_name)
+            data.load(idx+1+10, sentence_file_path, volume = volume)
+
+    if load_restat:
+        restart_file_path = dir_navigator.get_restart_audio_file_path(repo_base_dir)
+        data.load(100, restart_file_path, volume = volume)
+    
+    if load_relax:
+        relax_file_path = dir_navigator.get_relax_audio_file_path(repo_base_dir)
+        data.load(101, relax_file_path, volume = volume)
+
 
 def main():
-    if familirization_args.visual:
-        from multiprocessing import Process, Array
-        import time
+    familirization_args = parse_familirization_arguments()
+    set_globals(familirization_args)
 
+    if familirization_args.visual:
         # create process manager
         process_manager = ProcessManager()
             
@@ -319,103 +236,113 @@ def main():
         while visual_fb_state_dict["LSL_inlet_connected"] is False:
             time.sleep(0.1) # wait until module is connected
 
-        #intermodule_comm.send_cmd_LSL(outlet, 'visual', 'show_crosshair')
-
-    words = conf.words
-
-    #home_dir = os.path.expanduser('~')
-    #base_dir = "D:/Users/auditoryAphasia_stereo/auditoryAphasia_portable/auditoryAphasia/Feedbacks/media/online_paradigm/"
-
-    base_dir = conf_system.repository_dir_base
+    words_to_play = conf.words
+    master_volume = conf.master_volume
+    repo_base_dir = conf_system.repository_dir_base
 
     audio_state_dict = init_audio_state_dict()
 
-    ahc = pyscab.AudioInterface(device_name = conf_system.device_name,
-                                n_ch = conf_system.n_ch,
-                                format=conf_system.format,
-                                frames_per_buffer = conf_system.frames_per_buffer)
-    stc = pyscab.StimulationController(ahc, marker_send=sendMarker_visual, state_dict=audio_state_dict)
-
-    isfamiliarizing = True
-
-    MasterVolume = conf.master_volume
+    pyscab_audio_interface = pyscab.AudioInterface(
+        device_name = conf_system.device_name,
+        n_ch = conf_system.n_ch,
+        format=conf_system.format,
+        frames_per_buffer = conf_system.frames_per_buffer
+    )
+    
+    pyscab_stim_controller = pyscab.StimulationController(
+        pyscab_audio_interface, 
+        marker_send=send_marker_visual, 
+        state_dict=audio_state_dict
+    )
 
     if os.environ['computername'].lower() == 'am4':
         hp_ch = [1,2]
     else:
         hp_ch = [7,8]
 
-
-    while isfamiliarizing:
-        print('--------------------------------------------------------')
-        print('Familiarization begins. You have the following choices:')
-        print('0: Quit familiarization')
-        print('1: Oddball')
-        print('2: Play Each word')
-        print('3: Sentences and words from one speaker')
-        print('4: 6D run with customizable SOA.')
-        print('5: StereoPitch run with customizable SOA.')
-        print('6: Mono run with customizable SOA.')
-        print('------ Choose one now by inserting a number between [0-6] -------')
+    is_familiarizing = True
+    while is_familiarizing:
         try:
-            selected_fam_stage = input()
-            if int(selected_fam_stage) == 0:
-                sys.exit()
-            elif int(selected_fam_stage) == 1:
-                audio_plan, audio_data = gen_plan_play_oddball()
-            elif int(selected_fam_stage) == 2:
+            print('--------------------------------------------------------')
+            print('Familiarization begins. You have the following choices:')
+            print('0: Quit familiarization')
+            print('1: Oddball')
+            print('2: Play Each word')
+            print('3: Sentences and words from one speaker')
+            print('4: 6D run with customizable SOA.')
+            print('5: StereoPitch run with customizable SOA.')
+            print('6: Mono run with customizable SOA.')
+            print('------ Choose one now by inserting a number between [0-6] -------')
+            selected_fam_stage = int(input())
+            
+            match selected_fam_stage:
+                case 0:
+                    sys.exit()
+                
+                # play oddball
+                case 1:
+                    audio_plan, audio_data = gen_plan_play_oddball()
+                    
                 # play each word
-                print('Stage  2: Select words to play. (The index starts from 1)')
-                print('Words : ' + str(words))
-                selected_word = input()
-                audio_plan, audio_data = gen_plan_play_each_word(int(selected_word), base_dir, volume=MasterVolume)
-            elif int(selected_fam_stage) == 3:
-                # sentence and word
-                print('Stage 3: Select words to play. (The index starts from 1)')
-                print('Words : ' + str(words))
-                selected_word = input()
-                gen_plan_sentence_and_word(ahc, int(selected_word), base_dir, volume=MasterVolume)
-                continue
-            elif int(selected_fam_stage) == 4:
-                # 6d
-                print('Stage 4: Specify SOA (in seconds) for the familiarization:')
-                selected_soa = input()
-                print('Do you want to play 6d-pitch? if so, type y')
-                en_pitch_shift = input()
-                if en_pitch_shift == 'y':
-                    condition = '6d-pitch'
-                else:
-                    condition = '6d'
+                case 2:
+                    print('Stage  2: Select word to play. (The index starts from 1)')
+                    print('Words : ' + str(words_to_play))
+                    selected_word = input()
+                    audio_plan, audio_data = gen_plan_play_word(int(selected_word), repo_base_dir, volume=master_volume) 
 
-                audio_plan, audio_data = gen_plan_spk_fam(base_dir, condition, soa=float(selected_soa), volume=MasterVolume)
-            elif int(selected_fam_stage) == 5:
+                # sentence and word
+                case 3:
+                    print('Stage 3: Select word to play. (The index starts from 1)')
+                    print('Words : ' + str(words_to_play))
+                    selected_word = input()
+                    gen_plan_sentence_and_word(pyscab_audio_interface, int(selected_word), repo_base_dir, volume=master_volume)
+                    continue
+                
+                # 6d
+                case 4:
+                    print('Stage 4: Specify SOA (in seconds) for the familiarization:')
+                    selected_soa = input()
+                    print('Do you want to play 6d-pitch? if so, type y')
+                    en_pitch_shift = input()
+                    if en_pitch_shift == 'y':
+                        condition = '6d-pitch'
+                    else:
+                        condition = '6d'
+                    audio_plan, audio_data = gen_plan_spk_fam(repo_base_dir, condition, soa=float(selected_soa), volume=master_volume)
+
                 # stereo-pitch
-                print('Stage 5: Specify SOA (in seconds) for the familiarization:')
-                selected_soa = input()
-                audio_plan, audio_data = gen_plan_hp_fam(base_dir, condition='stereo-pitch', soa=float(selected_soa), volume=MasterVolume, ch=hp_ch)
-            elif int(selected_fam_stage) == 6:
+                case 5:
+                    print('Stage 5: Specify SOA (in seconds) for the familiarization:')
+                    selected_soa = input()
+                    audio_plan, audio_data = gen_plan_hp_fam(repo_base_dir, condition='stereo-pitch', soa=float(selected_soa), volume=master_volume, channel=hp_ch)
+
                 # mono
-                print('Stage 6: Specify SOA (in seconds) for the familiarization:')
-                selected_soa = input()
-                audio_plan, audio_data = gen_plan_hp_fam(base_dir, condition='mono', soa=float(selected_soa), volume=MasterVolume, ch=hp_ch)
-            elif int(selected_fam_stage) == 0:
-                sys.exit()
-            else:
-                continue
-            stc.open()
-            stc.play(audio_plan, audio_data, time_termination = 'auto', pause=0)
-            stc.close()
+                case 6:
+                    print('Stage 6: Specify SOA (in seconds) for the familiarization:')
+                    selected_soa = input()
+                    audio_plan, audio_data = gen_plan_hp_fam(repo_base_dir, condition='mono', soa=float(selected_soa), volume=master_volume, channel=hp_ch)
+
+                case _:
+                    continue
+
+            pyscab_stim_controller.open()
+            pyscab_stim_controller.play(audio_plan, audio_data, time_termination = 'auto', pause=0)
+            pyscab_stim_controller.close()
+
         except KeyboardInterrupt:
             audio_state_dict["audio_status"] = AudioStatus.FINISHED_PLAYING
             if familirization_args.visual:
                 visual_process.terminate()
             sys.exit()
+
         except ValueError:
             print("ERROR : input value was invailed.")
             main()
+
         except FileNotFoundError:
             print("ERROR : File was not found")
             main()
+            
     audio_state_dict["audio_status"] = AudioStatus.FINISHED_PLAYING
     if familirization_args.visual:
         visual_process.terminate()
