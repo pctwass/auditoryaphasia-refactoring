@@ -3,7 +3,7 @@ import time
 
 import config.conf as conf
 import config.conf_system as conf_system
-import common.utils as utils
+import src.common.utils as utils
 import src.process_management.intermodule_communication as intermodule_comm
 
 import logging

@@ -6,8 +6,8 @@ import numpy as np
 from scipy import signal
 from pylsl.pylsl import LostError
 
-from common.LSL_data_chunk import LSLDataStruct
-from acquisition.epoch_container import EpochContainer
+from src.common.LSL_data_chunk import LSLDataStruct
+from src.acquisition.epoch_container import EpochContainer
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -19,11 +19,11 @@ class OnlineDataAcquire(object):
             epoch_container : EpochContainer,
             eeg_inlet : pylsl.StreamInlet,
             marker_inlet : pylsl.StreamInlet,
-            channels_to_acquire : np.array[list[int]],
+            channels_to_acquire : list[list[int]], # np.array[list[int]]
             n_eeg_channels : int,
             sample_freq_eeg : float,
-            format_convert_eeg_func : function,
-            format_convert_marker_func : function,
+            format_convert_eeg_func,
+            format_convert_marker_func,
             filter_freq : float|None = None,
             filter_order : int|float|None = None,
             new_trial_markers : int|list[int]|None = None,

@@ -1,8 +1,7 @@
 import json
 
-import HIDController
 import src.process_management.intermodule_communication as intermodule_comm
-
+import src.HIDController as HIDController
 
 def interface(name, name_main_outlet='main', log_file=True, log_stdout=True):
     # ==============================================

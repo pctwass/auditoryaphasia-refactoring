@@ -5,9 +5,9 @@ import mne
 
 import numpy as np
 from pylsl import StreamInlet, resolve_stream
-import acquisition.epoch_container as epoch_container
-import acquisition.OnlineDataAcquire as OnlineDataAcquire
-import fmt_converter
+import src.acquisition.epoch_container as epoch_container
+import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
+import src.fmt_converter as fmt_converter
 
 ENABLE_STREAM_INLET_RECOVER = False
 FILTER_ORDER = 2

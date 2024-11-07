@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 import config.conf_system as conf_system
 import pyscab
 
-from process_management.process_communication_enums import AudioStatus
+from src.process_management.process_communication_enums import AudioStatus
 
 
 class AudioStimulationController(object):

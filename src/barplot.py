@@ -2,7 +2,7 @@ import time
 import matplotlib.pyplot as plt
 
 
-def barplot(state_dict : dict[str, any], words : enumerate[str]):
+def run_barplot(state_dict : dict[str, any], words : enumerate[str]):
     plt.ion()
     fig = plt.figure(1)
     n_classes = len(words)

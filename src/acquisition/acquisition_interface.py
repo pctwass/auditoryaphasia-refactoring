@@ -4,8 +4,8 @@ import logging
 import config.conf_system as conf_system
 import src.process_management.intermodule_communication as intermodule_comm
 
-from classifier import ClassifierFactory
-from acquisition.AcquisitionSystemController import AcquisitionSystemController
+from src.classifier import ClassifierFactory
+from src.acquisition.AcquisitionSystemController import AcquisitionSystemController
 from src.process_management.state_dictionaries import *
 
 logger = logging.getLogger(__name__)

@@ -5,13 +5,11 @@ import json
 import config.conf_system as conf_system
 import src.process_management.intermodule_communication as intermodule_comm
 
-from audio_stimulation.AudioStimulationController import AudioStimulationController
-
+from src.audio_stimulation.AudioStimulationController import AudioStimulationController
+from src.process_management.state_dictionaries import *
+from src.process_management.process_communication_enums import *
 
 logger = logging.getLogger(__name__)
-
-from process_management.state_dictionaries import *
-from process_management.process_communication_enums import *
 
 
 def interface(name:str, name_main_outlet:str='main', state_dict:dict[str,any]=None):

@@ -1,6 +1,6 @@
 import pyscab
 
-from plans.stimulation_plan import generate_stimulation_plan
+from src.plans.stimulation_plan import generate_stimulation_plan
 from src.common.sudoku_matrix import SudokuMarix
 
 

@@ -1,12 +1,12 @@
 import multiprocessing
 import multiprocessing.process
 
-import audio_stimulation.AudioStimulationInterface as AudioStimulationInterface
+import src.audio_stimulation.AudioStimulationInterface as AudioStimulationInterface
 import src.visual_feedback.VisualFeedbackInterface as VisualFeedbackInterface
 import src.acquisition.acquisition_interface as AcquisitionSystemInterface
 
 from src.process_management.state_dictionaries import *
-from src.barplot import barplot
+from src.barplot import run_barplot
 
 
 class ProcessManager:
@@ -42,8 +42,8 @@ class ProcessManager:
         return visual_fb_process, visual_fb_state_dict
 
 
-    def create_acquisition_process(self, num_classes : int, kwargs : list = None) -> tuple[multiprocessing.Process, dict[str, any]]:
-        live_barplot_process, live_barplot_state_dict = self.create_live_barplot_process(num_classes)
+    def create_acquisition_process(self, num_classes : int, kwargs : dict[str,any] = None, kwargs_live_barplot : dict[str,any] = None) -> tuple[multiprocessing.Process, dict[str, any]]:
+        live_barplot_process, live_barplot_state_dict = self.create_live_barplot_process(num_classes, kwargs_live_barplot)
 
         acquisition_state_dict = init_acquisition_state_dict(self._manager)
         if kwargs is None:
@@ -59,12 +59,13 @@ class ProcessManager:
         return acquisition_process, acquisition_state_dict, live_barplot_process
 
 
-    def create_live_barplot_process(self, num_classes : int, args : list = None) -> tuple[multiprocessing.Process, dict[str, any]]:
+    def create_live_barplot_process(self, num_classes : int, kwargs : dict[str,any] = None) -> tuple[multiprocessing.Process, dict[str, any]]:
         live_barplot_state_dict = init_live_barplot_state_dict(self._manager, num_classes)
-        if args is None:
-            args = [live_barplot_state_dict]
-        else:
-            args.append(live_barplot_state_dict)
 
-        live_barplot_process =  multiprocessing.Process(target=barplot, args=args)
+        if kwargs is None:
+            kwargs = dict(state_dict=live_barplot_state_dict)
+        else:
+            kwargs['state_dict'] = live_barplot_state_dict
+
+        live_barplot_process =  multiprocessing.Process(target=run_barplot, kwargs=kwargs)
         return live_barplot_process, live_barplot_state_dict

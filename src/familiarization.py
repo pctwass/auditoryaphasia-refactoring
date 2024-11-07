@@ -3,12 +3,12 @@ import os
 import sys
 import time
 import argparse
-import condition_params
 
 import config.conf as conf
 import config.conf_system as conf_system
 import src.process_management.intermodule_communication as intermodule_comm
 import src.common.directory_navigator as dir_navigator
+import src.condition_params as condition_params
 
 from src.common.sudoku_matrix import SudokuMarix
 from src.process_management.process_communication_enums import AudioStatus
@@ -16,6 +16,9 @@ from src.process_management.process_manager import ProcessManager
 from src.process_management.state_dictionaries import init_audio_state_dict
 from src.plans.audio_plan import generate_audio_plan
 from src.plans.stimulation_plan import generate_stimulation_plan
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 def gen_plan_play_oddball(

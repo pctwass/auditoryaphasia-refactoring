@@ -200,7 +200,7 @@ def filter_mne(data, sos):
     return r
 
 def get_calibration_data(params):
-    import common.utils as utils
+    import src.common.utils as utils
     import mne
     from scipy import signal
     import numpy as np

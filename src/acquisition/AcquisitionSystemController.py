@@ -7,7 +7,7 @@ import numpy as np
 import pylsl
 import logging
 
-from sklearn.base import accuracy_score
+from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
 from pyclf.lda.classification import EpochsVectorizer
 from scipy import stats
@@ -19,9 +19,9 @@ import pylsl
 import config.conf as conf
 import config.conf_system as conf_system
 import config.temp_new_conf as temp_new_conf
-import fmt_converter
-import common.LSL_streaming as streaming
-import acquisition.epoch_container as epoch_container
+import src.fmt_converter as fmt_converter
+import src.common.LSL_streaming as streaming
+import src.acquisition.epoch_container as epoch_container
 import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
 
 from src.classifier.ClassifierFactory import ClassifierFactory

@@ -1,16 +1,15 @@
 from fire import Fire
 
-import dependency_resolver
 import config.temp_new_conf as temp_new_config
 
 from dareplane_utils.default_server.server import DefaultServer
 from dareplane_utils.logging.logger import get_logger
 
-from main_online import main as main_online
-from main_offline import main as main_offline
-# from familiarization import main as main_familiarization
-from analysis import main as main_analysis
-from setup_testing import main as main_setup_testing
+from src.main_online import main as main_online
+from src.main_offline import main as main_offline
+from src.familiarization import main as main_familiarization
+from src.analysis import main as main_analysis
+from src.setup_testing import main as main_setup_testing
 
 
 def main(port: int = None, ip: str = None, loglevel: int = 10):
@@ -25,7 +24,7 @@ def main(port: int = None, ip: str = None, loglevel: int = 10):
     pcommand_map = {
         "START ONLINE": main_online,
         "START OFFLINE": main_offline,
-        # "START FAMILIARIZATION": main_familiarization,
+        "START FAMILIARIZATION": main_familiarization,
         "START ANALYSIS": main_analysis,
         "START TEST SETUP": main_setup_testing
     }

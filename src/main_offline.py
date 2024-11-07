@@ -8,7 +8,7 @@ from pylsl import StreamOutlet
 import config.conf as conf
 import config.conf_system as conf_system
 import config.temp_new_conf as temp_new_conf
-import common.utils as utils
+import src.common.utils as utils
 import src.condition_params as condition_params
 import src.process_management.intermodule_communication as intermodule_comm
 
@@ -16,9 +16,9 @@ from src.common.main_process_functions import *
 from src.common.eyes_open_close import run_eyes_open_close
 from src.common.oddball import run_oddball
 from src.process_management.process_communication_enums import *
-from plans.run_plan import generate_run_plan
-from plans.trial_plan import generate_trial_plan
-# from common.utils import *
+from src.plans.run_plan import generate_run_plan
+from src.plans.trial_plan import generate_trial_plan
+# from src.common.utils import *
 
 # conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
 import logging

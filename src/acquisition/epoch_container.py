@@ -2,7 +2,7 @@ import numpy as np
 #import mne
 #mne.set_log_level(verbose=False)
 
-from common.LSL_data_chunk import LSLDataStruct
+from src.common.LSL_data_chunk import LSLDataStruct
 
 import logging
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ class EpochContainer():
         return self.new_data_available
     
 
-    def get_new_data(self) -> tuple[np.ndarray[float], np.ndarray[int]]:
+    def get_new_data(self) -> tuple[list[float], list[int]]: # list objects are actually np.ndarrays
         idx = np.where(self.new_data == 1)
         idx = idx[0]
 

@@ -47,12 +47,13 @@ def init_acquisition_state_dict(manager : multiprocessing.Manager) -> dict[str, 
 def init_live_barplot_state_dict(manager : multiprocessing.Manager, num_classes : int) -> dict[str, any]:
     if manager is None:
         live_barplot_state_dict : dict = {}
+        mean_classificaiton_values = list([float(0)] * num_classes)
     else :
         live_barplot_state_dict = manager.dict()
+        mean_classificaiton_values = manager.list([float(0)] * num_classes)
     
     live_barplot_state_dict["display_barplot"] = False
-    live_barplot_state_dict["mean_classificaiton_values"] = multiprocessing.Array(
-                "d", [0 for m in range(num_classes)])
+    live_barplot_state_dict["mean_classificaiton_values"] = mean_classificaiton_values
     live_barplot_state_dict["index_best_class"] = None
             
     return live_barplot_state_dict

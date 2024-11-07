@@ -2,7 +2,7 @@ from pylsl import StreamInlet, resolve_stream
 import numpy
 from scipy import signal
 import data_structure
-import fmt_converter
+import src.fmt_converter as fmt_converter
 
 ENABLE_STREAM_INLET_RECOVER = False
 FILTER_ORDER = 2

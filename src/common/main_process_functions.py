@@ -9,10 +9,10 @@ from pylsl import StreamOutlet
 
 import config.conf as conf
 import config.conf_system as conf_system
-import common.utils as utils
+import src.common.utils as utils
 import src.process_management.intermodule_communication as intermodule_comm
 
-from process_management.process_manager import ProcessManager
+from src.process_management.process_manager import ProcessManager
 
 conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
 
@@ -45,7 +45,9 @@ def create_and_start_subprocesses() -> tuple[multiprocessing.Process, multiproce
         time.sleep(0.1) # wait until module is connected
 
     # open AcquisitionSystemController as a new Process
-    acquisition_process, acquisition_state_dict, live_barplot_process = process_manager.create_acquisition_process(kwargs=dict(name='acq', name_main_outlet='main'))
+    kwargs_acquisition=dict(name='acq', name_main_outlet='main')
+    kwargs_live_barplot=dict(words=conf.words)
+    acquisition_process, acquisition_state_dict, live_barplot_process = process_manager.create_acquisition_process(num_classes=conf_system.n_class, kwargs=kwargs_acquisition, kwargs_live_barplot=kwargs_live_barplot)
     acquisition_process.start()
     live_barplot_process.start()
     while acquisition_state_dict["LSL_inlet_connected"] is False:

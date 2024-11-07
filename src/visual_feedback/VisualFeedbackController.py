@@ -5,8 +5,8 @@ import numpy as np
 from psychopy import visual, core
 
 import config.conf_system as conf_system
-from visual_feedback.visual_objects.Crosshair import Crosshair
-from visual_feedback.visual_objects.Speaker import Speakers
+from src.visual_feedback.visual_objects.Crosshair import Crosshair
+from src.visual_feedback.visual_objects.Speaker import Speakers
 
 
 class VisualFeedbackController(object):
