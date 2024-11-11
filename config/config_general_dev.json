@@ -1,0 +1,35 @@
+{
+    "language" : "Dutch",
+    "subject_code" : "VPpdfc",
+
+    "callibration_file_name_prefix" : "AuditoryAphasia",
+
+    "words" : ["Spiegel", "Blender", "Groente", "Stropdas", "Tractor", "Knuffel"],
+    "number_of_repetitions" : 3,
+
+    "master_volume" : 0.3,
+
+    "port" : "COM3",
+
+    "screen_number" : 1,
+
+    "condition_offline" : ["6d", "6d" ],
+    "soa_offline" : [0.25, 0.25],
+    "initial_run_offline" : 1, 
+    "offline_session_type" : "pre",
+    "recorder_config_offline" : "32ch_DCC_standard.rwksp", 
+
+    "condition_online" : "6d",
+    "soa_online" : 0.25, 
+    "number_of_runs_online" : 15,
+    "recorder_config_online" : "32ch_DCC_standard.rwksp", 
+    "channel_labels_online" : ["Fp2", "F4", "F8", "FC6", "C4", "T8", "CP2", "CP6", "TP10", "P8", "O2", "PO10",
+                            "P4", "Cz", "Pz", "Oz", "PO9", "O1", "P7", "P3", "CP5", "CP1", "T7", "C3", "FC1",
+                            "FCz", "FC2", "Fz", "FC5", "F7", "F3", "Fp1"],
+
+    "eye_open_close_time" : 60,
+
+    "oddball_n_reps" : 2, 
+    "oddball_soa" : 1.0,
+    "oddball_n_seqs" : 50
+}

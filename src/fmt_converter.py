@@ -2,9 +2,9 @@ import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 
-#def n_ch_convert(n_ch):
-#    n_ch = n_ch -1
-#    return n_ch
+def n_ch_convert(n_ch):
+   n_ch = n_ch -1
+   return n_ch
 
 def eeg_format_convert(data):
     # BrainVision RDA

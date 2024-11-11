@@ -4,8 +4,8 @@ import sys
 import time
 import argparse
 
-import config.conf as conf
-import config.conf_system as conf_system
+import src.config.config as config
+import src.config.system_config as system_config
 import src.process_management.intermodule_communication as intermodule_comm
 import src.common.directory_navigator as dir_navigator
 import src.condition_params as condition_params
@@ -26,14 +26,14 @@ def gen_plan_play_oddball(
         num_reps : int = 10,
         volume : float = 1
 ) -> tuple[list[any], pyscab.DataHandler]:
-    oddball_base = os.path.join(conf_system.repository_dir_base, 'media', 'audio', 'oddball')
+    oddball_base = os.path.join(system_config.repository_dir_base, 'media', 'audio', 'oddball')
     
     non_target_id = 1
     target_id = 21
 
     audio_files = pyscab.DataHandler()
-    audio_files.load(non_target_id, os.path.join(oddball_base, conf_system.oddball_non_target), volume=volume)
-    audio_files.load(target_id, os.path.join(oddball_base, conf_system.oddball_target), volume=volume)
+    audio_files.load(non_target_id, os.path.join(oddball_base, system_config.oddball_non_target), volume=volume)
+    audio_files.load(target_id, os.path.join(oddball_base, system_config.oddball_target), volume=volume)
     
     #soa_oddball = 1.0
     #number_of_repetitions_oddball = 1 # 50->5min
@@ -61,7 +61,7 @@ def gen_plan_play_word(
 ) -> tuple[list[any], pyscab.DataHandler]:
     data = pyscab.DataHandler()
     condition = '6d'
-    words_to_speak = [conf.words[word_idx_to_be_played-1]]
+    words_to_speak = [config.words[word_idx_to_be_played-1]]
 
     load_audio_data(data, repo_base_dir, condition, words_to_speak, volume, load_sentences = False)
 
@@ -81,7 +81,7 @@ def gen_plan_sentence_and_word(
 ):
     data = pyscab.DataHandler()
     condition = '6d'
-    words_to_speak = [conf.words[word_idx_to_be_played-1]]
+    words_to_speak = [config.words[word_idx_to_be_played-1]]
 
     load_audio_data(data, repo_base_dir, condition, words_to_speak, volume)
     
@@ -94,7 +94,7 @@ def gen_plan_sentence_and_word(
     pyscab_audio_interface.play(sentence_data, channel)
     time.sleep(data.get_length_by_id(11))
 
-    input("Press Any Key to Play Word : %s" %(conf.words[word_idx_to_be_played-1]))
+    input("Press Any Key to Play Word : %s" %(config.words[word_idx_to_be_played-1]))
     pyscab_audio_interface.play(word_data, channel)
     time.sleep(data.get_length_by_id(1)*1.05)
 
@@ -172,22 +172,22 @@ def set_globals(familirization_args):
         intermodule_comm_outlet = intermodule_comm.create_intermodule_communication_outlet('main', channel_count=4, source_id='main')
 
 
-def send_marker_visual(marker : int):
+def send_marker_visual(val : int):
     global is_visual
     if is_visual:
         global speaker_showed
         global intermodule_comm_outlet
-        if marker == 210:
+        if val == 210:
             intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'show_speaker')
             speaker_showed = True
         
-        if marker >= 200 and marker <= 205:
+        if val >= 200 and val <= 205:
             speaker_showed = True
-            spk_num = str(marker)
+            spk_num = str(val)
             spk_num = int(spk_num[-1])+1
             intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'highlight_speaker', spk_num)
 
-        if marker >= 101 and marker <= 116:
+        if val >= 101 and val <= 116:
             if speaker_showed:
                 intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'show_crosshair')
                 speaker_showed = False
@@ -203,7 +203,7 @@ def load_audio_data(
         load_restat : bool = False, 
         load_relax : bool = False
 ):
-    for idx, word in enumerate(conf.words):
+    for idx, word in enumerate(config.words):
         if condition_params.conditions[condition]['single_file']:
             file_name = '1.wav'
         else:
@@ -239,17 +239,17 @@ def main():
         while visual_fb_state_dict["LSL_inlet_connected"] is False:
             time.sleep(0.1) # wait until module is connected
 
-    words_to_play = conf.words
-    master_volume = conf.master_volume
-    repo_base_dir = conf_system.repository_dir_base
+    words_to_play = config.words
+    master_volume = config.master_volume
+    repo_base_dir = system_config.repository_dir_base
 
     audio_state_dict = init_audio_state_dict()
 
     pyscab_audio_interface = pyscab.AudioInterface(
-        device_name = conf_system.device_name,
-        n_ch = conf_system.n_ch,
-        format=conf_system.format,
-        frames_per_buffer = conf_system.frames_per_buffer
+        device_name = system_config.device_name,
+        n_ch = system_config.n_channels,
+        format=system_config.format,
+        frames_per_buffer = system_config.frames_per_buffer
     )
     
     pyscab_stim_controller = pyscab.StimulationController(
@@ -350,6 +350,3 @@ def main():
     if familirization_args.visual:
         visual_process.terminate()
     sys.exit()
-
-if __name__ == '__main__':
-    main()

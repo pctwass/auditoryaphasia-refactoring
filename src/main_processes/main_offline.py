@@ -5,14 +5,14 @@ import pyscab
 
 from pylsl import StreamOutlet
 
-import config.conf as conf
-import config.conf_system as conf_system
+import src.config.config as config
+import src.config.system_config as system_config
 import config.temp_new_conf as temp_new_conf
 import src.common.utils as utils
 import src.condition_params as condition_params
 import src.process_management.intermodule_communication as intermodule_comm
 
-from src.common.main_process_functions import *
+from src.main_processes.main_process_functions import *
 from src.common.eyes_open_close import run_eyes_open_close
 from src.common.oddball import run_oddball
 from src.process_management.process_communication_enums import *
@@ -27,16 +27,16 @@ logger = logging.getLogger(__name__)
 
 def main():
     # make directory to save files
-    isExist = os.path.exists(os.path.join(conf_system.data_dir, conf_system.save_folder_name))
+    isExist = os.path.exists(os.path.join(system_config.data_dir, system_config.save_folder_name))
     if not isExist:
-        os.makedirs(os.path.join(conf_system.data_dir, conf_system.save_folder_name))
+        os.makedirs(os.path.join(system_config.data_dir, system_config.save_folder_name))
 
     generate_meta_file(session_type='offline')
 
-    sys.path.append(conf_system.repository_dir_base)
+    sys.path.append(system_config.repository_dir_base)
 
-    logger.debug("computer : %s" %conf_system.computer_name)
-    logger.debug("subject code : %s" %conf.subject_code)
+    logger.debug("computer : %s" %system_config.computer_name)
+    logger.debug("subject code : %s" %config.subject_code)
 
     #----------------------------------------------------------------------
     # start stimulation
@@ -60,14 +60,14 @@ def main():
     # oddball
     user_input_play_oddball = input("Do you want to play oddball? [y]/n : ")
     if user_input_play_oddball == "" or user_input_play_oddball.lower() == 'y':
-        run_oddball(intermodule_comm_outlet, audio_stim_state_dict, number_of_repetitions = conf.oddball_n_reps)
+        run_oddball(intermodule_comm_outlet, audio_stim_state_dict, number_of_repetitions = config.oddball_n_reps)
 
     idx_run_offset = 0
-    if conf.initial_run_offline != 1:
-        condition_plan = conf.condition_offline[conf.initial_run_offline-1:]
-        idx_run_offset += conf.initial_run_offline-1
+    if config.initial_run_offline != 1:
+        condition_plan = config.condition_offline[config.initial_run_offline-1:]
+        idx_run_offset += config.initial_run_offline-1
     else:
-        condition_plan = conf.condition_offline
+        condition_plan = config.condition_offline
 
     # main loop
     execute_run_for_each_condition(
@@ -101,18 +101,18 @@ def execute_run_for_each_condition(
     intermodule_comm_outlet : StreamOutlet,
     audio_stim_state_dict : dict[str,any]
 ):
-    audio_files_dir_base = conf_system.audio_files_dir_base
-    number_of_words = conf_system.number_of_words
-    master_volume = conf.master_volume
-    words = conf.words
+    audio_files_dir_base = system_config.audio_files_dir_base
+    number_of_words = system_config.number_of_words
+    master_volume = config.master_volume
+    words = config.words
 
     for idx_run, condition in enumerate(condition_plan):
         idx_run += idx_run_offset
-        soa = conf.soa_offline[idx_run]
+        soa = config.soa_offline[idx_run]
 
         time.sleep(1)
         input("Press Any Key to Start a New Run, %s, SOA %sms" %(condition, soa))
-        logger.debug("new run started, %d out of %d" %(idx_run+1, len(conf.condition_offline)))
+        logger.debug("new run started, %d out of %d" %(idx_run+1, len(config.condition_offline)))
         logger.debug("condition of run : %s" %condition)
         
         plan_run = generate_run_plan(
@@ -131,7 +131,7 @@ def execute_run_for_each_condition(
         intermodule_comm.send_params_LSL(intermodule_comm_outlet, 'audio', 'audio_info', audio_info)
         intermodule_comm.send_params_LSL(intermodule_comm_outlet, 'audio', 'marker', True)
         
-        f_name = gen_eeg_fname(os.path.join(conf_system.data_dir, conf_system.save_folder_name), conf.f_name_prefix, condition, soa, idx_run, 'eeg', session_type = conf.offline_session_type)
+        f_name = gen_eeg_fname(os.path.join(system_config.data_dir, system_config.save_folder_name), config.callibration_file_name_prefix, condition, soa, idx_run, 'eeg', session_type = config.offline_session_type)
         
         if temp_new_conf.init_recorder_locally:
             intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'acq','start_recording', f_name)
@@ -170,21 +170,21 @@ def execute_trial_for_each_word(
                                                 target,
                                                 condition,
                                                 soa,
-                                                conf.number_of_repetitions,
+                                                config.number_of_repetitions,
                                                 number_of_words,
-                                                conf_system.ch_speaker,
-                                                conf_system.ch_headphone,
+                                                system_config.channel_speaker,
+                                                system_config.channel_headphone,
                                                 condition_params.conditions[condition],
                                                 online=False)
         
-        word = conf.words[target-1]
+        word = config.words[target-1]
         logger.debug("word : %s" %word)
 
         sentence_data = pyscab.DataHandler()
-        sentence_data.load(0, os.path.join(conf_system.repository_dir_base,
+        sentence_data.load(0, os.path.join(system_config.repository_dir_base,
                                             'media',
                                             'audio',
-                                            conf.language,
+                                            config.language,
                                             'sentences',
                                             condition,
                                             word,
@@ -203,7 +203,7 @@ def execute_trial_for_each_word(
         while True:
             if int(audio_stim_state_dict["trial_marker"]) != marker and show_speaker_diagram:
                 marker = int(audio_stim_state_dict["trial_marker"])
-                if marker in conf_system.markers['new-trial']:  
+                if marker in system_config.markers['new-trial']:  
                     intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'highlight_speaker', {'spk_num':word_to_speak[marker-200], 'duration':sentence_duration})
                 elif marker == 210:
                     intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'show_speaker')
@@ -214,8 +214,4 @@ def execute_trial_for_each_word(
 
             time.sleep(0.01)
             
-        time.sleep(conf_system.pause_between_trial)
-
-
-if __name__ == '__main__':
-    main()
+        time.sleep(system_config.pause_between_trial)

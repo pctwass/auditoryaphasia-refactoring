@@ -2,11 +2,8 @@ import pyscab
 import os
 import random
 
-import config.conf_selector as conf_selector
-# exec("import %s as conf" % (conf_selector.conf_file_name))
-# exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import config.conf as conf
-import config.conf_system as conf_system
+import src.config.config as config
+import src.config.system_config as system_config
 
 from src.plans.stimulation_plan import generate_stimulation_plan
 
@@ -38,8 +35,8 @@ def test_stereo(volume = 1, num_rep = 20, ch = [7,8], soa = 1):
     #data.load(1, "./left.wav")
     #data.load(2, "./right.wav")
 
-    data.load(1, os.path.join(conf_system.repository_dir_base, 'media', 'audio', 'misc', 'left.wav'))
-    data.load(2, os.path.join(conf_system.repository_dir_base, 'media', 'audio', 'misc', 'right.wav'))
+    data.load(1, os.path.join(system_config.repository_dir_base, 'media', 'audio', 'misc', 'left.wav'))
+    data.load(2, os.path.join(system_config.repository_dir_base, 'media', 'audio', 'misc', 'right.wav'))
 
     audio_plan = list()
     time = 0
@@ -95,14 +92,14 @@ def main():
 
     #words = ['Spiegel', 'Blender', 'Groente', 'Stropdas', 'Tractor', 'Knuffel']
 
-    words = conf.words
+    words = config.words
 
     #home_dir = os.path.expanduser('~')
     #base_dir = "D:/Users/auditoryAphasia_stereo/auditoryAphasia_portable/auditoryAphasia/Feedbacks/media/online_paradigm/"
-    base_dir = os.path.join(conf_system.audio_files_dir_base)
+    base_dir = os.path.join(system_config.audio_files_dir_base)
 
     #DEVICE_NAME = 'X-AIR ASIO Driver'
-    ahc = pyscab.AudioInterface(device_name = conf_system.device_name, n_ch = conf_system.n_ch, format=conf_system.format, frames_per_buffer = conf_system.frames_per_buffer)
+    ahc = pyscab.AudioInterface(device_name = system_config.device_name, n_ch = system_config.n_channels, format=system_config.format, frames_per_buffer = system_config.frames_per_buffer)
     stc = pyscab.StimulationController(ahc, marker_send=sendMarker)
     stc.open()
 
@@ -135,6 +132,3 @@ def main():
     stc.close()
 
     #ahc.terminate()
-
-if __name__ == '__main__':
-    main()

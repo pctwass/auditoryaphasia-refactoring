@@ -4,15 +4,10 @@ import sys
 import mne
 import numpy as np
 
-import config.conf_selector
+import src.config.system_config as system_config
 
-# exec("import %s as conf" % (conf_selector.conf_file_name))
-# exec("import %s as conf_system" % (conf_selector.conf_system_file_name))
-import config.conf as conf
-import config.conf_system as conf_system
-
-dir_base = conf_system.data_dir
-save_dir = os.path.join(dir_base, "plots", conf_system.save_folder_name)
+dir_base = system_config.data_dir
+save_dir = os.path.join(dir_base, "plots", system_config.save_folder_name)
 
 subject_code = None
 date = None
@@ -342,7 +337,7 @@ def main():
     plot_erp(
         dir_base,
         save_dir=save_dir,
-        f_name_prefix=conf_system.f_name_prefix,
+        f_name_prefix=system_config.file_name_prefix,
         marker=marker,
         eog_channel=None,
         subject_code=subject_code,
@@ -352,14 +347,10 @@ def main():
     classify_erp(
         dir_base,
         save_dir=save_dir,
-        f_name_prefix=conf_system.f_name_prefix,
+        f_name_prefix=system_config.file_name_prefix,
         marker=marker,
         eog_channel=None,
         ivals=ivals,
         subject_code=subject_code,
         date=date,
     )
-
-
-if __name__ == '__main__':
-    main()

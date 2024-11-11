@@ -7,24 +7,26 @@ matplotlib.use('tkagg')
 
 from pylsl import StreamOutlet
 
-import config.conf as conf
-import config.conf_system as conf_system
+import src.config.config as config
+import src.config.system_config as system_config
+import src.config.classifier_config as classifier_config
 import src.common.utils as utils
 import src.process_management.intermodule_communication as intermodule_comm
 
 from src.process_management.process_manager import ProcessManager
 
-conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
-
 import logging
 logger = logging.getLogger(__name__)
+
+import src.logging.logger as custom_logger
+custom_logger.set_logger(file = True, stdout = True, level_file = 'debug', level_stdout = 'info')
 
 
 def generate_meta_file(session_type:str):
     meta = dict()
     meta['session_type'] = session_type
-    meta['words'] = conf.words
-    with open(os.path.join(conf_system.data_dir, conf_system.save_folder_name, 'meta.json'), 'w') as f:
+    meta['words'] = config.words
+    with open(os.path.join(system_config.data_dir, system_config.save_folder_name, 'meta.json'), 'w') as f:
         json.dump(meta, f, indent=4)
 
 
@@ -46,8 +48,8 @@ def create_and_start_subprocesses() -> tuple[multiprocessing.Process, multiproce
 
     # open AcquisitionSystemController as a new Process
     kwargs_acquisition=dict(name='acq', name_main_outlet='main')
-    kwargs_live_barplot=dict(words=conf.words)
-    acquisition_process, acquisition_state_dict, live_barplot_process = process_manager.create_acquisition_process(num_classes=conf_system.n_class, kwargs=kwargs_acquisition, kwargs_live_barplot=kwargs_live_barplot)
+    kwargs_live_barplot=dict(words=config.words)
+    acquisition_process, acquisition_state_dict, live_barplot_process = process_manager.create_acquisition_process(num_classes=classifier_config.n_class, kwargs=kwargs_acquisition, kwargs_live_barplot=kwargs_live_barplot)
     acquisition_process.start()
     live_barplot_process.start()
     while acquisition_state_dict["LSL_inlet_connected"] is False:

@@ -1,11 +1,10 @@
 import numpy as np
-#import mne
-#mne.set_log_level(verbose=False)
 
 from src.common.LSL_data_chunk import LSLDataStruct
 
 import logging
 logger = logging.getLogger(__name__)
+
 
 class EpochContainer():
     def __init__(

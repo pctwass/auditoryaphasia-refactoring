@@ -8,13 +8,13 @@ matplotlib.use('tkagg')
 
 from pylsl import StreamOutlet
 
-import config.conf as conf
-import config.conf_system as conf_system
+import src.config.config as config
+import src.config.system_config as system_config
 import config.temp_new_conf as temp_new_conf
 import src.condition_params as condition_params
 import src.process_management.intermodule_communication as intermodule_comm
 
-from src.common.main_process_functions import *
+from src.main_processes.main_process_functions import *
 from src.common.eyes_open_close import run_eyes_open_close
 from src.common.oddball import run_oddball
 from src.process_management.process_communication_enums import *
@@ -22,26 +22,25 @@ from src.plans.run_plan import generate_run_plan
 from src.plans.trial_plan import generate_trial_plan
 from src.plans.feedback_plan import generate_feedback_plan
 
-conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
 import logging
 logger = logging.getLogger(__name__)
 
 
 def main():
     # make directory to save files
-    isExist = os.path.exists(os.path.join(conf_system.data_dir, conf_system.save_folder_name))
+    isExist = os.path.exists(os.path.join(system_config.data_dir, system_config.save_folder_name))
     if not isExist:
-        os.makedirs(os.path.join(conf_system.data_dir, conf_system.save_folder_name))
+        os.makedirs(os.path.join(system_config.data_dir, system_config.save_folder_name))
 
     generate_meta_file(session_type='online')
 
-    sys.path.append(conf_system.repository_dir_base)
+    sys.path.append(system_config.repository_dir_base)
 
-    logger.debug("computer : %s" %conf_system.computer_name)
-    logger.debug("subject code : %s" %conf.subject_code)
+    logger.debug("computer : %s" %system_config.computer_name)
+    logger.debug("subject code : %s" %config.subject_code)
     
-    condition = conf.condition_online
-    soa = conf.soa_online
+    condition = config.condition_online
+    soa = config.soa_online
 
     #----------------------------------------------------------------------
     # start stimulation
@@ -64,7 +63,7 @@ def main():
     # oddball
     user_input_play_oddball = input("Do you want to play oddball? [y]/n : ")
     if user_input_play_oddball == "" or user_input_play_oddball.lower() == 'y':
-        run_oddball(intermodule_comm_outlet, audio_stim_state_dict, number_of_repetitions = conf.oddball_n_reps)
+        run_oddball(intermodule_comm_outlet, audio_stim_state_dict, number_of_repetitions = config.oddball_n_reps)
 
     # initiate the acquisition system
     launch_acquisition(
@@ -112,12 +111,12 @@ def execute_runs(
     condition : str,
     soa : float
 ):
-    audio_files_dir_base = conf_system.audio_files_dir_base
-    number_of_words = conf_system.number_of_words
-    master_volume = conf.master_volume
-    words = conf.words
+    audio_files_dir_base = system_config.audio_files_dir_base
+    number_of_words = system_config.number_of_words
+    master_volume = config.master_volume
+    words = config.words
 
-    for i in range(conf.number_of_runs_online):
+    for i in range(config.number_of_runs_online):
         plan_run = generate_run_plan(audio_files_dir_base,
                                         words,
                                         condition,
@@ -132,9 +131,9 @@ def execute_runs(
         n_runs = 1
         while True:
             #f_name = gen_eeg_fname(os.path.join(conf.data_dir, conf.save_folder_name), conf.f_name_prefix, condition, soa, idx_run)
-            f_name = os.path.join(conf_system.data_dir,
-                                  conf_system.save_folder_name,
-                                  "%s_%s_%s_%s.%s" %(conf.f_name_prefix, condition, str(int(soa*1000)), str(n_runs).zfill(4), 'eeg'))
+            f_name = os.path.join(system_config.data_dir,
+                                  system_config.save_folder_name,
+                                  "%s_%s_%s_%s.%s" %(config.callibration_file_name_prefix, condition, str(int(soa*1000)), str(n_runs).zfill(4), 'eeg'))
             print(f_name)
             if os.path.exists(f_name):
                 n_runs += 1
@@ -190,7 +189,7 @@ def execute_trial_for_each_word(
     master_volume : float,
     words : list[str]
 ):
-    number_of_words = conf_system.number_of_words
+    number_of_words = system_config.number_of_words
 
     for idx, trial_num in enumerate(range(1, number_of_words+1)):
         target = target_plan[idx]
@@ -201,20 +200,20 @@ def execute_trial_for_each_word(
                                                 target,
                                                 condition,
                                                 soa,
-                                                conf.number_of_repetitions,
-                                                conf_system.number_of_words,
-                                                conf_system.ch_speaker,
-                                                conf_system.ch_headphone,
+                                                config.number_of_repetitions,
+                                                system_config.number_of_words,
+                                                system_config.channel_speaker,
+                                                system_config.channel_headphone,
                                                 condition_params.conditions[condition],
                                                 online = True)
 
-        word = conf.words[target-1]
+        word = config.words[target-1]
         logger.debug("word : %s" %word)
         sentence_data = pyscab.DataHandler()
-        sentence_data.load(0, os.path.join(conf_system.repository_dir_base,
+        sentence_data.load(0, os.path.join(system_config.repository_dir_base,
                                             'media',
                                             'audio',
-                                            conf.language,
+                                            config.language,
                                             'sentences',
                                             condition,
                                             word,
@@ -237,7 +236,7 @@ def execute_trial_for_each_word(
         while acquisition_state_dict["trial_completed"] is False:
             if int(audio_stim_state_dict["trial_marker"]) != marker and show_speaker_diagram:
                 marker = int(audio_stim_state_dict["trial_marker"])
-                if marker in conf_system.markers['new-trial']:  
+                if marker in system_config.markers['new-trial']:  
                     intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'highlight_speaker', {'spk_num':word_to_speak[marker-200], 'duration':sentence_duration})
                 elif marker == 210:
                     intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'show_speaker')
@@ -270,10 +269,10 @@ def execute_trial_for_each_word(
         #intermodule_comm.send_cmd_LSL(outlet, 'acq', 'stop_recording')
         audio_stim_state_dict["audio_status"] = AudioStatus.INITIAL # reinitialize status
 
-        if conf_system.enable_pause_between_trial:
+        if system_config.enable_pause_between_trial:
             input("Press Any Key to Start A New Trial")
         else:
-            time.sleep(conf_system.pause_between_trial)
+            time.sleep(system_config.pause_between_trial)
 
 
 def provide_audiovisual_feeback(
@@ -293,7 +292,7 @@ def provide_audiovisual_feeback(
         visual_fb = 'positive'
     elif fb_type == TrialClassificationStatus.DECODED_EARLY:
         # TODO probably best to replace the first part of the below if statement by a unique classification state and do the check in the acquisition controller  
-        if acquisition_state_dict["trial_stimulus_count"] == conf_system.dynamic_stopping_params['min_n_stims'] and np.random.randint(5) == 0:
+        if acquisition_state_dict["trial_stimulus_count"] == classifier_config.dynamic_stopping_params['min_n_stims'] and np.random.randint(5) == 0:
             # 0.2 random chance
             visual_fb = 'show_gif'
         else:
@@ -306,8 +305,8 @@ def provide_audiovisual_feeback(
         acquisition_state_dict["trial_label"],
         fb_type,
         condition,
-        conf_system.ch_speaker,
-        conf_system.ch_headphone,
+        system_config.channel_speaker,
+        system_config.channel_headphone,
         condition_params.conditions[condition],
         master_volume
     )
@@ -315,7 +314,7 @@ def provide_audiovisual_feeback(
     intermodule_comm.send_params_LSL(intermodule_comm_outlet, 'audio', 'audio_info', fb_plan['audio_info'])
     #utils.send_params_LSL(outlet, 'audio', 'marker', False)
 
-    time.sleep(conf_system.pause_before_feedback)
+    time.sleep(system_config.pause_before_feedback)
 
     if visual_fb == 'show_gif':
         intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', 'show_gif')
@@ -330,7 +329,3 @@ def provide_audiovisual_feeback(
     #time.sleep(3)
     if visual_fb != 'show_gif':
         intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, 'visual', "hide_" + visual_fb)
-
-
-if __name__ == '__main__':
-    main()

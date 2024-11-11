@@ -1,4 +1,4 @@
-import config.conf_system as conf_system
+import src.config.system_config as system_config
 
 from src.plans.stimulation_plan import generate_stimulation_plan
 
@@ -23,7 +23,7 @@ def generate_trial_plan(audio_files,
     elif condition_params['output'] == 'headphone':
         play_plan.append([time_plan, 100, ch_headphone, 210]) # play restart sound
     time_plan += audio_files.get_length_by_id(100)
-    time_plan += conf_system.pause_after_start_sound
+    time_plan += system_config.pause_after_start_sound
 
     # === About the marker of sentence ===
     # Sending 201 for word 1 is straight forward,
@@ -38,7 +38,7 @@ def generate_trial_plan(audio_files,
 
     # ====================================
 
-    time_plan += conf_system.pause_between_sentence_and_subtrial
+    time_plan += system_config.pause_between_sentence_and_subtrial
     time_plan += audio_files.get_length_by_id(target+10)
     for word_num in word_plan:
         time_plan += soa
@@ -55,7 +55,7 @@ def generate_trial_plan(audio_files,
         play_plan.append([time_plan, word_num, spk, marker])
     
     if online is False:
-        time_plan += conf_system.pause_after_trial
+        time_plan += system_config.pause_after_trial
         if condition_params['output'] == 'speaker':
             play_plan.append([time_plan, 101, [ch_speaker[0]], 0])
         elif condition_params['output'] == 'heaphone':

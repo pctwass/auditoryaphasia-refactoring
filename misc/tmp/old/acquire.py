@@ -2,7 +2,7 @@ from pylsl import StreamInlet, resolve_stream
 import numpy
 from scipy import signal
 import data_structure
-import src.fmt_converter as fmt_converter
+import src.config.system_config as system_config
 
 ENABLE_STREAM_INLET_RECOVER = False
 FILTER_ORDER = 2
@@ -24,6 +24,7 @@ class Data:
     time_correction = list()
 
 def main():
+    formatting_client = system_config.FormattingClient()
 
     # ------------------------------------------------------------------------------------------------
     # find/connect eeg outlet
@@ -33,7 +34,7 @@ def main():
     eeg_stream.stream = resolve_stream('type', 'EEG')
     eeg_stream.inlet = StreamInlet(eeg_stream.stream[0], recover=ENABLE_STREAM_INLET_RECOVER)
     n_ch = eeg_stream.stream[0].channel_count()
-    n_ch = fmt_converter.n_ch_convert(n_ch)
+    n_ch = formatting_client.n_channels_convert(n_ch)
 
     fs_eeg = eeg_stream.stream[0].nominal_srate()
 
@@ -78,7 +79,7 @@ def main():
         if eeg.time_chunk:                
             for idx in range(len(eeg.time_chunk)):
                 eeg.time_chunk[idx] += eeg.time_correction
-            eeg.data_chunk = fmt_converter.eeg_format_convert(eeg.data_chunk)
+            eeg.data_chunk = formatting_client.eeg_format_convert(eeg.data_chunk)
             eeg.data_chunk, z = signal.sosfilt(sos, eeg.data_chunk, axis=1, zi=z)
             eeg.data = numpy.concatenate((eeg.data, eeg.data_chunk), axis=1)
             eeg.time = numpy.append(eeg.time, eeg.time_chunk)
@@ -93,7 +94,7 @@ def main():
         if marker.time_chunk:
             for idx in range(len(marker.time_chunk)):
                 marker.time_chunk[idx] += marker.time_correction     
-            marker.data_chunk = fmt_converter.marker_format_convert(marker.data_chunk)
+            marker.data_chunk = formatting_client.marker_format_convert(marker.data_chunk)
             marker.data = numpy.append(marker.data, marker.data_chunk)
             marker.time = numpy.append(marker.time, marker.time_chunk)
             marker.time_chunk = list()

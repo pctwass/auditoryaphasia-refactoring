@@ -12,5 +12,5 @@ marker_stream_await_timeout_ms : int|float = 1000
 init_recorder_locally : bool = False
 
 # Dareplane API Server
-api_ip : str = "127.0.0.1"
-api_port : int = 8001 
+dareplane_api_ip : str = "127.0.0.1"
+dareplane_api_port : int = 8001 
