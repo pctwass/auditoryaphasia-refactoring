@@ -1,6 +1,9 @@
 import src.config.config_builder as config_builder
 config_builder.build_configs()
 
+import src.config.config as config
+import src.config.system_config as system_config
+import src.config.classifier_config as classifier_config
 from src.main_processes.main_online import main as main_online
 from src.main_processes.main_offline import main as main_offline
 from src.main_processes.familiarization import main as main_familiarization
