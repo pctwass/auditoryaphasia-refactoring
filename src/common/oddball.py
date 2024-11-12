@@ -5,8 +5,8 @@ import pyscab
 import logging
 logger = logging.getLogger(__name__)
 
-import config.conf as conf
-import config.conf_system as conf_system
+import src.config.config as config
+import src.config.system_config as system_config
 import src.process_management.intermodule_communication as intermodule_comm
 
 from src.process_management.process_communication_enums import AudioStatus
@@ -19,26 +19,26 @@ def run_oddball(
     number_of_repetitions = None
 ):
     if number_of_repetitions is None:
-        number_of_repetitions = conf.oddball_n_reps
+        number_of_repetitions = config.oddball_n_reps
 
     while True:
-        oddball_base = os.path.join(conf_system.repository_dir_base, 'media', 'audio', 'oddball')
+        oddball_base = os.path.join(system_config.repository_dir_base, 'media', 'audio', 'oddball')
         nT_id = 1
         T_id = 21
 
         audio_info = list()
         audio_files = pyscab.DataHandler()
 
-        audio_info.append([nT_id, os.path.join(oddball_base, conf_system.oddball_non_target), conf.master_volume])
-        audio_files.load(nT_id, os.path.join(oddball_base, conf_system.oddball_non_target), volume=conf.master_volume)
-        logger.debug("oddball nT, id:%s, dir:%s, volume:%s", nT_id, os.path.join(oddball_base, conf_system.oddball_non_target), conf.master_volume)
+        audio_info.append([nT_id, os.path.join(oddball_base, system_config.oddball_non_target), config.master_volume])
+        audio_files.load(nT_id, os.path.join(oddball_base, system_config.oddball_non_target), volume=config.master_volume)
+        logger.debug("oddball nT, id:%s, dir:%s, volume:%s", nT_id, os.path.join(oddball_base, system_config.oddball_non_target), config.master_volume)
 
-        audio_info.append([T_id, os.path.join(oddball_base, conf_system.oddball_target), conf.master_volume])
-        audio_files.load(T_id, os.path.join(oddball_base, conf_system.oddball_target), volume=conf.master_volume)
-        logger.debug("oddball T, id:%s, dir:%s, volume:%s", T_id, os.path.join(oddball_base, conf_system.oddball_target), conf.master_volume)
+        audio_info.append([T_id, os.path.join(oddball_base, system_config.oddball_target), config.master_volume])
+        audio_files.load(T_id, os.path.join(oddball_base, system_config.oddball_target), volume=config.master_volume)
+        logger.debug("oddball T, id:%s, dir:%s, volume:%s", T_id, os.path.join(oddball_base, system_config.oddball_target), config.master_volume)
 
-        soa_oddball = conf.oddball_soa
-        number_of_repetitions_oddball = conf.oddball_n_seqs # 50->5min
+        soa_oddball = config.oddball_soa
+        number_of_repetitions_oddball = config.oddball_n_seqs # 50->5min
         logger.debug("oddball soa : %s", str(soa_oddball))
         logger.debug("oddball number of repetitions : %s", str(number_of_repetitions_oddball))
 
@@ -48,9 +48,9 @@ def run_oddball(
         time_plan = 0
         for stim in stimplan:
             if stim == 1:
-                play_plan.append([time_plan, T_id, conf_system.oddball_channels, conf_system.oddball_marker['target']])
+                play_plan.append([time_plan, T_id, system_config.oddball_channels, system_config.oddball_marker['target']])
             else:
-                play_plan.append([time_plan, nT_id, conf_system.oddball_channels, conf_system.oddball_marker['nontarget']])
+                play_plan.append([time_plan, nT_id, system_config.oddball_channels, system_config.oddball_marker['nontarget']])
             time_plan += soa_oddball
 
         for i in range(number_of_repetitions):
@@ -59,7 +59,7 @@ def run_oddball(
 
             while True:
                 oddball_run_idx += 1
-                f_dir = os.path.join(conf_system.data_dir, conf_system.save_folder_name, "Oddball_%d.eeg"%oddball_run_idx)
+                f_dir = os.path.join(system_config.data_dir, system_config.save_folder_name, "Oddball_%d.eeg"%oddball_run_idx)
                 if os.path.exists(f_dir):
                     continue
                 else:

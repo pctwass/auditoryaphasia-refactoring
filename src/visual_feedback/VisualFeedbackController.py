@@ -4,7 +4,7 @@ import numpy as np
 
 from psychopy import visual, core
 
-import config.conf_system as conf_system
+import src.config.system_config as system_config
 from src.visual_feedback.visual_objects.Crosshair import Crosshair
 from src.visual_feedback.visual_objects.Speaker import Speakers
 
@@ -23,17 +23,17 @@ class VisualFeedbackController(object):
 
 
     def show_screen(self):
-        self.window = visual.Window(self.display_size, color=conf_system.background_color, fullscr=self.fullscreen_mode,
+        self.window = visual.Window(self.display_size, color=system_config.background_color, fullscr=self.fullscreen_mode,
                                  pos=self.window_position, units=self.window_units, screen=self.screen)
-        self.smiley = visual.ImageStim(win=self.window, size=conf_system.size_smiley)
+        self.smiley = visual.ImageStim(win=self.window, size=system_config.size_smiley)
         self.barplot = visual.ImageStim(win=self.window)
         self.eyes_open = visual.ImageStim(win=self.window, image=os.path.join(self.images_dir_base, 'eyesOpen.jpg'),
-                                          size=conf_system.size_eye_open_close)
+                                          size=system_config.size_eye_open_close)
         self.eyes_close = visual.ImageStim(win=self.window, image=os.path.join(self.images_dir_base, 'eyesClosed.jpg'),
-                                           size=conf_system.size_eye_open_close)
-        self.dancing_gif = visual.ImageStim(win=self.window, size=conf_system.size_dancing_gif)
+                                           size=system_config.size_eye_open_close)
+        self.dancing_gif = visual.ImageStim(win=self.window, size=system_config.size_dancing_gif)
         self.crosshair = Crosshair(self.window)
-        self.speakers = Speakers(self.window, highlight_color=conf_system.highlight_color)
+        self.speakers = Speakers(self.window, highlight_color=system_config.highlight_color)
 
     def hide_screen(self):
         self.window.close()
@@ -41,7 +41,7 @@ class VisualFeedbackController(object):
     def show_barplot_with_smiley(self):
         self.fb_smiley, self.fb_bar = self._show_pics_vert(win=self.window,
                                             img_1_dir=os.path.join(self.images_dir_base, 'smiley_transparent.png'),
-                                            img_2_dir=os.path.join(conf_system.repository_dir_base, 'media', 'tmp', 'fb_barplot.png'),
+                                            img_2_dir=os.path.join(system_config.repository_dir_base, 'media', 'tmp', 'fb_barplot.png'),
                                             img_1_vert_coff=0.15)
         self.window.flip()
     
@@ -51,7 +51,7 @@ class VisualFeedbackController(object):
         self.window.flip()
 
     def show_barplot(self):
-        self.barplot = self._show_pic_by_height(self.window, os.path.join(conf_system.repository_dir_base, 'media', 'tmp', 'fb_barplot.png'))
+        self.barplot = self._show_pic_by_height(self.window, os.path.join(system_config.repository_dir_base, 'media', 'tmp', 'fb_barplot.png'))
         self.window.flip()
 
     def hide_barplot(self):

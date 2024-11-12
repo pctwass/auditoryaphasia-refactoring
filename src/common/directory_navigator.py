@@ -1,5 +1,5 @@
 import os
-import config.conf as conf
+import src.config.config as config
 
 def get_word_audio_file_path(
     base_dir : str,
@@ -11,7 +11,7 @@ def get_word_audio_file_path(
         base_dir,
         'media',
         'audio',
-        conf.language,
+        config.language,
         'words',
         condition,
         word,
@@ -29,7 +29,7 @@ def get_sentence_audio_file_path(
         base_dir,
         'media',
         'audio',
-        conf.language,
+        config.language,
         'sentences',
         condition,
         word,
@@ -44,7 +44,7 @@ def get_restart_audio_file_path(
         base_dir,
         'media',
         'audio',
-        conf.language,
+        config.language,
         'misc',
         'restart.wav'
     )
@@ -57,7 +57,7 @@ def get_relax_audio_file_path(
         base_dir,
         'media',
         'audio',
-        conf.language,
+        config.language,
         'misc',
         'relax.wav'
     )

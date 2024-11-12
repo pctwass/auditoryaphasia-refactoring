@@ -1,7 +1,7 @@
 import logging
 logger = logging.getLogger(__name__)
 
-import config.conf_system as conf_system
+import src.config.system_config as system_config
 import pyscab
 
 from src.process_management.process_communication_enums import AudioStatus
@@ -17,18 +17,18 @@ class AudioStimulationController(object):
 
 
     def open(self):
-        self.audio_device_interface = pyscab.AudioInterface(device_name = conf_system.device_name,
-                                        n_ch = conf_system.n_ch,
-                                        format=conf_system.format,
-                                        frames_per_buffer = conf_system.frames_per_buffer)
+        self.audio_device_interface = pyscab.AudioInterface(device_name = system_config.device_name,
+                                        n_ch = system_config.n_channels,
+                                        format=system_config.format,
+                                        frames_per_buffer = system_config.frames_per_buffer)
                             
-        self.marker = conf_system.Marker()
+        self.marker = system_config.MarkerClient()
         self.marker.open()
              
         self.psycab_stim_controller = pyscab.StimulationController(self.audio_device_interface, 
                                                 marker_send=self.marker.sendMarker,
-                                                correct_latency = conf_system.correct_sw_latency,
-                                                correct_hardware_buffer = conf_system.correct_hw_latency,
+                                                correct_latency = system_config.correct_sw_latency,
+                                                correct_hardware_buffer = system_config.correct_hw_latency,
                                                 state_dict=self.state_dict)
         self.psycab_stim_controller.open()
 

@@ -3,7 +3,7 @@
 language = 'Dutch'
 subject_code = 'VPpdfc'
 
-f_name_prefix = 'AuditoryAphasia'
+callibration_file_name_prefix = 'AuditoryAphasia'
 
 # stored in media/audio/<LANGUAGE>/words/<CONDITION>
 words = ['Spiegel', 'Blender', 'Groente', 'Stropdas', 'Tractor', 'Knuffel']

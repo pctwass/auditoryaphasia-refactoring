@@ -1,13 +1,14 @@
 import json
 import time
 
-import config.conf as conf
-import config.conf_system as conf_system
+import src.config.config as config
+import src.config.system_config as system_config
 import src.process_management.intermodule_communication as intermodule_comm
 
 import logging
 logger = logging.getLogger(__name__)
 
+from src.config.config_builder import build_configs
 from src.visual_feedback.VisualFeedbackController import VisualFeedbackController
 
 
@@ -22,12 +23,15 @@ def interface(name:str, name_main_outlet:str='main', state_dict:str=None):
     # name_main_outlet : name of main module's outlet. This module will find the main module with this name.
     #
 
+    # Because the interface is spawned as the target of a new process, we need to load the config into memory again
+    build_configs()
+
     state_dict["LSL_inlet_connected"] = False
 
     #status.value = 0
     params = dict() # variable for receive parameters
 
-    vfc = VisualFeedbackController(images_dir_base=conf_system.visual_images_dir_base, fullscreen_mode = conf_system.enable_fullscreen, screen=conf.screen_number)
+    vfc = VisualFeedbackController(images_dir_base=system_config.visual_images_dir_base, fullscreen_mode = system_config.enable_fullscreen, screen=config.screen_number)
     vfc.show_screen()
     vfc.show_crosshair()
     #vfc.show_speakers()

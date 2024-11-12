@@ -2,9 +2,10 @@ import sys
 import logging
 import json
 
-import config.conf_system as conf_system
+import src.config.system_config as system_config
 import src.process_management.intermodule_communication as intermodule_comm
 
+from src.config.config_builder import build_configs
 from src.audio_stimulation.AudioStimulationController import AudioStimulationController
 from src.process_management.state_dictionaries import *
 from src.process_management.process_communication_enums import *
@@ -24,7 +25,9 @@ def interface(name:str, name_main_outlet:str='main', state_dict:dict[str,any]=No
     #
     # state_dict : value which is state_dictd with main module.
 
-    sys.path.append(conf_system.repository_dir_base)
+    # Because the interface is spawned as the target of a new process, we need to load the config into memory again
+    build_configs()
+    sys.path.append(system_config.repository_dir_base)
 
     if state_dict == None:
         state_dict = init_audio_state_dict()

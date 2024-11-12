@@ -7,6 +7,7 @@ from pylsl import StreamInlet, resolve_stream
 import src.acquisition.epoch_container as epoch_container
 import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
 import src.fmt_converter as fmt_converter
+import src.config.system_config as system_config
 
 home_dir = os.path.expanduser('~')
 
@@ -38,6 +39,7 @@ markers['new-trial'] = [200,201,202,203,204,205]
 MARKERS_TO_EPOCH = markers['target'] + markers['non-target']
 
 def main():
+    formatting_client = system_config.FormattingClient()
 
     # ------------------------------------------------------------------------------------------------
     # find/connect eeg outlet
@@ -47,7 +49,7 @@ def main():
         eeg_stream = resolve_stream('type', 'EEG')
         eeg_inlet = StreamInlet(eeg_stream[0], recover=ENABLE_STREAM_INLET_RECOVER)
         n_channels = eeg_stream[0].channel_count()
-        n_channels = fmt_converter.n_ch_convert(n_channels)
+        n_channels = formatting_client.n_ch_convert(n_channels)
 
         sampling_freq = eeg_stream[0].nominal_srate()
         info = eeg_inlet.info()
@@ -87,8 +89,8 @@ def main():
                             marker_inlet,
                             n_channels,
                             sampling_freq,
-                            fmt_converter.eeg_format_convert,
-                            fmt_converter.marker_format_convert,
+                            formatting_client.eeg_format_convert,
+                            formatting_client.marker_format_convert,
                             filter_freq=FILTER_FREQ,
                             filter_order=FILTER_ORDER,
                             new_trial_markers=None,

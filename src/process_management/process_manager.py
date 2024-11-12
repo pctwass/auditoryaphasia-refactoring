@@ -59,13 +59,13 @@ class ProcessManager:
         return acquisition_process, acquisition_state_dict, live_barplot_process
 
 
-    def create_live_barplot_process(self, num_classes : int, kwargs : dict[str,any] = None) -> tuple[multiprocessing.Process, dict[str, any]]:
+    def create_live_barplot_process(self, num_classes : int, kwargs_live_barplot : dict[str,any] = None) -> tuple[multiprocessing.Process, dict[str, any]]:
         live_barplot_state_dict = init_live_barplot_state_dict(self._manager, num_classes)
 
-        if kwargs is None:
-            kwargs = dict(state_dict=live_barplot_state_dict)
+        if kwargs_live_barplot is None:
+            kwargs_live_barplot = dict(state_dict=live_barplot_state_dict)
         else:
-            kwargs['state_dict'] = live_barplot_state_dict
+            kwargs_live_barplot['state_dict'] = live_barplot_state_dict
 
-        live_barplot_process =  multiprocessing.Process(target=run_barplot, kwargs=kwargs)
+        live_barplot_process =  multiprocessing.Process(target=run_barplot, kwargs=kwargs_live_barplot)
         return live_barplot_process, live_barplot_state_dict

@@ -16,21 +16,16 @@ matplotlib.use("tkagg")
 import matplotlib.pyplot as plt
 import pylsl
 
-import config.conf as conf
-import config.conf_system as conf_system
-import config.temp_new_conf as temp_new_conf
-import src.fmt_converter as fmt_converter
+import src.config.config as config
+import src.config.system_config as system_config
+import src.config.classifier_config as classifier_config
+import src.common.utils as utils
 import src.common.LSL_streaming as streaming
 import src.acquisition.epoch_container as epoch_container
 import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
 
-from src.classifier.ClassifierFactory import ClassifierFactory
 from src.common.pandas_save_utility import PandasSaveUtility
 from src.acquisition.acquisition_streaming_outlet_manager import AcquisitionStreamingOutletManager
-
-
-#TODO: figure out alternative for starting live barplot process without ProcessManager circular import
-# from src.process_management.process_manager import ProcessManager
 from src.process_management.state_dictionaries import *
 from src.process_management.process_communication_enums import *
 
@@ -78,24 +73,36 @@ class AcquisitionSystemController:
         # - self.n_channels
         self._connect_LSL_acquisition_inlet()
 
+        # TODO find a way to pass the number of features and classes so that the outlets can be initalized alongside the manager
+        # NOTE at the moment the outlets are initialized the first time features or distances/classifications are pushed to them
+        self.streaming_outlet_manager = AcquisitionStreamingOutletManager()
+
+        self.incrementing_idx = 0  # index to track LSL packages, belonging to a single decoding set
+        self.feature_outlet: pylsl.StreamOutlet | None = None
+        self.distance_outlet: pylsl.StreamOutlet | None = None
+
+        markers_to_epoch = markers['target'] + markers['nontarget']
+        n_sessions = utils.get_n_sessions(system_config.data_dir, config.subject_code, system_config.datestr)
+        
         self.epochs = epoch_container.EpochContainer(
             self.n_channels,
             self.sampling_freq,
-            self.markers["target"] + self.markers["nontarget"],
+            markers_to_epoch,
             tmin,
             tmax,
             baseline
         )
 
-        self.acq = OnlineDataAcquire.OnlineDataAcquire(
+        formatting_client = system_config.FormattingClient()
+        self.online_data_acquisitioner = OnlineDataAcquire.OnlineDataAcquire(
             self.epochs,
             self.eeg_inlet,
             self.marker_inlet,
             self.channels_to_acquire,
             self.n_channels,
             self.sampling_freq,
-            fmt_converter.eeg_format_convert,
-            fmt_converter.marker_format_convert,
+            formatting_client.eeg_format_convert,
+            formatting_client.marker_format_convert,
             filter_freq=filter_freq,
             filter_order=filter_order,
             new_trial_markers=self.markers["new-trial"],
@@ -105,25 +112,31 @@ class AcquisitionSystemController:
             jumping_mean_ivals=self.ivals, sfreq=self.sampling_freq, t_ref=tmin
         )
 
-        # TODO find a way to pass the number of features and classes so that the outlets can be initalized alongside the manager
-        # NOTE at the moment the outlets are initialized the first time features or distances/classifications are pushed to them
-        self.streaming_outlet_manager = AcquisitionStreamingOutletManager()
-
-        self.incrementing_idx = 0  # index to track LSL packages, belonging to a single decoding set
-        # single decoding task
-        self.feature_outlet: pylsl.StreamOutlet | None = None
-        self.distance_outlet: pylsl.StreamOutlet | None = None
+        self.calibration_data_provider = system_config.CallibrationDataProviderClass(
+            logger = logger,
+            n_sessions = n_sessions,
+            data_dir = system_config.data_dir,
+            subject_code = config.subject_code,
+            tmin = tmin,
+            tmax = tmax,
+            baseline = baseline,
+            channel_labels_online = config.channel_labels_online,
+            file_name_prefix = config.callibration_file_name_prefix,
+            filter_freq = filter_freq,
+            filter_order = filter_order,
+            markers_to_epoch = markers_to_epoch
+        )
 
     
-    def _connect_LSL_acquisition_inlet(self, ENABLE_STREAM_INLET_RECOVER:bool=True):
+    def _connect_LSL_acquisition_inlet(self):
         # ------------------------------------------------------------------------------------------------
         # find/connect eeg outlet
 
         logger.info("looking for an EEG stream...")
         
         self.eeg_stream, self.eeg_inlet = streaming.resolve_stream(
-            temp_new_conf.eeg_acquisition_stream_name,
-            temp_new_conf.eeg_acquisition_stream_type
+            system_config.eeg_acquisition_stream_name,
+            system_config.eeg_acquisition_stream_type
         )
 
         self.sampling_freq = self.eeg_stream[0].nominal_srate()
@@ -138,10 +151,10 @@ class AcquisitionSystemController:
 
         logger.info("looking for a marker stream...")
         self.marker_stream, self.marker_inlet = streaming.init_LSL_inlet(
-            temp_new_conf.marker_acquisition_stream_name,
-            temp_new_conf.marker_acquisition_stream_type,
+            system_config.marker_acquisition_stream_name,
+            system_config.marker_acquisition_stream_type,
             await_stream = True,
-            timeout = temp_new_conf.marker_stream_await_timeout_ms
+            timeout = system_config.marker_stream_await_timeout_ms
         )
         logger.info("Configuration Done.")
 
@@ -149,7 +162,7 @@ class AcquisitionSystemController:
     def _get_channel_indices_to_acquire(self) -> list[int]:
         channel_indices_to_acquire = list()
         for idx, channel in enumerate(self.channel_names):
-            if channel in conf.channel_labels_online:
+            if channel in config.channel_labels_online:
                 channel_indices_to_acquire.append(idx)
 
         self.channels_to_acquire = np.array(channel_indices_to_acquire)
@@ -172,17 +185,18 @@ class AcquisitionSystemController:
         events = mne.merge_events(
             events,
             self.markers["target"],
-            conf_system.labels_binary_classification["target"],
+            classifier_config.labels_binary_classification["target"],
         )
         events = mne.merge_events(
             events,
             self.markers["nontarget"],
-            conf_system.labels_binary_classification["nontarget"],
+            classifier_config.labels_binary_classification["nontarget"],
         )
 
         Y = events[:, -1]
 
         self.clf.fit(X, Y)
+
 
     def calibration(self, params:dict[str,any]):
         """
@@ -190,7 +204,7 @@ class AcquisitionSystemController:
         =========
         """
         logger.info("start calibration")
-        epochs = conf_system.get_calibration_data(params)
+        epochs = self.calibration_data_provider.get_calibration_data(params)
         epochs.load_data()
         self.fit_classifier(epochs)
 
@@ -209,21 +223,21 @@ class AcquisitionSystemController:
         self.live_barplot_state_dict["display_barplot"] = True
        
         if not os.path.exists(
-            os.path.join(conf_system.repository_dir_base, "media", "tmp")
+            os.path.join(system_config.repository_dir_base, "media", "tmp")
         ):
             os.makedirs(
-                os.path.join(conf_system.repository_dir_base, "media", "tmp")
+                os.path.join(system_config.repository_dir_base, "media", "tmp")
             )
 
         self.state_dict["acquire_trials"] = True
-        self.acq.start()
+        self.online_data_acquisitioner.start()
 
         while self.state_dict["acquire_trials"] is True:
             try:
-                new_trial_marker = self.acq.get_new_trial_marker()
+                new_trial_marker = self.online_data_acquisitioner.get_new_trial_marker()
                 # logger.info(new_trial)
                 if new_trial_marker is not None:
-                    self.acq.clear_new_trial_marker()
+                    self.online_data_acquisitioner.clear_new_trial_marker()
                     self.state_dict["trial_completed"] = False
                     
                     trial_label = int(str(new_trial_marker + 1)[-1])
@@ -259,17 +273,17 @@ class AcquisitionSystemController:
 
                     true_class_labels = np.empty(0)
                     for event in events:
-                        if event in conf_system.markers["target"]:
+                        if event in system_config.markers["target"]:
                             true_class_labels = np.append(
                                 true_class_labels,
-                                conf_system.labels_binary_classification[
+                                classifier_config.labels_binary_classification[
                                     "target"
                                 ],
                             )
-                        elif event in conf_system.markers["nontarget"]:
+                        elif event in system_config.markers["nontarget"]:
                             true_class_labels = np.append(
                                 true_class_labels,
-                                conf_system.labels_binary_classification[
+                                classifier_config.labels_binary_classification[
                                     "nontarget"
                                 ],
                             )
@@ -279,14 +293,14 @@ class AcquisitionSystemController:
                     vectorized_epoch = self.vectorizer.transform(epoch)
                     self.streaming_outlet_manager.push_features_to_lsl(vectorized_epoch, true_class_labels, self.incrementing_idx)
 
-                    if conf_system.adaptation:
+                    if classifier_config.adaptation:
                         # this function will calclate new set of w and b.
                         # And it's not overwritten yet. It will be overwritten after trial.
-                        conf_system.adaptation_clf.adaptation(
+                        classifier_config.adaptation_clf.adaptation(
                             vectorized_epoch,
                             true_class_labels,
-                            eta_cov=conf_system.adaptation_eta_cov,
-                            eta_mean=conf_system.adaptation_eta_mean,
+                            eta_cov=classifier_config.adaptation_eta_cov,
+                            eta_mean=classifier_config.adaptation_eta_mean,
                         )
                         self.adaptation_available_new = True
 
@@ -307,7 +321,7 @@ class AcquisitionSystemController:
                     self.streaming_outlet_manager.push_distances_to_lsl(distances, self.incrementing_idx)
 
                     if (
-                        conf_system.show_barplot
+                        system_config.show_live_classification_barplot
                         and stimulus_count >= self.n_class
                     ):
                         clf_out = self._get_distances_foreach_class(distances, self.n_class)
@@ -398,7 +412,7 @@ class AcquisitionSystemController:
 
                                     fig_feedback = plt.figure(num=2)
                                     plt.bar(
-                                        conf.words, clf_out_mean, color=barplot_colors
+                                        config.words, clf_out_mean, color=barplot_colors
                                     )
                                     plt.tick_params(
                                         left=False,
@@ -407,7 +421,7 @@ class AcquisitionSystemController:
                                     )
                                     fig_feedback.savefig(
                                         os.path.join(
-                                            conf_system.repository_dir_base,
+                                            system_config.repository_dir_base,
                                             "media",
                                             "tmp",
                                             "fb_barplot.png",
@@ -464,16 +478,16 @@ class AcquisitionSystemController:
 
                 if self.state_dict["trial_completed"] and self.adaptation_available_new:
                     # overwrite w and b with new set.
-                    conf_system.adaptation_clf.apply_adaptation()
+                    classifier_config.adaptation_clf.apply_adaptation()
                     logger.info("classifier was updated.")
                     pandas_save_utility.add(
                         data=[
                             [
-                                conf_system.adaptation_clf.coef_,
-                                conf_system.adaptation_clf.intercept_,
-                                conf_system.adaptation_clf.cl_mean,
-                                conf_system.adaptation_clf.C_inv,
-                                conf_system.adaptation_clf.classes_,
+                                classifier_config.adaptation_clf.coef_,
+                                classifier_config.adaptation_clf.intercept_,
+                                classifier_config.adaptation_clf.cl_mean,
+                                classifier_config.adaptation_clf.C_inv,
+                                classifier_config.adaptation_clf.classes_,
                                 datetime.datetime.now().strftime(
                                     "%y/%m/%d-%H:%M:%S"
                                 ),
@@ -500,13 +514,13 @@ class AcquisitionSystemController:
                 # logger.error(str(sys.exc_info()))
                 # logger.info(sys.exc_info()[1])
                 # logger.info("Error : " + sys.exc_info()[0])
-        self.acq.stop()
+        self.online_data_acquisitioner.stop()
 
 
     def _prepare_panda_save_util_for_adaptation() -> PandasSaveUtility:
         calibration_dir = os.path.join(
-                conf_system.data_dir,
-                conf_system.save_folder_name,
+                system_config.data_dir,
+                system_config.save_folder_name,
                 "calibration",
             )
         
@@ -521,11 +535,11 @@ class AcquisitionSystemController:
         pandas_save_utility.add(
             data=[
                 [
-                    conf_system.adaptation_clf.coef_,
-                    conf_system.adaptation_clf.intercept_,
-                    conf_system.adaptation_clf.cl_mean,
-                    conf_system.adaptation_clf.C_inv,
-                    conf_system.adaptation_clf.classes_,
+                    classifier_config.adaptation_clf.coef_,
+                    classifier_config.adaptation_clf.intercept_,
+                    classifier_config.adaptation_clf.cl_mean,
+                    classifier_config.adaptation_clf.C_inv,
+                    classifier_config.adaptation_clf.classes_,
                     datetime.datetime.now().strftime("%y/%m/%d-%H:%M:%S"),
                 ]
             ],
@@ -545,7 +559,7 @@ class AcquisitionSystemController:
             self.live_barplot_state_dict["mean_classificaiton_values"][m] = 0
 
         fb_barplot_path = os.path.join(
-            conf_system.repository_dir_base,
+            system_config.repository_dir_base,
             "media",
             "tmp",
             "fb_barplot.png",
@@ -569,7 +583,7 @@ class AcquisitionSystemController:
     def _plot_and_save_feedback_figure(clf_out_mean:list[float], barplot_colors:list[str]):
         fig_feedback = plt.figure(num=2)
         plt.bar(
-            conf.words, clf_out_mean, color=barplot_colors
+            config.words, clf_out_mean, color=barplot_colors
         )
         plt.tick_params(
             left=False,
@@ -578,7 +592,7 @@ class AcquisitionSystemController:
         )
         fig_feedback.savefig(
             os.path.join(
-                conf_system.repository_dir_base,
+                system_config.repository_dir_base,
                 "media",
                 "tmp",
                 "fb_barplot.png",
@@ -590,22 +604,23 @@ class AcquisitionSystemController:
 
 if __name__ == "__main__":
     print('Testing AcquisitionSystemController')
-    clfh = ClassifierFactory(n_channels=conf_system.n_ch)
-    clf = clfh.get_model()
+    classifier_factory = system_config.ClassificationPipelineClass(n_channels=classifier_config.n_channels)
+    classifier = classifier_factory.get_model()
 
-    testdict = dict(markers=conf_system.markers,
-        tmin=conf_system.tmin,
-        tmax=conf_system.tmax,
-        baseline=conf_system.baseline,
-        filter_freq=conf_system.filter_freq,
-        filter_order=conf_system.filter_order,
-        clf=clf,
-        ivals=conf_system.ivals,
-        n_class=conf_system.n_class,
-        adaptation=conf_system.adaptation,
-        dynamic_stopping=conf_system.dynamic_stopping,
-        dynamic_stopping_params=conf_system.dynamic_stopping_params,
-        max_n_stims=conf_system.n_stimulus)
+    testdict = dict(
+        markers=system_config.markers,
+        tmin=classifier_config.tmin,
+        tmax=classifier_config.tmax,
+        baseline=classifier_config.baseline,
+        filter_freq=classifier_config.filter_freq,
+        filter_order=classifier_config.filter_order,
+        clf=classifier,
+        ivals=classifier_config.ivals,
+        n_class=classifier_config.n_class,
+        adaptation=classifier_config.adaptation,
+        dynamic_stopping=classifier_config.dynamic_stopping,
+        dynamic_stopping_params=classifier_config.dynamic_stopping_params,
+        max_n_stims=classifier_config.n_stimulus)
     
     for k,v in testdict.items():
         print(k, v)

@@ -7,7 +7,7 @@ import numpy as np
 from pylsl import StreamInlet, resolve_stream
 import src.acquisition.epoch_container as epoch_container
 import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
-import src.fmt_converter as fmt_converter
+import src.config.system_config as system_config
 
 ENABLE_STREAM_INLET_RECOVER = False
 FILTER_ORDER = 2
@@ -114,14 +114,16 @@ def main():
     marker_inlet = StreamInlet(marker_stream[0], recover=ENABLE_STREAM_INLET_RECOVER)
 
     epochs = epoch_container.EpochContainer(n_channels, sample_freq, MARKERS_TO_EPOCH, EPOCH_T_MIN, EPOCH_T_MAX, EPOCH_BASELINE)
+    
+    formatting_client = system_config.FormattingClient()
     acq = OnlineDataAcquire.OnlineDataAcquire(
                             epochs,
                             eeg_inlet,
                             marker_inlet,
                             n_channels,
                             sample_freq,
-                            fmt_converter.eeg_format_convert,
-                            fmt_converter.marker_format_convert,
+                            formatting_client.eeg_format_convert,
+                            formatting_client.marker_format_convert,
                             filter_freq=FILTER_FREQ,
                             filter_order=FILTER_ORDER,
                             new_trial_markers=markers['new-trial'])

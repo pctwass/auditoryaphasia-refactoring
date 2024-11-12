@@ -1,10 +1,11 @@
 import json
 import logging
 
-import config.conf_system as conf_system
+import src.config.system_config as system_config
+import src.config.classifier_config as classifier_config
 import src.process_management.intermodule_communication as intermodule_comm
 
-from src.classifier import ClassifierFactory
+from src.config.config_builder import build_configs
 from src.acquisition.AcquisitionSystemController import AcquisitionSystemController
 from src.process_management.state_dictionaries import *
 
@@ -24,6 +25,9 @@ def interface(
     # name_main_outlet : name of main module's outlet. This module will find the main module with this name.
     #
 
+    # Because the interface is spawned as the target of a new process, we need to load the config into memory again
+    build_configs()
+
     if state_dict == None:
         state_dict = init_acquisition_state_dict()
 
@@ -34,7 +38,8 @@ def interface(
     # print('LSL connected, Acquisition Controller Module')
     state_dict["LSL_inlet_connected"] = True
 
-    asc = None
+    acquisition_local_client = None
+    acquisition_sys_controller = None
 
     while True:
         data, _ = inlet.pull_sample(timeout=0.01)
@@ -47,23 +52,30 @@ def interface(
                     )
                     # ------------------------------------
                     # command
-                    if data[2].lower() == "start_recording":
-                        f_dir = json.loads(data[3])
-                        conf_system.start_recording(f_dir)
-                    elif data[2].lower() == "init_recorder":
+                    if data[2].lower() == "init_recorder":
                         params["init_recorder"] = json.loads(data[3])
-                        conf_system.initialize_recorder(
-                            params["init_recorder"]
+                        acquisition_local_client = system_config.RecorderClient(
+                            logger=logger,
+                            params=params["init_recorder"]
                         )
+                        
+                    elif data[2].lower() == "start_recording":
+                        f_dir = json.loads(data[3])
+                        acquisition_local_client.start_recording(f_dir)
+
                     elif data[2].lower() == "stop_recording":
-                        conf_system.stop_recording()
-                    elif data[2].lower() == "start_calibration":
-                        asc.calibration(params)
-                        state_dict["trial_completed"] = True
+                        acquisition_local_client.stop_recording()
+
                     elif data[2].lower() == "init":
-                        asc = init_acquisition(state_dict, live_barplot_state_dict)
+                        acquisition_sys_controller = init_acquisition(state_dict, live_barplot_state_dict)
+
+                    elif data[2].lower() == "start_calibration":
+                        acquisition_sys_controller.calibration(params)
+                        state_dict["trial_completed"] = True
+
                     elif data[2].lower() == "start":
-                        asc.main()
+                        acquisition_sys_controller.main()
+
                     else:
                         raise ValueError("Unknown command was received.")
                     # modify here to add new commands
@@ -83,25 +95,25 @@ def interface(
                 
 
 def init_acquisition(state_dict:dict[str,any], live_barplot_state_dict : dict[str,any]):
-    classifier_factory = ClassifierFactory(n_channels=conf_system.n_ch)
-    classifier = classifier_factory.getmodel()
+    classification_pipeline = system_config.ClassificationPipelineClass(n_channels=classifier_config.n_channels)
+    classifier = classification_pipeline.getmodel()
 
-    asc = AcquisitionSystemController(
+    acquisition_sys_controller = AcquisitionSystemController(
         state_dict=state_dict,
         live_barplot_state_dict=live_barplot_state_dict,
         clf=classifier,
-        markers=conf_system.markers,
-        tmin=conf_system.tmin,
-        tmax=conf_system.tmax,
-        baseline=conf_system.baseline,
-        filter_freq=conf_system.filter_freq,
-        filter_order=conf_system.filter_order,
-        ivals=conf_system.ivals,
-        n_class=conf_system.n_class,
-        adaptation=conf_system.adaptation,
-        dynamic_stopping=conf_system.dynamic_stopping,
-        dynamic_stopping_params=conf_system.dynamic_stopping_params,
-        max_n_stims=conf_system.n_stimulus,
+        markers=system_config.markers,
+        tmin=classifier_config.tmin,
+        tmax=classifier_config.tmax,
+        baseline=classifier_config.baseline,
+        filter_freq=classifier_config.filter_freq,
+        filter_order=classifier_config.filter_order,
+        ivals=classifier_config.ivals,
+        n_class=classifier_config.n_class,
+        adaptation=classifier_config.adaptation,
+        dynamic_stopping=classifier_config.dynamic_stopping,
+        dynamic_stopping_params=classifier_config.dynamic_stopping_params,
+        max_n_stims=classifier_config.n_stimulus,
     )
 
-    return asc
+    return acquisition_sys_controller
