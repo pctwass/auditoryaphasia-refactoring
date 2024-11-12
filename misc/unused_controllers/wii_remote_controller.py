@@ -112,7 +112,7 @@ def start(params, outlet=None):
             wii.set_LSL(outlet, press = params['lsl_press'], release = params['lsl_release'])
         wii.start()
 
-def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, array=None):
+def interface(name:str, state_dict:dict[str,any], name_main_outlet:str='main'):
     # ==============================================
     # This function is called from main module.
     # It opens LSL and communicate with main module.
@@ -122,7 +122,7 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, arr
     #        This name will be given by main module.
     # name_main_outlet : name of main module's outlet. This module will find the main module with this name.
     #
-    # array : instance of multiprocessing.Array, shared with parent module. length of array should be 16.
+    # state_dict : instance of multiprocessing.Manager.dict, shared with parent module.
 
     print(name)
     print(name_main_outlet)

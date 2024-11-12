@@ -5,7 +5,7 @@ import mne
 #import numpy as np
 from pylsl import StreamInlet, resolve_stream
 import src.acquisition.epoch_container as epoch_container
-import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
+import acquisition.online_data_acquire as online_data_acquire
 import src.config.system_config as system_config
 
 home_dir = os.path.expanduser('~')
@@ -82,7 +82,7 @@ def main():
                             EPOCH_T_MAX,
                             EPOCH_BASELINE)
 
-    acq = OnlineDataAcquire.OnlineDataAcquire(
+    acq = online_data_acquire.OnlineDataAcquire(
                             epochs,
                             eeg_inlet,
                             marker_inlet,

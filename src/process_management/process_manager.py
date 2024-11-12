@@ -1,8 +1,8 @@
 import multiprocessing
 import multiprocessing.process
 
-import src.audio_stimulation.AudioStimulationInterface as AudioStimulationInterface
-import src.visual_feedback.VisualFeedbackInterface as VisualFeedbackInterface
+import audio_stimulation.audio_stimulation_interface as audio_stimulation_interface
+import visual_feedback.visual_feedback_interface as visual_feedback_interface
 import src.acquisition.acquisition_interface as AcquisitionSystemInterface
 
 from src.process_management.state_dictionaries import *
@@ -26,7 +26,7 @@ class ProcessManager:
         else:
             kwargs['state_dict'] = audio_stim_state_dict
 
-        audio_process = multiprocessing.Process(target=AudioStimulationInterface.interface, kwargs=kwargs)
+        audio_process = multiprocessing.Process(target=audio_stimulation_interface.interface, kwargs=kwargs)
         return audio_process, audio_stim_state_dict
 
 
@@ -38,7 +38,7 @@ class ProcessManager:
         else:
             kwargs['state_dict'] = visual_fb_state_dict
 
-        visual_fb_process = multiprocessing.Process(target=VisualFeedbackInterface.interface, kwargs=kwargs)
+        visual_fb_process = multiprocessing.Process(target=visual_feedback_interface.interface, kwargs=kwargs)
         return visual_fb_process, visual_fb_state_dict
 
 

@@ -9,7 +9,7 @@ from src.logging.logger import get_logger
 logger = get_logger()
 
 from src.config.config_builder import build_configs
-from src.visual_feedback.VisualFeedbackController import VisualFeedbackController
+from visual_feedback.visual_feedback_controller import VisualFeedbackController
 
 
 def interface(name:str, name_main_outlet:str='main', state_dict:str=None):

@@ -3,7 +3,10 @@ import json
 import src.process_management.intermodule_communication as intermodule_comm
 import src.HIDController as HIDController
 
-def interface(name, name_main_outlet='main', log_file=True, log_stdout=True):
+from src.logging.logger import get_logger
+logger = get_logger()
+
+def interface(name:str, state_dict:dict[str,any], name_main_outlet:str='main'):
     # ==============================================
     # This function is called from main module.
     # It opens LSL and communicate with main module.

@@ -22,7 +22,7 @@ import src.config.classifier_config as classifier_config
 import src.common.utils as utils
 import src.common.LSL_streaming as streaming
 import src.acquisition.epoch_container as epoch_container
-import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
+import acquisition.online_data_acquire as online_data_acquire
 
 from src.common.pandas_save_utility import PandasSaveUtility
 from src.acquisition.acquisition_streaming_outlet_manager import AcquisitionStreamingOutletManager
@@ -94,7 +94,7 @@ class AcquisitionSystemController:
         )
 
         formatting_client = system_config.FormattingClient()
-        self.online_data_acquisitioner = OnlineDataAcquire.OnlineDataAcquire(
+        self.online_data_acquisitioner = online_data_acquire.OnlineDataAcquire(
             self.epochs,
             self.eeg_inlet,
             self.marker_inlet,

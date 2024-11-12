@@ -6,7 +6,7 @@ import src.config.system_config as system_config
 import src.process_management.intermodule_communication as intermodule_comm
 
 from src.config.config_builder import build_configs
-from src.audio_stimulation.AudioStimulationController import AudioStimulationController
+from audio_stimulation.audio_stimulation_controller import AudioStimulationController
 from src.process_management.state_dictionaries import *
 from src.process_management.process_communication_enums import *
 
