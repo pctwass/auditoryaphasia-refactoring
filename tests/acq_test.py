@@ -6,7 +6,6 @@ import mne
 from pylsl import StreamInlet, resolve_stream
 import src.acquisition.epoch_container as epoch_container
 import src.acquisition.OnlineDataAcquire as OnlineDataAcquire
-import src.fmt_converter as fmt_converter
 import src.config.system_config as system_config
 
 home_dir = os.path.expanduser('~')
