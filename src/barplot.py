@@ -1,10 +1,6 @@
 import time
 import matplotlib.pyplot as plt
 
-# Because run_barplot is spawned as the target of a new process, we need to load the config into memory again
-from src.config.config_builder import build_configs
-build_configs()
-
 
 def run_barplot(state_dict : dict[str, any], words : enumerate[str]):
     plt.ion()

@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 temp/logging/*.log
 config/*dev.json
+config/conf_selector.py

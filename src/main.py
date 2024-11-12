@@ -1,9 +1,6 @@
-import src.config.config_builder as config_builder
-config_builder.build_configs()
+from src.config.config_builder import build_configs
+build_configs()
 
-import src.config.config as config
-import src.config.system_config as system_config
-import src.config.classifier_config as classifier_config
 from src.main_processes.main_online import main as main_online
 from src.main_processes.main_offline import main as main_offline
 from src.main_processes.familiarization import main as main_familiarization
@@ -22,23 +19,23 @@ def main():
     print('--------------------------------------------------------')
     
     while True:
-        main_process_selected = int(input())
+        main_process_selected = input()
 
         match main_process_selected:
-            case 0: return
-            case 1: 
+            case '0': return
+            case '1': 
                 print("Starting AMUSE online...")
                 main_online()
-            case 2: 
+            case '2': 
                 print("Starting AMUSE offline...")
                 main_offline()
-            case 3: 
+            case '3': 
                 print("Starting familarization...")
                 main_familiarization()
-            case 4: 
+            case '4': 
                 print("Starting analysis...")
                 main_analysis()
-            case 5: 
+            case '5': 
                 print("Starting setup testing...")
                 main_setup_testing()
             case _: 

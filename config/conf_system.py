@@ -3,7 +3,6 @@ import sys
 import datetime
 from pathlib import Path
 import json # for loading conf variables
-from psychopy import core, gui
 
 import logging
 logger = logging.getLogger(__name__)
@@ -19,8 +18,7 @@ computer_name = socket.gethostname().lower()
 # General
 
 repository_dir_base = Path(os.path.abspath(__file__)).parents[1]
-# data_dir = os.path.join('D:/', 'home', 'bbci')
-data_dir = "c:\\Users\\peter\\Desktop\\Aphasia test data"
+data_dir = os.path.join('D:/', 'home', 'bbci')
 
 sys.path.append(repository_dir_base)
 

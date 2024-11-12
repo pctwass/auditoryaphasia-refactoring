@@ -1,10 +1,6 @@
 import json
 import time
 
-# Because the interface is spawned as the target of a new process, we need to load the config into memory again
-from src.config.config_builder import build_configs
-build_configs()
-
 import src.config.config as config
 import src.config.system_config as system_config
 import src.process_management.intermodule_communication as intermodule_comm
@@ -12,6 +8,7 @@ import src.process_management.intermodule_communication as intermodule_comm
 import logging
 logger = logging.getLogger(__name__)
 
+from src.config.config_builder import build_configs
 from src.visual_feedback.VisualFeedbackController import VisualFeedbackController
 
 
@@ -25,6 +22,9 @@ def interface(name:str, name_main_outlet:str='main', state_dict:str=None):
     #        This name will be given by main module.
     # name_main_outlet : name of main module's outlet. This module will find the main module with this name.
     #
+
+    # Because the interface is spawned as the target of a new process, we need to load the config into memory again
+    build_configs()
 
     state_dict["LSL_inlet_connected"] = False
 
