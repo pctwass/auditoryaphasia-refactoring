@@ -3,7 +3,7 @@ import json
 import src.process_management.intermodule_communication as intermodule_comm
 
 
-def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, share=None):
+def interface(name:str, state_dict:dict[str,any], name_main_outlet:str='main'):
     # ==============================================
     # This function is called from main module.
     # It opens LSL and communicate with main module.
@@ -13,7 +13,7 @@ def interface(name, name_main_outlet='main', log_file=True, log_stdout=True, sha
     #        This name will be given by main module.
     # name_main_outlet : name of main module's outlet. This module will find the main module with this name.
     #
-    # share : instance of multiprocessing.Array, shared with parent module.
+    # state_dict : instance of multiprocessing.Manager.dict, shared with parent module.
 
     inlet = intermodule_comm.get_intermodule_communication_inlet(name_main_outlet)
     print('LSL connected, %s' %name)

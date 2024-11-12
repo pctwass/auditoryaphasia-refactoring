@@ -6,7 +6,7 @@ import src.config.classifier_config as classifier_config
 import src.process_management.intermodule_communication as intermodule_comm
 
 from src.config.config_builder import build_configs
-from src.acquisition.AcquisitionSystemController import AcquisitionSystemController
+from acquisition.acquisition_system_controller import AcquisitionSystemController
 from src.process_management.state_dictionaries import *
 
 logger = get_logger()
