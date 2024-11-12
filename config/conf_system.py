@@ -4,8 +4,8 @@ import datetime
 from pathlib import Path
 import json # for loading conf variables
 
-import logging
-logger = logging.getLogger(__name__)
+from src.logging.logger import get_logger
+logger = get_logger()
 
 import config.conf_selector
 import config.conf_selector as conf_selector

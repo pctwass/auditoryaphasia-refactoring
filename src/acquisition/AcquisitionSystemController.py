@@ -5,7 +5,7 @@ import matplotlib
 import mne
 import numpy as np
 import pylsl
-import logging
+from src.logging.logger import get_logger
 
 from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
@@ -29,7 +29,7 @@ from src.acquisition.acquisition_streaming_outlet_manager import AcquisitionStre
 from src.process_management.state_dictionaries import *
 from src.process_management.process_communication_enums import *
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class AcquisitionSystemController:

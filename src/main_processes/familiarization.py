@@ -17,8 +17,8 @@ from src.process_management.state_dictionaries import init_audio_state_dict
 from src.plans.audio_plan import generate_audio_plan
 from src.plans.stimulation_plan import generate_stimulation_plan
 
-import logging
-logger = logging.getLogger(__name__)
+from src.logging.logger import get_logger
+logger = get_logger()
 
 
 def gen_plan_play_oddball(

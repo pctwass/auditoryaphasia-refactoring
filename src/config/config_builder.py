@@ -13,8 +13,6 @@ import src.config.config as config
 import src.config.system_config as system_config
 import src.config.classifier_config as classifier_config
 
-import logging
-logger = logging.getLogger(__name__)
 
 repository_dir_base = Path(os.path.abspath(__file__)).parents[2]
 
@@ -111,6 +109,14 @@ def build_system_config(config_file_path : str):
     # Dareplane
     system_config.dareplane_api_ip = config_json_dict.get('dareplane_api_ip')
     system_config.dareplane_api_port = config_json_dict.get('dareplane_api_port')
+
+    # Logging
+    system_config.logger_name = config_json_dict.get('logger_name')
+    system_config.log_level_default = config_json_dict.get('log_level_default')
+    system_config.log_to_stdout = config_json_dict.get('log_to_stdout')
+    system_config.log_level_stdout = config_json_dict.get('log_level_stdout')
+    system_config.log_to_file = config_json_dict.get('log_to_file')
+    system_config.log_level_file = config_json_dict.get('log_level_file')
 
     # Marker
     system_config.MarkerClient = import_client_class(config_json_dict.get('marker_client_class'))

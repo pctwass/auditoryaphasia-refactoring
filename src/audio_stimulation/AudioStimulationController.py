@@ -1,11 +1,11 @@
-import logging
-logger = logging.getLogger(__name__)
+from src.logging.logger import get_logger
+logger = get_logger()
 
 import src.config.system_config as system_config
 import pyscab
 
 from src.process_management.process_communication_enums import AudioStatus
-
+from src.audio_stimulation.pyscab_stimulation_controller import PyscabStimulationController
 
 class AudioStimulationController(object):
 
@@ -25,7 +25,7 @@ class AudioStimulationController(object):
         self.marker = system_config.MarkerClient()
         self.marker.open()
              
-        self.psycab_stim_controller = pyscab.StimulationController(self.audio_device_interface, 
+        self.psycab_stim_controller = PyscabStimulationController(self.audio_device_interface, 
                                                 marker_send=self.marker.sendMarker,
                                                 correct_latency = system_config.correct_sw_latency,
                                                 correct_hardware_buffer = system_config.correct_hw_latency,

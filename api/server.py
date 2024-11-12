@@ -1,10 +1,12 @@
 from fire import Fire
-
-import config.temp_new_conf as temp_new_config
-
 from dareplane_utils.default_server.server import DefaultServer
-from dareplane_utils.logging.logger import get_logger
 
+from src.config.config_builder import build_configs
+build_configs()
+
+import src.config.system_config as system_config
+
+from src.logging.logger import get_logger
 from src.main_processes.main_online import main as main_online
 from src.main_processes.main_offline import main as main_offline
 from src.main_processes.familiarization import main as main_familiarization
@@ -13,13 +15,13 @@ from src.main_processes.setup_testing import main as main_setup_testing
 
 
 def main(port: int = None, ip: str = None, loglevel: int = 10):
-    logger = get_logger("AuditoryAphasia")
+    logger = get_logger()
     logger.setLevel(loglevel)
 
     if ip is None:
-        ip = temp_new_config.dareplane_api_ip
+        ip = system_config.dareplane_api_ip
     if port is None:
-        port = temp_new_config.dareplane_api_port
+        port = system_config.dareplane_api_port
 
     pcommand_map = {
         "START ONLINE": main_online,

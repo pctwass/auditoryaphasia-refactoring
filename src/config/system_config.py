@@ -6,7 +6,6 @@ computer_name : str
 data_dir : str
 datestr : str
 save_folder_name : str
-log_file_name : str
 file_name_prefix : str
 
 number_of_words : int
@@ -34,6 +33,18 @@ misc_channels : list[str]
 # Dareplane
 dareplane_api_ip : str = "127.0.0.1"
 dareplane_api_port : int = 8001 
+
+# ------------------------------------------------------------------------
+# Logging
+logger_name : str = "auditoryaphasia"
+log_level_default : str = "info"
+
+log_to_stdout : bool = False
+log_level_stdout : str = "info"
+
+log_to_file : bool = False
+log_level_file : str = "debug"
+log_file_name : str
 
 # ------------------------------------------------------------------------
 # Marker

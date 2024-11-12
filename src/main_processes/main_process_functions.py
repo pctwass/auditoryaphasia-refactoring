@@ -15,11 +15,8 @@ import src.process_management.intermodule_communication as intermodule_comm
 
 from src.process_management.process_manager import ProcessManager
 
-import logging
-logger = logging.getLogger(__name__)
-
-import src.logging.logger as custom_logger
-custom_logger.set_logger(file = True, stdout = True, level_file = 'debug', level_stdout = 'info')
+from src.logging.logger import get_logger
+logger = get_logger()
 
 
 def generate_meta_file(session_type:str):

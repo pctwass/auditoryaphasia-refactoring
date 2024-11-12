@@ -2,8 +2,8 @@ import numpy as np
 
 from src.common.LSL_data_chunk import LSLDataStruct
 
-import logging
-logger = logging.getLogger(__name__)
+from src.logging.logger import get_logger
+logger = get_logger()
 
 
 class EpochContainer():

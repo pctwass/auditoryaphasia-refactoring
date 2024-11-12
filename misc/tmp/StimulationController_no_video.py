@@ -1,4 +1,4 @@
-import logging
+from src.logging.logger import get_logger
 import argparse
 import pyscab
 import pyencoder

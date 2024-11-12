@@ -31,7 +31,15 @@
 
 
     "dareplane_api_ip" : "127.0.0.1",
-    "dareplane_api_port" : 8001, 
+    "dareplane_api_port" : 8001,
+    
+
+    "logger_name" : "auditoryaphasia",
+    "log_level_default" : "info",
+    "log_to_stdout" : false,
+    "log_level_stdout" : "info",
+    "log_to_file" : true,
+    "log_level_file" : "debug" ,
 
 
     "marker_client_class" : "clients.marker.button_box_bic_marker_client:ButtonBoxBciMarkerClient",
