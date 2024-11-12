@@ -27,7 +27,7 @@ def generate_meta_file(session_type:str):
         json.dump(meta, f, indent=4)
 
 
-def create_and_start_subprocesses() -> tuple[multiprocessing.Process, multiprocessing.Process, multiprocessing.Process, multiprocessing.Process, dict[str, any], dict[str, any], dict[str, any]]:
+def create_and_start_subprocesses() -> tuple[multiprocessing.Process, multiprocessing.Process, multiprocessing.Process, multiprocessing.Process, dict[str, any], dict[str, any], dict[str, any], dict[str, any]]:
     # create process manager
     process_manager = ProcessManager()
 
@@ -46,13 +46,13 @@ def create_and_start_subprocesses() -> tuple[multiprocessing.Process, multiproce
     # open AcquisitionSystemController as a new Process
     kwargs_acquisition=dict(name='acq', name_main_outlet='main')
     kwargs_live_barplot=dict(words=config.words)
-    acquisition_process, acquisition_state_dict, live_barplot_process = process_manager.create_acquisition_process(num_classes=classifier_config.n_class, kwargs=kwargs_acquisition, kwargs_live_barplot=kwargs_live_barplot)
+    acquisition_process, acquisition_state_dict, live_barplot_process, live_barplot_state_dict = process_manager.create_acquisition_process(num_classes=classifier_config.n_class, kwargs=kwargs_acquisition, kwargs_live_barplot=kwargs_live_barplot)
     acquisition_process.start()
     live_barplot_process.start()
     while acquisition_state_dict["LSL_inlet_connected"] is False:
         time.sleep(0.1) # wait until module is connected
 
-    return audio_stim_process, visual_fb_process, acquisition_process, live_barplot_process, audio_stim_state_dict, visual_fb_state_dict, acquisition_state_dict
+    return audio_stim_process, visual_fb_process, acquisition_process, live_barplot_process, audio_stim_state_dict, visual_fb_state_dict, acquisition_state_dict, live_barplot_state_dict
 
 
 def open_audio_device(

@@ -6,6 +6,11 @@ def run_barplot(state_dict : dict[str, any], words : enumerate[str]):
     plt.ion()
     fig = plt.figure(1)
     n_classes = len(words)
+
+    print(f"barplot dict: {state_dict}")
+    print(f"barplot dict keys: {state_dict.keys()}")
+    print(f"barplot dict values: {state_dict.values()}")
+
     
     while True:
         if state_dict["display_barplot"]:

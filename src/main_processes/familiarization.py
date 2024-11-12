@@ -336,7 +336,7 @@ def main():
             audio_state_dict["audio_status"] = AudioStatus.FINISHED_PLAYING
             if familirization_args.visual:
                 visual_process.terminate()
-            sys.exit()
+            return
 
         except ValueError:
             print("ERROR : input value was invailed.")
@@ -349,4 +349,4 @@ def main():
     audio_state_dict["audio_status"] = AudioStatus.FINISHED_PLAYING
     if familirization_args.visual:
         visual_process.terminate()
-    sys.exit()
+    
