@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 
 import mne
 import numpy as np
@@ -201,9 +202,6 @@ def classify_erp(
     baseline=None,
     resample=250,
 ):
-
-    import json
-
     extension = "vhdr"
 
     session, conditions, soas = session_parser(
