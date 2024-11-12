@@ -6,8 +6,8 @@ import src.config.system_config as system_config
 import src.common.utils as utils
 import src.process_management.intermodule_communication as intermodule_comm
 
-import logging
-logger = logging.getLogger(__name__)
+from src.logging.logger import get_logger
+logger = get_logger()
 
 
 def run_eyes_open_close(outlet, pre_or_post):

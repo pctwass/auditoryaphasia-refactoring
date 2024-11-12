@@ -2,8 +2,8 @@ import os
 import time
 import pyscab
 
-import logging
-logger = logging.getLogger(__name__)
+from src.logging.logger import get_logger
+logger = get_logger()
 
 import src.config.config as config
 import src.config.system_config as system_config

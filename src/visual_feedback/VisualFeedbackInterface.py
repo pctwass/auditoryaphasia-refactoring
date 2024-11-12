@@ -5,8 +5,8 @@ import src.config.config as config
 import src.config.system_config as system_config
 import src.process_management.intermodule_communication as intermodule_comm
 
-import logging
-logger = logging.getLogger(__name__)
+from src.logging.logger import get_logger
+logger = get_logger()
 
 from src.config.config_builder import build_configs
 from src.visual_feedback.VisualFeedbackController import VisualFeedbackController

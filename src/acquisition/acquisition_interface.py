@@ -1,5 +1,5 @@
 import json
-import logging
+from src.logging.logger import get_logger
 
 import src.config.system_config as system_config
 import src.config.classifier_config as classifier_config
@@ -9,7 +9,7 @@ from src.config.config_builder import build_configs
 from src.acquisition.AcquisitionSystemController import AcquisitionSystemController
 from src.process_management.state_dictionaries import *
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def interface(

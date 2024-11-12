@@ -22,8 +22,8 @@ from src.plans.run_plan import generate_run_plan
 from src.plans.trial_plan import generate_trial_plan
 from src.plans.feedback_plan import generate_feedback_plan
 
-import logging
-logger = logging.getLogger(__name__)
+from src.logging.logger import get_logger
+logger = get_logger()
 
 
 def main():

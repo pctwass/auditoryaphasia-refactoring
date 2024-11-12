@@ -1,5 +1,5 @@
 import sys
-import logging
+from src.logging.logger import get_logger
 import json
 
 import src.config.system_config as system_config
@@ -10,7 +10,7 @@ from src.audio_stimulation.AudioStimulationController import AudioStimulationCon
 from src.process_management.state_dictionaries import *
 from src.process_management.process_communication_enums import *
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def interface(name:str, name_main_outlet:str='main', state_dict:dict[str,any]=None):

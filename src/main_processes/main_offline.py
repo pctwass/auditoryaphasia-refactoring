@@ -21,8 +21,8 @@ from src.plans.trial_plan import generate_trial_plan
 # from src.common.utils import *
 
 # conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
-import logging
-logger = logging.getLogger(__name__)
+from src.logging.logger import get_logger
+logger = get_logger()
 
 
 def main():

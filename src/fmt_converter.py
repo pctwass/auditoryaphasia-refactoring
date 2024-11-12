@@ -1,6 +1,6 @@
 import numpy as np
-import logging
-logger = logging.getLogger(__name__)
+from src.logging.logger import get_logger
+logger = get_logger()
 
 def n_ch_convert(n_ch):
    n_ch = n_ch -1
