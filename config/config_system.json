@@ -42,7 +42,7 @@
     "log_level_file" : "debug" ,
 
 
-    "marker_client_class" : "clients.marker.button_box_bic_marker_client:ButtonBoxBciMarkerClient",
+    "marker_client_class" : "clients.marker.button_box_bci_marker_client:ButtonBoxBciMarkerClient",
     "markers" : 
     {
         "target" : [111,112,113,114,115,116],

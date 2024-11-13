@@ -58,7 +58,7 @@ dareplane_api_port : int = 8001
 
 # ------------------------------------------------------------------------
 # Marker
-from clients.marker.button_box_bic_marker_client import ButtonBoxBciMarkerClient
+from clients.marker.button_box_bci_marker_client import ButtonBoxBciMarkerClient
 MarkerClient = ButtonBoxBciMarkerClient
 
 markers = dict()
