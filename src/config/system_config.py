@@ -60,7 +60,7 @@ enable_stream_inlet_recover : bool
 audio_files_dir_base : str
 
 n_channels : int
-device_name : str
+audio_device_name : str
 
 format : str
 frames_per_buffer : int

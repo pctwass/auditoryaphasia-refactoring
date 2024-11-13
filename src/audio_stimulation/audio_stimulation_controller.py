@@ -17,7 +17,7 @@ class AudioStimulationController(object):
 
 
     def open(self):
-        self.audio_device_interface = pyscab.AudioInterface(device_name = system_config.device_name,
+        self.audio_device_interface = pyscab.AudioInterface(device_name = system_config.audio_device_name,
                                         n_ch = system_config.n_channels,
                                         format=system_config.format,
                                         frames_per_buffer = system_config.frames_per_buffer)

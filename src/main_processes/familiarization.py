@@ -246,7 +246,7 @@ def main():
     audio_state_dict = init_audio_state_dict()
 
     pyscab_audio_interface = pyscab.AudioInterface(
-        device_name = system_config.device_name,
+        device_name = system_config.audio_device_name,
         n_ch = system_config.n_channels,
         format=system_config.format,
         frames_per_buffer = system_config.frames_per_buffer

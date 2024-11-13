@@ -55,7 +55,7 @@
 
 
     "n_channels" : 8,
-    "device_name" : "X-AIR ASIO Driver",
+    "audio_device_name" : "X-AIR ASIO Driver",
     "format" : "INT16",
     "frames_per_buffer" : 512,
     "correct_sw_latency" : true,

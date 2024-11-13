@@ -99,7 +99,7 @@ def main():
     base_dir = os.path.join(system_config.audio_files_dir_base)
 
     #DEVICE_NAME = 'X-AIR ASIO Driver'
-    ahc = pyscab.AudioInterface(device_name = system_config.device_name, n_ch = system_config.n_channels, format=system_config.format, frames_per_buffer = system_config.frames_per_buffer)
+    ahc = pyscab.AudioInterface(device_name = system_config.audio_device_name, n_ch = system_config.n_channels, format=system_config.format, frames_per_buffer = system_config.frames_per_buffer)
     stc = pyscab.StimulationController(ahc, marker_send=sendMarker)
     stc.open()
 

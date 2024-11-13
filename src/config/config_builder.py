@@ -130,7 +130,7 @@ def build_system_config(config_file_path : str):
         system_config.audio_files_dir_base = os.path.join(repository_dir_base, config_json_dict.get('audio_files_dir_base'), config.language)
     else: system_config.audio_files_dir_base = None
     system_config.n_channels = config_json_dict.get('n_channels')
-    system_config.device_name = config_json_dict.get('device_name')
+    system_config.audio_device_name = config_json_dict.get('audio_device_name')
     system_config.format = config_json_dict.get('format')
     system_config.frames_per_buffer = config_json_dict.get('frames_per_buffer')
     system_config.correct_sw_latency = config_json_dict.get('correct_sw_latency')
