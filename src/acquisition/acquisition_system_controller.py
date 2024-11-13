@@ -134,9 +134,11 @@ class AcquisitionSystemController:
 
         logger.info("looking for an EEG stream...")
         
-        self.eeg_stream, self.eeg_inlet = streaming.resolve_stream(
-            system_config.eeg_acquisition_stream_name,
-            system_config.eeg_acquisition_stream_type
+        self.eeg_stream, self.eeg_inlet = streaming.init_LSL_inlet(
+            stream_name = system_config.eeg_acquisition_stream_name,
+            stream_type = system_config.eeg_acquisition_stream_type,
+            await_stream = True,
+            timeout = system_config.stream_await_timeout_ms
         )
 
         self.sampling_freq = self.eeg_stream[0].nominal_srate()
@@ -151,10 +153,11 @@ class AcquisitionSystemController:
 
         logger.info("looking for a marker stream...")
         self.marker_stream, self.marker_inlet = streaming.init_LSL_inlet(
-            system_config.marker_acquisition_stream_name,
-            system_config.marker_acquisition_stream_type,
+            stream_name = system_config.marker_acquisition_stream_name,
+            stream_type = system_config.marker_acquisition_stream_type,
+            stream_name_keyword = system_config.marker_stream_name_keyword,
             await_stream = True,
-            timeout = system_config.marker_stream_await_timeout_ms
+            timeout = system_config.stream_await_timeout_ms
         )
         logger.info("Configuration Done.")
 

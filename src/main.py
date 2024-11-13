@@ -19,7 +19,7 @@ def main():
     print('--------------------------------------------------------')
     
     while True:
-        main_process_selected = input()
+        main_process_selected = input().strip()
 
         match main_process_selected:
             case '0': return

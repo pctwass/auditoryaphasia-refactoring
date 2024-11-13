@@ -80,13 +80,13 @@
 
     "rda_lsl_dir" : "lsl/BrainVisionRDA_x64/BrainVisionRDA.exe",
     "rda_lsl_config_dir" : "lsl/BrainVisionRDA_x64/brainvision_config.cfg",
-    "marker_stream_keyword" : "RDA",
+    "stream_await_timeout_ms" : 1000,
 
     "eeg_acquisition_stream_name" : "eeg_stream",
     "eeg_acquisition_stream_type" : "eeg",
     "marker_acquisition_stream_name" : "marker_stream",
     "marker_acquisition_stream_type" : "markers",
-    "marker_stream_await_timeout_ms" : 1000
+    "marker_stream_name_keyword" : "RDA"
 }
 
 

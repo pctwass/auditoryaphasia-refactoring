@@ -153,12 +153,13 @@ def build_system_config(config_file_path : str):
     system_config.init_recorder_locally = config_json_dict.get('init_recorder_locally')
     system_config.rda_lsl_dir = os.path.join(repository_dir_base, config_json_dict.get('rda_lsl_dir')) if 'rda_lsl_dir' in config_json_dict else None
     system_config.rda_lsl_config_dir = os.path.join(repository_dir_base, config_json_dict.get('rda_lsl_config_dir')) if 'rda_lsl_config_dir' in config_json_dict else None
-    system_config.marker_stream_keyword = config_json_dict.get('marker_stream_keyword')
+    system_config.stream_await_timeout_ms = config_json_dict.get('stream_await_timeout_ms')
+    
     system_config.eeg_acquisition_stream_name = config_json_dict.get('eeg_acquisition_stream_name')
     system_config.eeg_acquisition_stream_type = config_json_dict.get('eeg_acquisition_stream_type')
     system_config.marker_acquisition_stream_name = config_json_dict.get('marker_acquisition_stream_name')
     system_config.marker_acquisition_stream_type = config_json_dict.get('marker_acquisition_stream_type')
-    system_config.marker_stream_await_timeout_ms = config_json_dict.get('marker_stream_await_timeout_ms')
+    system_config.marker_stream_name_keyword = config_json_dict.get('marker_stream_name_keyword')
 
     system_config.RecorderClient = import_client_class(config_json_dict.get('recorder_client_class'))
     system_config.FormattingClient = import_client_class(config_json_dict.get('formatting_client_class'))

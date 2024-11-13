@@ -94,10 +94,12 @@ FormattingClient = None
 
 rda_lsl_dir : str
 rda_lsl_config_dir : str
-marker_stream_keyword : str
+stream_await_timeout_ms : int|float  
 
+# at least the stream name or type needs to be provided. 
+# For the marker stream, if no stream name is given, a stream will be selected for which the name contains the stream name keyword (ignored otherwise)
 eeg_acquisition_stream_name : str
 eeg_acquisition_stream_type : str
 marker_acquisition_stream_name : str 
 marker_acquisition_stream_type : str 
-marker_stream_await_timeout_ms : int|float  
+marker_stream_name_keyword : str
