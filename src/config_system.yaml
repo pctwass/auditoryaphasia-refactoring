@@ -35,7 +35,7 @@
     
 
     "logger_name" : "auditoryaphasia",
-    "log_level_default" : "info",
+    "log_level_default" : 20,
     "log_to_stdout" : false,
     "log_level_stdout" : "info",
     "log_to_file" : true,

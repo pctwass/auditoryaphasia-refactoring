@@ -1,19 +1,22 @@
 import json
-from src.logging.logger import get_logger
 
-import src.config.system_config as system_config
 import src.config.classifier_config as classifier_config
+import src.config.system_config as system_config
 import src.process_management.intermodule_communication as intermodule_comm
-
+from acquisition.acquisition_system_controller import \
+    AcquisitionSystemController
 from src.config.config_builder import build_configs
-from acquisition.acquisition_system_controller import AcquisitionSystemController
+from src.logging.logger import get_logger
 from src.process_management.state_dictionaries import *
 
 logger = get_logger()
 
 
 def interface(
-    name:str, state_dict:dict[str,any], live_barplot_state_dict:dict[str,any], name_main_outlet:str='main'
+    name: str,
+    state_dict: dict[str, any],
+    live_barplot_state_dict: dict[str, any],
+    name_main_outlet: str = "main",
 ):
     # ==============================================
     # This function is called from main module.
@@ -55,10 +58,9 @@ def interface(
                     if data[2].lower() == "init_recorder":
                         params["init_recorder"] = json.loads(data[3])
                         acquisition_local_client = system_config.RecorderClient(
-                            logger=logger,
-                            params=params["init_recorder"]
+                            logger=logger, params=params["init_recorder"]
                         )
-                        
+
                     elif data[2].lower() == "start_recording":
                         f_dir = json.loads(data[3])
                         acquisition_local_client.start_recording(f_dir)
@@ -67,7 +69,9 @@ def interface(
                         acquisition_local_client.stop_recording()
 
                     elif data[2].lower() == "init":
-                        acquisition_sys_controller = init_acquisition(state_dict, live_barplot_state_dict)
+                        acquisition_sys_controller = init_acquisition(
+                            state_dict, live_barplot_state_dict
+                        )
 
                     elif data[2].lower() == "start_calibration":
                         acquisition_sys_controller.calibration(params)
@@ -86,16 +90,19 @@ def interface(
                     # parameters
                     params[data[2]] = json.loads(data[3])
                     logger.info(
-                        "Param Received : %s, %s"
-                        % (str(data[2]), str(params[data[2]]))
+                        "Param Received : %s, %s" % (str(data[2]), str(params[data[2]]))
                     )
                     # ------------------------------------
                 else:
                     raise ValueError("Unknown LSL data type received.")
-                
 
-def init_acquisition(state_dict:dict[str,any], live_barplot_state_dict : dict[str,any]):
-    classification_pipeline = system_config.ClassificationPipelineClass(n_channels=classifier_config.n_channels)
+
+def init_acquisition(
+    state_dict: dict[str, any], live_barplot_state_dict: dict[str, any]
+):
+    classification_pipeline = system_config.ClassificationPipelineClass(
+        n_channels=classifier_config.n_channels
+    )
     classifier = classification_pipeline.getmodel()
 
     acquisition_sys_controller = AcquisitionSystemController(
@@ -117,3 +124,4 @@ def init_acquisition(state_dict:dict[str,any], live_barplot_state_dict : dict[st
     )
 
     return acquisition_sys_controller
+
