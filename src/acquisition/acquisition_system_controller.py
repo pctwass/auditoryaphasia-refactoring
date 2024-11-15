@@ -5,7 +5,7 @@ import matplotlib
 import mne
 import numpy as np
 import pylsl
-from src.logging.logger import get_logger
+from auditory_aphasia.logging.logger import get_logger
 
 from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
@@ -16,18 +16,18 @@ matplotlib.use("tkagg")
 import matplotlib.pyplot as plt
 import pylsl
 
-import src.config.config as config
-import src.config.system_config as system_config
-import src.config.classifier_config as classifier_config
-import src.common.utils as utils
-import src.common.LSL_streaming as streaming
-import src.acquisition.epoch_container as epoch_container
+import auditory_aphasia.config.config as config
+import auditory_aphasia.config.system_config as system_config
+import auditory_aphasia.config.classifier_config as classifier_config
+import auditory_aphasia.common.utils as utils
+import auditory_aphasia.common.LSL_streaming as streaming
+import auditory_aphasia.acquisition.epoch_container as epoch_container
 import acquisition.online_data_acquire as online_data_acquire
 
-from src.common.pandas_save_utility import PandasSaveUtility
-from src.acquisition.acquisition_streaming_outlet_manager import AcquisitionStreamingOutletManager
-from src.process_management.state_dictionaries import *
-from src.process_management.process_communication_enums import *
+from auditory_aphasia.common.pandas_save_utility import PandasSaveUtility
+from auditory_aphasia.acquisition.acquisition_streaming_outlet_manager import AcquisitionStreamingOutletManager
+from auditory_aphasia.process_management.state_dictionaries import *
+from auditory_aphasia.process_management.process_communication_enums import *
 
 logger = get_logger()
 

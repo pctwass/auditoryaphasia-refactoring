@@ -7,9 +7,9 @@ See the pyscab package for more detail at: https://pypi.org/project/pyscab/
 import time
 import threading
 
-from src.process_management.state_dictionaries import init_audio_state_dict
-from src.process_management.process_communication_enums import AudioStatus
-from src.logging.logger import get_logger
+from auditory_aphasia.process_management.state_dictionaries import init_audio_state_dict
+from auditory_aphasia.process_management.process_communication_enums import AudioStatus
+from auditory_aphasia.logging.logger import get_logger
 
 logger = get_logger()
 

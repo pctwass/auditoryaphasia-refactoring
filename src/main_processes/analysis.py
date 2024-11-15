@@ -5,7 +5,7 @@ import json
 import mne
 import numpy as np
 
-import src.config.system_config as system_config
+import auditory_aphasia.config.system_config as system_config
 
 dir_base = system_config.data_dir
 save_dir = os.path.join(dir_base, "plots", system_config.save_folder_name)

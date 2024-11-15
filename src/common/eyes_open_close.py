@@ -1,12 +1,12 @@
 import os
 import time
 
-import src.config.config as config
-import src.config.system_config as system_config
-import src.common.utils as utils
-import src.process_management.intermodule_communication as intermodule_comm
+import auditory_aphasia.config.config as config
+import auditory_aphasia.config.system_config as system_config
+import auditory_aphasia.common.utils as utils
+import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
 
-from src.logging.logger import get_logger
+from auditory_aphasia.logging.logger import get_logger
 logger = get_logger()
 
 

@@ -1,6 +1,6 @@
 import json
 
-import src.process_management.intermodule_communication as intermodule_comm
+import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
 
 
 def interface(name:str, state_dict:dict[str,any], name_main_outlet:str='main'):

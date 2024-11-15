@@ -4,7 +4,7 @@ import logging
 
 from dareplane_utils.logging.logger import get_logger as get_dareplane_logger
 
-import src.config.system_config as system_config
+import auditory_aphasia.config.system_config as system_config
 
 
 logger = None

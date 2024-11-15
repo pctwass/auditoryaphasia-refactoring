@@ -1,7 +1,7 @@
 import os
 import pyscab
 
-from src.common.sudoku_matrix import SudokuMarix
+from auditory_aphasia.common.sudoku_matrix import SudokuMarix
 
 
 def generate_run_plan(audio_files_dir_base, words, condition, condition_params, master_volume = 1.0):

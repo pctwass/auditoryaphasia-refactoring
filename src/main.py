@@ -1,11 +1,11 @@
-from src.config.config_builder import build_configs
+from auditory_aphasia.config.config_builder import build_configs
 build_configs()
 
-from src.main_processes.main_online import main as main_online
-from src.main_processes.main_offline import main as main_offline
-from src.main_processes.familiarization import main as main_familiarization
-from src.main_processes.analysis import main as main_analysis
-from src.main_processes.setup_testing import main as main_setup_testing
+from auditory_aphasia.main_processes.main_online import main as main_online
+from auditory_aphasia.main_processes.main_offline import main as main_offline
+from auditory_aphasia.main_processes.familiarization import main as main_familiarization
+from auditory_aphasia.main_processes.analysis import main as main_analysis
+from auditory_aphasia.main_processes.setup_testing import main as main_setup_testing
 
 
 def main():

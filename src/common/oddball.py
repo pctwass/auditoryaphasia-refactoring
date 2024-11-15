@@ -2,15 +2,15 @@ import os
 import time
 import pyscab
 
-from src.logging.logger import get_logger
+from auditory_aphasia.logging.logger import get_logger
 logger = get_logger()
 
-import src.config.config as config
-import src.config.system_config as system_config
-import src.process_management.intermodule_communication as intermodule_comm
+import auditory_aphasia.config.config as config
+import auditory_aphasia.config.system_config as system_config
+import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
 
-from src.process_management.process_communication_enums import AudioStatus
-from src.plans.stimulation_plan import generate_stimulation_plan
+from auditory_aphasia.process_management.process_communication_enums import AudioStatus
+from auditory_aphasia.plans.stimulation_plan import generate_stimulation_plan
 
 
 def run_oddball(

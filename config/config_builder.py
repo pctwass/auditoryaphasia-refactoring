@@ -9,15 +9,15 @@ from pathlib import Path
 
 import git
 import yaml
+from clients.formatting.brain_vision_formatting_client import \
+    BrainVisionFromattingClient
+from clients.recorder.brain_vision_recorder_client import \
+    BrainVisionRecorderClient
 
 import config.conf_selector as config_selector
 import src.config.classifier_config as classifier_config
 import src.config.config as config
 import src.config.system_config as system_config
-from clients.formatting.brain_vision_formatting_client import \
-    BrainVisionFromattingClient
-from clients.recorder.brain_vision_recorder_client import \
-    BrainVisionRecorderClient
 
 ISO_DATE = datetime.datetime.now().strftime("%Y-%m-%d")
 
@@ -142,6 +142,31 @@ class SystemConfig:
 
     RecorderClient: BrainVisionRecorderClient = None
     FormattingClient: BrainVisionFromattingClient = None
+
+
+@dataclass
+class ClassifierConfig:
+    ClassificationPipelineClass = None
+    CallibrationDataProviderClass = None
+
+    n_channels: int
+    n_class: int
+    n_stimulus: int
+
+    ivals: list[tuple[float]]
+    filter_order: int
+    filter_freq: tuple[float]
+    baseline: str | int | float
+    tmin: float
+    tmax: float
+
+    dynamic_stopping: bool
+    dynamic_stopping_params: dict[str, float | int]
+
+    adaptation: bool
+    adaptation_eta_cov: float
+    adaptation_eta_mean: float
+    labels_binary_classification: dict[str, int]
 
 
 # probably do not need that init, as we will call the build functions

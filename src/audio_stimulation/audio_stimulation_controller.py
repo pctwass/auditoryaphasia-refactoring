@@ -1,11 +1,11 @@
-from src.logging.logger import get_logger
+from auditory_aphasia.logging.logger import get_logger
 logger = get_logger()
 
-import src.config.system_config as system_config
+import auditory_aphasia.config.system_config as system_config
 import pyscab
 
-from src.process_management.process_communication_enums import AudioStatus
-from src.audio_stimulation.pyscab_stimulation_controller import PyscabStimulationController
+from auditory_aphasia.process_management.process_communication_enums import AudioStatus
+from auditory_aphasia.audio_stimulation.pyscab_stimulation_controller import PyscabStimulationController
 
 class AudioStimulationController(object):
 
