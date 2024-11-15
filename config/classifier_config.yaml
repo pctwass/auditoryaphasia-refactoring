@@ -1,6 +1,6 @@
 {
-    "classification_pipeline_class" : "classifier.toeplitz_LDA_pipeline:ToeplitzLDAPipeline",
-    "calibration_data_provider_class" : "classifier.calibration_data_provider:CallibrationDataProvider",
+    "classification_pipeline_name" : "ToeplitzLDAPipeline",
+    "calibration_data_provider_name" : "CalibrationDataProvider",
     
     "ivals": [
         [

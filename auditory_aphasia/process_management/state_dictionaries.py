@@ -1,13 +1,15 @@
 import multiprocessing
-from auditory_aphasia.process_management.process_communication_enums import *
+
+from auditory_aphasia.process_management.process_communication_enums import (
+    AudioStatus, TrialClassificationStatus)
 
 
 # There are reference to an index 3 of the below dict. This 4th (index 3) entry has not been implemented
-# due to it not being used (only in commented-out code). 
-def init_audio_state_dict(manager : multiprocessing.Manager = None) -> dict[str, any]:
+# due to it not being used (only in commented-out code).
+def init_audio_state_dict(manager: multiprocessing.Manager = None) -> dict[str, any]:
     if manager is None:
-        audio_state_dict : dict = {}
-    else :
+        audio_state_dict: dict = {}
+    else:
         audio_state_dict = manager.dict()
 
     audio_state_dict["LSL_inlet_connected"] = False
@@ -17,10 +19,10 @@ def init_audio_state_dict(manager : multiprocessing.Manager = None) -> dict[str,
     return audio_state_dict
 
 
-def init_visual_fb_state_dict(manager : multiprocessing.Manager) -> dict[str, any]:
+def init_visual_fb_state_dict(manager: multiprocessing.Manager) -> dict[str, any]:
     if manager is None:
-        visual_fb_state_dict : dict = {}
-    else :
+        visual_fb_state_dict: dict = {}
+    else:
         visual_fb_state_dict = manager.dict()
 
     visual_fb_state_dict["LSL_inlet_connected"] = False
@@ -28,15 +30,17 @@ def init_visual_fb_state_dict(manager : multiprocessing.Manager) -> dict[str, an
     return visual_fb_state_dict
 
 
-def init_acquisition_state_dict(manager : multiprocessing.Manager) -> dict[str, any]:
+def init_acquisition_state_dict(manager: multiprocessing.Manager) -> dict[str, any]:
     if manager is None:
-        acquisition_state_dict : dict = {}
-    else :
+        acquisition_state_dict: dict = {}
+    else:
         acquisition_state_dict = manager.dict()
 
     acquisition_state_dict["LSL_inlet_connected"] = False
     acquisition_state_dict["trial_completed"] = True
-    acquisition_state_dict["trial_classification_status"] = TrialClassificationStatus.UNDECODED
+    acquisition_state_dict["trial_classification_status"] = (
+        TrialClassificationStatus.UNDECODED
+    )
     acquisition_state_dict["trial_label"] = 0
     acquisition_state_dict["trial_stimulus_count"] = 0
     acquisition_state_dict["acquire_trials"] = False
@@ -44,16 +48,19 @@ def init_acquisition_state_dict(manager : multiprocessing.Manager) -> dict[str, 
     return acquisition_state_dict
 
 
-def init_live_barplot_state_dict(manager : multiprocessing.Manager, num_classes : int) -> dict[str, any]:
+def init_live_barplot_state_dict(
+    manager: multiprocessing.Manager, num_classes: int
+) -> dict[str, any]:
     if manager is None:
-        live_barplot_state_dict : dict = {}
+        live_barplot_state_dict: dict = {}
         mean_classificaiton_values = list([float(0)] * num_classes)
-    else :
+    else:
         live_barplot_state_dict = manager.dict()
         mean_classificaiton_values = manager.list([float(0)] * num_classes)
-    
+
     live_barplot_state_dict["display_barplot"] = False
     live_barplot_state_dict["mean_classificaiton_values"] = mean_classificaiton_values
     live_barplot_state_dict["index_best_class"] = None
-            
+
     return live_barplot_state_dict
+

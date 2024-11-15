@@ -1,33 +1,37 @@
 import datetime
 import os
 import traceback
+
 import matplotlib
 import mne
 import numpy as np
 import pylsl
-from auditory_aphasia.logging.logger import get_logger
-
-from sklearn.metrics import accuracy_score
-from sklearn.pipeline import Pipeline
 from pyclf.lda.classification import EpochsVectorizer
 from scipy import stats
+from sklearn.metrics import accuracy_score
+from sklearn.pipeline import Pipeline
+
+from auditory_aphasia.logging.logger import get_logger
 
 matplotlib.use("tkagg")
+import acquisition.online_data_acquire as online_data_acquire
 import matplotlib.pyplot as plt
-import pylsl
 
+import auditory_aphasia.acquisition.epoch_container as epoch_container
+import auditory_aphasia.common.LSL_streaming as streaming
+import auditory_aphasia.common.utils as utils
+import auditory_aphasia.config.classifier_config as classifier_config
 import auditory_aphasia.config.config as config
 import auditory_aphasia.config.system_config as system_config
-import auditory_aphasia.config.classifier_config as classifier_config
-import auditory_aphasia.common.utils as utils
-import auditory_aphasia.common.LSL_streaming as streaming
-import auditory_aphasia.acquisition.epoch_container as epoch_container
-import acquisition.online_data_acquire as online_data_acquire
-
+from auditory_aphasia.acquisition.acquisition_streaming_outlet_manager import \
+    AcquisitionStreamingOutletManager
 from auditory_aphasia.common.pandas_save_utility import PandasSaveUtility
-from auditory_aphasia.acquisition.acquisition_streaming_outlet_manager import AcquisitionStreamingOutletManager
-from auditory_aphasia.process_management.state_dictionaries import *
+from auditory_aphasia.config_builder import (build_classifier_config,
+                                             build_system_config)
+from auditory_aphasia.factories import (calibration_data_provider_factory,
+                                        classification_pipeline_factory)
 from auditory_aphasia.process_management.process_communication_enums import *
+from auditory_aphasia.process_management.state_dictionaries import *
 
 logger = get_logger()
 
@@ -36,21 +40,21 @@ class AcquisitionSystemController:
 
     def __init__(
         self,
-        state_dict : dict[str,any],
-        live_barplot_state_dict : dict[str,any],
-        clf : Pipeline,
-        markers : dict[str,int],
-        tmin : float,
-        tmax : float,
-        baseline : str,
-        filter_freq : enumerate[float],
-        filter_order : int|float,
-        ivals : enumerate[enumerate[float]],
-        n_class : int,
-        adaptation : bool = False,
-        dynamic_stopping : bool = False,
-        dynamic_stopping_params : dict[str,int|float] = None,
-        max_n_stims : int = None,
+        state_dict: dict[str, any],
+        live_barplot_state_dict: dict[str, any],
+        clf: Pipeline,
+        markers: dict[str, int],
+        tmin: float,
+        tmax: float,
+        baseline: str,
+        filter_freq: enumerate[float],
+        filter_order: int | float,
+        ivals: enumerate[enumerate[float]],
+        n_class: int,
+        adaptation: bool = False,
+        dynamic_stopping: bool = False,
+        dynamic_stopping_params: dict[str, int | float] = None,
+        max_n_stims: int = None,
     ):
         self.state_dict = state_dict
         self.live_barplot_state_dict = live_barplot_state_dict
@@ -64,7 +68,7 @@ class AcquisitionSystemController:
         self.max_n_stims = max_n_stims
         self.n_class = n_class
 
-        # below function sets: 
+        # below function sets:
         # - self.eeg_stream
         # - self.eeg_inlet
         # - self.sampling_freq
@@ -77,20 +81,19 @@ class AcquisitionSystemController:
         # NOTE at the moment the outlets are initialized the first time features or distances/classifications are pushed to them
         self.streaming_outlet_manager = AcquisitionStreamingOutletManager()
 
-        self.incrementing_idx = 0  # index to track LSL packages, belonging to a single decoding set
+        self.incrementing_idx = (
+            0  # index to track LSL packages, belonging to a single decoding set
+        )
         self.feature_outlet: pylsl.StreamOutlet | None = None
         self.distance_outlet: pylsl.StreamOutlet | None = None
 
-        markers_to_epoch = markers['target'] + markers['nontarget']
-        n_sessions = utils.get_n_sessions(system_config.data_dir, config.subject_code, system_config.datestr)
-        
+        markers_to_epoch = markers["target"] + markers["nontarget"]
+        n_sessions = utils.get_n_sessions(
+            system_config.data_dir, config.subject_code, system_config.datestr
+        )
+
         self.epochs = epoch_container.EpochContainer(
-            self.n_channels,
-            self.sampling_freq,
-            markers_to_epoch,
-            tmin,
-            tmax,
-            baseline
+            self.n_channels, self.sampling_freq, markers_to_epoch, tmin, tmax, baseline
         )
 
         formatting_client = system_config.FormattingClient()
@@ -112,33 +115,35 @@ class AcquisitionSystemController:
             jumping_mean_ivals=self.ivals, sfreq=self.sampling_freq, t_ref=tmin
         )
 
-        self.calibration_data_provider = system_config.CallibrationDataProviderClass(
-            logger = logger,
-            n_sessions = n_sessions,
-            data_dir = system_config.data_dir,
-            subject_code = config.subject_code,
-            tmin = tmin,
-            tmax = tmax,
-            baseline = baseline,
-            channel_labels_online = config.channel_labels_online,
-            file_name_prefix = config.callibration_file_name_prefix,
-            filter_freq = filter_freq,
-            filter_order = filter_order,
-            markers_to_epoch = markers_to_epoch
+        classifier_config = build_classifier_config()
+
+        self.calibration_data_provider = calibration_data_provider_factory(
+            provider_name=classifier_config.calibration_data_provider_name,
+            logger=logger,
+            n_sessions=n_sessions,
+            data_dir=system_config.data_dir,
+            subject_code=config.subject_code,
+            tmin=tmin,
+            tmax=tmax,
+            baseline=baseline,
+            channel_labels_online=config.channel_labels_online,
+            file_name_prefix=config.callibration_file_name_prefix,
+            filter_freq=filter_freq,
+            filter_order=filter_order,
+            markers_to_epoch=markers_to_epoch,
         )
 
-    
     def _connect_LSL_acquisition_inlet(self):
         # ------------------------------------------------------------------------------------------------
         # find/connect eeg outlet
 
         logger.info("looking for an EEG stream...")
-        
+
         self.eeg_stream, self.eeg_inlet = streaming.init_LSL_inlet(
-            stream_name = system_config.eeg_acquisition_stream_name,
-            stream_type = system_config.eeg_acquisition_stream_type,
-            await_stream = True,
-            timeout = system_config.stream_await_timeout_ms
+            stream_name=system_config.eeg_acquisition_stream_name,
+            stream_type=system_config.eeg_acquisition_stream_type,
+            await_stream=True,
+            timeout=system_config.stream_await_timeout_ms,
         )
 
         self.sampling_freq = self.eeg_stream[0].nominal_srate()
@@ -146,21 +151,22 @@ class AcquisitionSystemController:
 
         channel_indices_to_acquire = self._get_channel_indices_to_acquire()
         self.n_channels = len(channel_indices_to_acquire)
-        logger.debug("number of channels (n_channels) for online session : %d" % self.n_channels)
+        logger.debug(
+            "number of channels (n_channels) for online session : %d" % self.n_channels
+        )
 
         # ------------------------------------------------------------------------------------------------
         # find/connect marker outlet
 
         logger.info("looking for a marker stream...")
         self.marker_stream, self.marker_inlet = streaming.init_LSL_inlet(
-            stream_name = system_config.marker_acquisition_stream_name,
-            stream_type = system_config.marker_acquisition_stream_type,
-            stream_name_keyword = system_config.marker_stream_name_keyword,
-            await_stream = True,
-            timeout = system_config.stream_await_timeout_ms
+            stream_name=system_config.marker_acquisition_stream_name,
+            stream_type=system_config.marker_acquisition_stream_type,
+            stream_name_keyword=system_config.marker_stream_name_keyword,
+            await_stream=True,
+            timeout=system_config.stream_await_timeout_ms,
         )
         logger.info("Configuration Done.")
-
 
     def _get_channel_indices_to_acquire(self) -> list[int]:
         channel_indices_to_acquire = list()
@@ -170,16 +176,13 @@ class AcquisitionSystemController:
 
         self.channels_to_acquire = np.array(channel_indices_to_acquire)
         logger.debug("ch_names_LSL : %s" % str(self.channel_names))
-        logger.debug(
-            "channels_to_acquire (idx) : %s" % str(channel_indices_to_acquire)
-        )
+        logger.debug("channels_to_acquire (idx) : %s" % str(channel_indices_to_acquire))
         logger.debug(
             "channels_to_acquire : %s"
             % str(np.array(self.channel_names)[self.channels_to_acquire])
         )
 
         return channel_indices_to_acquire
-
 
     def fit_classifier(self, epochs):
         X = self.vectorizer.transform(epochs)
@@ -200,8 +203,7 @@ class AcquisitionSystemController:
 
         self.clf.fit(X, Y)
 
-
-    def calibration(self, params:dict[str,any]):
+    def calibration(self, params: dict[str, any]):
         """
         Parameters
         =========
@@ -213,7 +215,6 @@ class AcquisitionSystemController:
 
         logger.info("classifier was calibrated.")
 
-        
     def main(self):
         logger.info("Acquisition System Controller was started.")
 
@@ -224,13 +225,11 @@ class AcquisitionSystemController:
         preds = list()
 
         self.live_barplot_state_dict["display_barplot"] = True
-       
+
         if not os.path.exists(
             os.path.join(system_config.repository_dir_base, "media", "tmp")
         ):
-            os.makedirs(
-                os.path.join(system_config.repository_dir_base, "media", "tmp")
-            )
+            os.makedirs(os.path.join(system_config.repository_dir_base, "media", "tmp"))
 
         self.state_dict["acquire_trials"] = True
         self.online_data_acquisitioner.start()
@@ -242,7 +241,7 @@ class AcquisitionSystemController:
                 if new_trial_marker is not None:
                     self.online_data_acquisitioner.clear_new_trial_marker()
                     self.state_dict["trial_completed"] = False
-                    
+
                     trial_label = int(str(new_trial_marker + 1)[-1])
                     labels.append(trial_label)
                     logger.info("New Trial Started : %d" % trial_label)
@@ -260,7 +259,9 @@ class AcquisitionSystemController:
                         "min_n_stims"
                     ]
 
-                    barplot_colors = self._do_live_barplot_setup_for_new_trial(trial_label)
+                    barplot_colors = self._do_live_barplot_setup_for_new_trial(
+                        trial_label
+                    )
 
                 if self.epochs.has_new_data():
                     # increment index to track LSL packages
@@ -269,7 +270,7 @@ class AcquisitionSystemController:
                     epoch, events = self.epochs.get_new_data()
                     if self.state_dict["trial_completed"]:
                         continue
-                    
+
                     logger.info("New epochs was recorded.")
                     logger.debug("epoch.shape : %s" % str(epoch.shape))
                     logger.debug("events : %s" % str(events))
@@ -294,7 +295,9 @@ class AcquisitionSystemController:
                             raise ValueError("Unknown event")
 
                     vectorized_epoch = self.vectorizer.transform(epoch)
-                    self.streaming_outlet_manager.push_features_to_lsl(vectorized_epoch, true_class_labels, self.incrementing_idx)
+                    self.streaming_outlet_manager.push_features_to_lsl(
+                        vectorized_epoch, true_class_labels, self.incrementing_idx
+                    )
 
                     if classifier_config.adaptation:
                         # this function will calclate new set of w and b.
@@ -318,26 +321,39 @@ class AcquisitionSystemController:
                         if classification_scores.ndim == 0:
                             distances.append([event_number, classification_scores])
                         else:
-                            distances.append([event_number, classification_scores[index]])
+                            distances.append(
+                                [event_number, classification_scores[index]]
+                            )
 
                     logger.debug("distances : %s" % str(distances))
-                    self.streaming_outlet_manager.push_distances_to_lsl(distances, self.incrementing_idx)
+                    self.streaming_outlet_manager.push_distances_to_lsl(
+                        distances, self.incrementing_idx
+                    )
 
                     if (
                         system_config.show_live_classification_barplot
                         and stimulus_count >= self.n_class
                     ):
-                        clf_out = self._get_distances_foreach_class(distances, self.n_class)
+                        clf_out = self._get_distances_foreach_class(
+                            distances, self.n_class
+                        )
                         for index, clf_out_class in enumerate(clf_out):
                             # clf_out_mean[idx] = np.mean(clf_out_class)
-                            self.live_barplot_state_dict["mean_classificaiton_values"][index] = np.mean(clf_out_class)
+                            self.live_barplot_state_dict["mean_classificaiton_values"][
+                                index
+                            ] = np.mean(clf_out_class)
 
                     if (
                         self.dynamic_stopping is True
                         and self.state_dict["trial_completed"] is False
                     ):
-                        if (stimulus_count >= self.dynamic_stopping_params["min_n_stims"]):
-                            for stim_num in range(dynamic_stopping_stim_num, stimulus_count + 1):
+                        if (
+                            stimulus_count
+                            >= self.dynamic_stopping_params["min_n_stims"]
+                        ):
+                            for stim_num in range(
+                                dynamic_stopping_stim_num, stimulus_count + 1
+                            ):
                                 clf_out = self._get_distances_foreach_class(
                                     distances, self.n_class, idx=stim_num - 1
                                 )
@@ -358,23 +374,39 @@ class AcquisitionSystemController:
                                 for index, clf_out_class in enumerate(clf_out):
                                     clf_out_mean[index] = np.mean(clf_out_class)
 
-                                logger.info(f"label trial (target) : {str(trial_label)}")
+                                logger.info(
+                                    f"label trial (target) : {str(trial_label)}"
+                                )
                                 target_idx = trial_label - 1
                                 target_distances = np.array(clf_out[target_idx])
-                                logger.info(f"target_distances : {str(target_distances)}")
+                                logger.info(
+                                    f"target_distances : {str(target_distances)}"
+                                )
 
                                 nontarget_clf_out_mean = clf_out_mean.copy()
                                 nontarget_clf_out_mean.pop(target_idx)
                                 nontarget_clf_out = clf_out.copy()
                                 nontarget_clf_out.pop(target_idx)
-                                logger.info(f"len(nontarget_clf_out) : {len(nontarget_clf_out)}")
-                                logger.info(f"len(nontarget_clf_out_mean) : {len(nontarget_clf_out_mean)}")
-                                logger.info(f"nontarget_distances : {str(nontarget_clf_out_mean)}")
+                                logger.info(
+                                    f"len(nontarget_clf_out) : {len(nontarget_clf_out)}"
+                                )
+                                logger.info(
+                                    f"len(nontarget_clf_out_mean) : {len(nontarget_clf_out_mean)}"
+                                )
+                                logger.info(
+                                    f"nontarget_distances : {str(nontarget_clf_out_mean)}"
+                                )
 
                                 best_nontarget_idx = np.argmax(nontarget_clf_out_mean)
-                                best_nontarget_distances = np.array(nontarget_clf_out[best_nontarget_idx])
-                                logger.info(f"best_nontarget_idx : {best_nontarget_idx}")
-                                logger.info(f"best_nontarget_distances : {str(best_nontarget_distances)}")
+                                best_nontarget_distances = np.array(
+                                    nontarget_clf_out[best_nontarget_idx]
+                                )
+                                logger.info(
+                                    f"best_nontarget_idx : {best_nontarget_idx}"
+                                )
+                                logger.info(
+                                    f"best_nontarget_distances : {str(best_nontarget_distances)}"
+                                )
 
                                 # best_nontarget_idx =
                                 # best_class_idx = np.argmax(clf_out_mean)
@@ -411,7 +443,10 @@ class AcquisitionSystemController:
 
                                 logger.info("pvalue : %.4f" % ttest_p_value)
 
-                                if ttest_p_value <= self.dynamic_stopping_params["pvalue"]:
+                                if (
+                                    ttest_p_value
+                                    <= self.dynamic_stopping_params["pvalue"]
+                                ):
 
                                     fig_feedback = plt.figure(num=2)
                                     plt.bar(
@@ -437,16 +472,16 @@ class AcquisitionSystemController:
                                     preds.append(pred_trial)
                                     logger.info("labels : %s" % str(labels))
                                     logger.info("preds : %s" % str(preds))
-                                    logger.info(
-                                        "n_stimulus : %d" % stimulus_count
-                                    )
+                                    logger.info("n_stimulus : %d" % stimulus_count)
                                     acc = accuracy_score(labels, preds)
                                     logger.info("Acc : %.3f" % acc)
                                     self.state_dict["trial_classification_status"] = (
                                         TrialClassificationStatus.DECODED_EARLY  # decoded by dynamic stopping
                                     )
                                     self.state_dict["trial_label"] = trial_label
-                                    self.state_dict["trial_stimulus_count"] = stimulus_count
+                                    self.state_dict["trial_stimulus_count"] = (
+                                        stimulus_count
+                                    )
                                     self.state_dict["trial_completed"] = True
                                     break
                             dynamic_stopping_stim_num = stimulus_count + 1
@@ -456,13 +491,17 @@ class AcquisitionSystemController:
                         and self.state_dict["trial_completed"] is False
                     ):
                         # without dynamic stopping
-                        clf_out = self._get_distances_foreach_class(distances, self.n_class)
+                        clf_out = self._get_distances_foreach_class(
+                            distances, self.n_class
+                        )
                         logger.debug("clf_out : %s" % str(clf_out))
                         for index, clf_out_class in enumerate(clf_out):
                             clf_out_mean[index] = np.mean(clf_out_class)
                         logger.debug("clf_out_mean : %s" % str(clf_out_mean))
 
-                        self._plot_and_save_feedback_figure(clf_out_mean, barplot_colors)
+                        self._plot_and_save_feedback_figure(
+                            clf_out_mean, barplot_colors
+                        )
 
                         pred_trial = np.argmax(clf_out_mean) + 1
                         preds.append(pred_trial)
@@ -471,9 +510,13 @@ class AcquisitionSystemController:
                         logger.info("preds : %s" % str(preds))
                         logger.info("Acc : %.3f" % acc)
                         if pred_trial == trial_label:
-                            self.state_dict["trial_classification_status"] = TrialClassificationStatus.DECODED
+                            self.state_dict["trial_classification_status"] = (
+                                TrialClassificationStatus.DECODED
+                            )
                         else:
-                            self.state_dict["trial_classification_status"] = TrialClassificationStatus.UNDECODED
+                            self.state_dict["trial_classification_status"] = (
+                                TrialClassificationStatus.UNDECODED
+                            )
 
                         self.state_dict["trial_label"] = trial_label
                         self.state_dict["trial_stimulus_count"] = stimulus_count
@@ -491,9 +534,7 @@ class AcquisitionSystemController:
                                 classifier_config.adaptation_clf.cl_mean,
                                 classifier_config.adaptation_clf.C_inv,
                                 classifier_config.adaptation_clf.classes_,
-                                datetime.datetime.now().strftime(
-                                    "%y/%m/%d-%H:%M:%S"
-                                ),
+                                datetime.datetime.now().strftime("%y/%m/%d-%H:%M:%S"),
                             ]
                         ],
                         save_as_html=True,
@@ -519,20 +560,20 @@ class AcquisitionSystemController:
                 # logger.info("Error : " + sys.exc_info()[0])
         self.online_data_acquisitioner.stop()
 
-
     def _prepare_panda_save_util_for_adaptation() -> PandasSaveUtility:
         calibration_dir = os.path.join(
-                system_config.data_dir,
-                system_config.save_folder_name,
-                "calibration",
-            )
-        
+            system_config.data_dir,
+            system_config.save_folder_name,
+            "calibration",
+        )
+
         if os.path.exists(calibration_dir) is False:
             os.mkdir(calibration_dir)
 
         columns = ["w", "b", "cl_mean", "Cov_inv", "classes", "time"]
         pandas_save_utility = PandasSaveUtility(
-            file_path=os.path.join(calibration_dir, "calibration_log"), default_columns=columns
+            file_path=os.path.join(calibration_dir, "calibration_log"),
+            default_columns=columns,
         )
 
         pandas_save_utility.add(
@@ -551,9 +592,8 @@ class AcquisitionSystemController:
         )
 
         return pandas_save_utility
-    
 
-    def _do_live_barplot_setup_for_new_trial(self, trial_label:int) -> list[str]:
+    def _do_live_barplot_setup_for_new_trial(self, trial_label: int) -> list[str]:
         trial_label_index = trial_label - 1
         self.live_barplot_state_dict["index_best_class"] = trial_label_index
         barplot_colors = ["tab:blue" for m in range(self.n_class)]
@@ -571,9 +611,10 @@ class AcquisitionSystemController:
             os.remove(fb_barplot_path)
 
         return barplot_colors
-    
 
-    def _get_distances_foreach_class(distances:list[tuple[int,float]], n_class:int, idx:int=None) -> list[list[float]]:
+    def _get_distances_foreach_class(
+        distances: list[tuple[int, float]], n_class: int, idx: int = None
+    ) -> list[list[float]]:
         distances_foreach_class = [list() for m in range(n_class)]
         for idx_event, distance in enumerate(distances):
             event_num = distance[0]
@@ -581,13 +622,12 @@ class AcquisitionSystemController:
             if idx is not None and idx_event == idx:
                 break
         return distances_foreach_class
-    
 
-    def _plot_and_save_feedback_figure(clf_out_mean:list[float], barplot_colors:list[str]):
+    def _plot_and_save_feedback_figure(
+        clf_out_mean: list[float], barplot_colors: list[str]
+    ):
         fig_feedback = plt.figure(num=2)
-        plt.bar(
-            config.words, clf_out_mean, color=barplot_colors
-        )
+        plt.bar(config.words, clf_out_mean, color=barplot_colors)
         plt.tick_params(
             left=False,
             right=False,
@@ -606,9 +646,14 @@ class AcquisitionSystemController:
 
 
 if __name__ == "__main__":
-    print('Testing AcquisitionSystemController')
-    classifier_factory = system_config.ClassificationPipelineClass(n_channels=classifier_config.n_channels)
-    classifier = classifier_factory.get_model()
+    print("Testing AcquisitionSystemController")
+
+    system_config = build_system_config()
+    classifier_config = build_classifier_config()
+
+    classifier = classification_pipeline_factory(
+        classifier_config.classification_pipeline_name
+    )
 
     testdict = dict(
         markers=system_config.markers,
@@ -623,7 +668,9 @@ if __name__ == "__main__":
         adaptation=classifier_config.adaptation,
         dynamic_stopping=classifier_config.dynamic_stopping,
         dynamic_stopping_params=classifier_config.dynamic_stopping_params,
-        max_n_stims=classifier_config.n_stimulus)
-    
-    for k,v in testdict.items():
+        max_n_stims=classifier_config.n_stimulus,
+    )
+
+    for k, v in testdict.items():
         print(k, v)
+

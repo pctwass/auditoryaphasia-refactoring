@@ -1,13 +1,19 @@
 import json
 
-import auditory_aphasia.config.classifier_config as classifier_config
-import auditory_aphasia.config.system_config as system_config
-import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
 from acquisition.acquisition_system_controller import \
     AcquisitionSystemController
-from auditory_aphasia.config.config_builder import build_configs
+
+import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
+from auditory_aphasia.clients.recorder.brain_vision_recorder_client import \
+    BrainVisionRecorderClient as RecorderClient
+from auditory_aphasia.config_builder import (GeneralConfig, SystemConfig,
+                                             build_classifier_config,
+                                             build_general_config,
+                                             build_system_config)
+from auditory_aphasia.factories import classification_pipeline_factory
 from auditory_aphasia.logging.logger import get_logger
-from auditory_aphasia.process_management.state_dictionaries import *
+from auditory_aphasia.process_management.state_dictionaries import \
+    init_acquisition_state_dict
 
 logger = get_logger()
 
@@ -29,9 +35,10 @@ def interface(
     #
 
     # Because the interface is spawned as the target of a new process, we need to load the config into memory again
-    build_configs()
+    system_config = build_system_config()
+    general_config = build_general_config()
 
-    if state_dict == None:
+    if state_dict is None:
         state_dict = init_acquisition_state_dict()
 
     # set_logger(file=log_file, stdout=log_stdout)
@@ -57,8 +64,11 @@ def interface(
                     # command
                     if data[2].lower() == "init_recorder":
                         params["init_recorder"] = json.loads(data[3])
-                        acquisition_local_client = system_config.RecorderClient(
-                            logger=logger, params=params["init_recorder"]
+                        acquisition_local_client = RecorderClient(
+                            logger=logger,
+                            params=params["init_recorder"],
+                            system_config=system_config,
+                            general_config=general_config,
                         )
 
                     elif data[2].lower() == "start_recording":
@@ -70,7 +80,10 @@ def interface(
 
                     elif data[2].lower() == "init":
                         acquisition_sys_controller = init_acquisition(
-                            state_dict, live_barplot_state_dict
+                            state_dict,
+                            live_barplot_state_dict,
+                            system_config=system_config,
+                            general_config=general_config,
                         )
 
                     elif data[2].lower() == "start_calibration":
@@ -98,12 +111,17 @@ def interface(
 
 
 def init_acquisition(
-    state_dict: dict[str, any], live_barplot_state_dict: dict[str, any]
+    state_dict: dict[str, any],
+    live_barplot_state_dict: dict[str, any],
+    system_config: SystemConfig,
+    general_config: GeneralConfig,
 ):
-    classification_pipeline = system_config.ClassificationPipelineClass(
-        n_channels=classifier_config.n_channels
+
+    classifier_config = build_classifier_config()
+
+    classifier = classification_pipeline_factory(
+        classifier_config.classification_pipeline_name
     )
-    classifier = classification_pipeline.getmodel()
 
     acquisition_sys_controller = AcquisitionSystemController(
         state_dict=state_dict,
@@ -124,4 +142,3 @@ def init_acquisition(
     )
 
     return acquisition_sys_controller
-
