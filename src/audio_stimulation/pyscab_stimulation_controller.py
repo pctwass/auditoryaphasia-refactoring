@@ -116,7 +116,7 @@ class PyscabStimulationController(object):
                 if now > plan[0]:
                     self.ahc.play(data.get_data_by_id(plan[1]),plan[2])
                     self.marker_send(val=plan[3])
-                    self.state_dict["trial_marker" ] = plan[3]
+                    self.state_dict["trial_marker"] = plan[3]
                     del_idxs.append(int(idx))
                     logger.debug(f"Playing, id:{str(plan[1])}, ch:{str(plan[2])}, marker:{str(plan[3])}, path:f{data.get_path_by_id(plan[1])}")
                 for del_idx in del_idxs:
