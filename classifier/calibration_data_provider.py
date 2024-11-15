@@ -1,5 +1,9 @@
 from scipy import signal
 from psychopy import core, gui
+import src.common.utils as utils
+import mne
+from scipy import signal
+import numpy as np
 
 class CallibrationDataProvider():
     def __init__(
@@ -32,11 +36,6 @@ class CallibrationDataProvider():
 
 
     def get_calibration_data(self, params):
-        import src.common.utils as utils
-        import mne
-        from scipy import signal
-        import numpy as np
-
         #mne.set_log_level(verbose=False)
 
         condition = params['condition']
