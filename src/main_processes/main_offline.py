@@ -7,8 +7,6 @@ from pylsl import StreamOutlet
 
 import src.config.config as config
 import src.config.system_config as system_config
-import config.temp_new_conf as temp_new_conf
-import src.common.utils as utils
 import src.condition_params as condition_params
 import src.process_management.intermodule_communication as intermodule_comm
 
