@@ -1,5 +1,5 @@
 import multiprocessing
-from src.process_management.process_communication_enums import *
+from auditory_aphasia.process_management.process_communication_enums import *
 
 
 # There are reference to an index 3 of the below dict. This 4th (index 3) entry has not been implemented

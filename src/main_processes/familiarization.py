@@ -5,18 +5,18 @@ import time
 
 import pyscab
 
-import src.common.directory_navigator as dir_navigator
-import src.condition_params as condition_params
-import src.config.config as config
-import src.config.system_config as system_config
-import src.process_management.intermodule_communication as intermodule_comm
-from src.common.sudoku_matrix import SudokuMarix
-from src.logging.logger import get_logger
-from src.plans.audio_plan import generate_audio_plan
-from src.plans.stimulation_plan import generate_stimulation_plan
-from src.process_management.process_communication_enums import AudioStatus
-from src.process_management.process_manager import ProcessManager
-from src.process_management.state_dictionaries import init_audio_state_dict
+import auditory_aphasia.common.directory_navigator as dir_navigator
+import auditory_aphasia.condition_params as condition_params
+import auditory_aphasia.config.config as config
+import auditory_aphasia.config.system_config as system_config
+import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
+from auditory_aphasia.common.sudoku_matrix import SudokuMarix
+from auditory_aphasia.logging.logger import get_logger
+from auditory_aphasia.plans.audio_plan import generate_audio_plan
+from auditory_aphasia.plans.stimulation_plan import generate_stimulation_plan
+from auditory_aphasia.process_management.process_communication_enums import AudioStatus
+from auditory_aphasia.process_management.process_manager import ProcessManager
+from auditory_aphasia.process_management.state_dictionaries import init_audio_state_dict
 
 logger = get_logger()
 

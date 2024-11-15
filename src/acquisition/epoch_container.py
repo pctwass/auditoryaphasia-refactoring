@@ -1,8 +1,8 @@
 import numpy as np
 
-from src.common.LSL_data_chunk import LSLDataStruct
+from auditory_aphasia.common.LSL_data_chunk import LSLDataStruct
 
-from src.logging.logger import get_logger
+from auditory_aphasia.logging.logger import get_logger
 logger = get_logger()
 
 

@@ -1,7 +1,7 @@
 import os
 import sys
 import shutil
-import src.common.utils as utils
+import auditory_aphasia.common.utils as utils
 
 home_dir = os.path.expanduser('~')
 

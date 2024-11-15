@@ -3,7 +3,7 @@ import json
 
 from multiprocessing import Process, Value
 
-import src.process_management.intermodule_communication as intermodule_comm
+import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
 
 class WiiController(object):
     # Get information of pressed button from wii controller

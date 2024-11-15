@@ -1,9 +1,9 @@
 import json
 
-import src.process_management.intermodule_communication as intermodule_comm
-import src.HIDController as HIDController
+import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
+import auditory_aphasia.HIDController as HIDController
 
-from src.logging.logger import get_logger
+from auditory_aphasia.logging.logger import get_logger
 logger = get_logger()
 
 def interface(name:str, state_dict:dict[str,any], name_main_outlet:str='main'):

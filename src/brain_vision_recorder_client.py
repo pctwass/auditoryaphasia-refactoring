@@ -1,8 +1,8 @@
 import os
 import subprocess
 
-import src.config.config as config
-import src.config.system_config as system_config
+import auditory_aphasia.config.config as config
+import auditory_aphasia.config.system_config as system_config
 
 
 class BrainVisionRecorderClient():

@@ -4,12 +4,12 @@ import datetime
 from pathlib import Path
 import json # for loading conf variables
 
-from src.logging.logger import get_logger
+from auditory_aphasia.logging.logger import get_logger
 logger = get_logger()
 
 import config.conf_selector
 import config.conf_selector as conf_selector
-import src.config.config as config
+import auditory_aphasia.config.config as config
 
 import socket
 computer_name = socket.gethostname().lower()

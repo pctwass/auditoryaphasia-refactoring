@@ -1,13 +1,13 @@
 import json
 
-import src.config.classifier_config as classifier_config
-import src.config.system_config as system_config
-import src.process_management.intermodule_communication as intermodule_comm
+import auditory_aphasia.config.classifier_config as classifier_config
+import auditory_aphasia.config.system_config as system_config
+import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
 from acquisition.acquisition_system_controller import \
     AcquisitionSystemController
-from src.config.config_builder import build_configs
-from src.logging.logger import get_logger
-from src.process_management.state_dictionaries import *
+from auditory_aphasia.config.config_builder import build_configs
+from auditory_aphasia.logging.logger import get_logger
+from auditory_aphasia.process_management.state_dictionaries import *
 
 logger = get_logger()
 

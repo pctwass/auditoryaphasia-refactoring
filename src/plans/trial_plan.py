@@ -1,6 +1,6 @@
-import src.config.system_config as system_config
+import auditory_aphasia.config.system_config as system_config
 
-from src.plans.stimulation_plan import generate_stimulation_plan
+from auditory_aphasia.plans.stimulation_plan import generate_stimulation_plan
 
 
 def generate_trial_plan(audio_files,

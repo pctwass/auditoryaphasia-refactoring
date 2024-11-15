@@ -3,10 +3,10 @@ import multiprocessing.process
 
 import audio_stimulation.audio_stimulation_interface as audio_stimulation_interface
 import visual_feedback.visual_feedback_interface as visual_feedback_interface
-import src.acquisition.acquisition_interface as AcquisitionSystemInterface
+import auditory_aphasia.acquisition.acquisition_interface as AcquisitionSystemInterface
 
-from src.process_management.state_dictionaries import *
-from src.barplot import run_barplot
+from auditory_aphasia.process_management.state_dictionaries import *
+from auditory_aphasia.barplot import run_barplot
 
 
 class ProcessManager:

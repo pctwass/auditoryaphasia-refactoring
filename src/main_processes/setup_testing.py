@@ -2,10 +2,10 @@ import pyscab
 import os
 import random
 
-import src.config.config as config
-import src.config.system_config as system_config
+import auditory_aphasia.config.config as config
+import auditory_aphasia.config.system_config as system_config
 
-from src.plans.stimulation_plan import generate_stimulation_plan
+from auditory_aphasia.plans.stimulation_plan import generate_stimulation_plan
 
 
 def test_multi_ch(freq = 440,freq_1 = 440*1.2, duration = 0.5, volume = 1, num_rep = 3, soa = 0.7, ch = [1,2,3,4,5,6]):

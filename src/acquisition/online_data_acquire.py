@@ -6,8 +6,8 @@ import numpy as np
 from scipy import signal
 from pylsl.pylsl import LostError
 
-from src.common.LSL_data_chunk import LSLDataStruct
-from src.acquisition.epoch_container import EpochContainer
+from auditory_aphasia.common.LSL_data_chunk import LSLDataStruct
+from auditory_aphasia.acquisition.epoch_container import EpochContainer
 from logging import getLogger
 
 logger = getLogger(__name__)

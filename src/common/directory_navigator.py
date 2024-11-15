@@ -1,5 +1,5 @@
 import os
-import src.config.config as config
+import auditory_aphasia.config.config as config
 
 def get_word_audio_file_path(
     base_dir : str,

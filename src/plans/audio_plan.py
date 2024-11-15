@@ -1,7 +1,7 @@
 import pyscab
 
-from src.plans.stimulation_plan import generate_stimulation_plan
-from src.common.sudoku_matrix import SudokuMarix
+from auditory_aphasia.plans.stimulation_plan import generate_stimulation_plan
+from auditory_aphasia.common.sudoku_matrix import SudokuMarix
 
 
 def generate_audio_plan(

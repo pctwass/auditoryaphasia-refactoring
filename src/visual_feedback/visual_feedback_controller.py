@@ -4,9 +4,9 @@ import numpy as np
 
 from psychopy import visual, core
 
-import src.config.system_config as system_config
-from src.visual_feedback.visual_objects.crosshair import Crosshair
-from src.visual_feedback.visual_objects.speaker import Speakers
+import auditory_aphasia.config.system_config as system_config
+from auditory_aphasia.visual_feedback.visual_objects.crosshair import Crosshair
+from auditory_aphasia.visual_feedback.visual_objects.speaker import Speakers
 
 
 class VisualFeedbackController(object):

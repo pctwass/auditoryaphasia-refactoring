@@ -8,21 +8,21 @@ matplotlib.use('tkagg')
 
 from pylsl import StreamOutlet
 
-import src.config.config as config
-import src.config.system_config as system_config
+import auditory_aphasia.config.config as config
+import auditory_aphasia.config.system_config as system_config
 import config.temp_new_conf as temp_new_conf
-import src.condition_params as condition_params
-import src.process_management.intermodule_communication as intermodule_comm
+import auditory_aphasia.condition_params as condition_params
+import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
 
-from src.main_processes.main_process_functions import *
-from src.common.eyes_open_close import run_eyes_open_close
-from src.common.oddball import run_oddball
-from src.process_management.process_communication_enums import *
-from src.plans.run_plan import generate_run_plan
-from src.plans.trial_plan import generate_trial_plan
-from src.plans.feedback_plan import generate_feedback_plan
+from auditory_aphasia.main_processes.main_process_functions import *
+from auditory_aphasia.common.eyes_open_close import run_eyes_open_close
+from auditory_aphasia.common.oddball import run_oddball
+from auditory_aphasia.process_management.process_communication_enums import *
+from auditory_aphasia.plans.run_plan import generate_run_plan
+from auditory_aphasia.plans.trial_plan import generate_trial_plan
+from auditory_aphasia.plans.feedback_plan import generate_feedback_plan
 
-from src.logging.logger import get_logger
+from auditory_aphasia.logging.logger import get_logger
 logger = get_logger()
 
 
