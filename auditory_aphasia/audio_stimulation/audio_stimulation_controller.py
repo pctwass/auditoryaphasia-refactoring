@@ -1,3 +1,4 @@
+import pyaudio
 import pyscab
 
 from auditory_aphasia.audio_stimulation.pyscab_stimulation_controller import \
@@ -19,15 +20,37 @@ class AudioStimulationController(object):
         self.marker = None
         self.audio_device_interface = None
         self.psycab_stim_controller = None
+        self.system_config = build_system_config()
 
     def open(self):
-        system_config = build_system_config()
-        self.audio_device_interface = pyscab.AudioInterface(
-            device_name=system_config.audio_device_name,
-            n_ch=system_config.n_channels,
-            format=system_config.format,
-            frames_per_buffer=system_config.frames_per_buffer,
-        )
+
+        try:
+            self.audio_device_interface = pyscab.AudioInterface(
+                device_name=self.system_config.audio_device_name,
+                n_ch=self.system_config.n_channels,
+                format=self.system_config.format,
+                frames_per_buffer=self.system_config.frames_per_buffer,
+            )
+        except KeyError as e:
+            if self.system_config.audio_device_name not in str(e):
+                raise
+            else:
+                # grab available devices
+                device_name = (
+                    pyaudio.PyAudio().get_default_output_device_info().get("name")
+                )
+                logger.info(
+                    f"Could not find audio device with name {self.system_config.audio_device_name}, trying default device {device_name=}"
+                )
+                # try opening with default audio
+                # https://pyscab.readthedocs.io/en/latest/_modules/pyscab/HardwareController.html#CallbackParams
+
+                self.audio_device_interface = pyscab.AudioInterface(
+                    device_name=device_name,
+                    n_ch=self.system_config.n_channels,
+                    format=self.system_config.format,
+                    frames_per_buffer=self.system_config.frames_per_buffer,
+                )
 
         self.marker = MarkerClient()
         self.marker.open()
@@ -35,8 +58,8 @@ class AudioStimulationController(object):
         self.psycab_stim_controller = PyscabStimulationController(
             self.audio_device_interface,
             marker_send=self.marker.sendMarker,
-            correct_latency=system_config.correct_sw_latency,
-            correct_hardware_buffer=system_config.correct_hw_latency,
+            correct_latency=self.system_config.correct_sw_latency,
+            correct_hardware_buffer=self.system_config.correct_hw_latency,
             state_dict=self.state_dict,
         )
         self.psycab_stim_controller.open()

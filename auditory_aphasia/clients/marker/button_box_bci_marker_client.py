@@ -1,8 +1,10 @@
 from markerbci import buttonbox
 
+# https://pypi.org/project/markerbci/
+
 
 class ButtonBoxBciMarkerClient(object):
-    def __init__(self, port:str='', marker_duration:float=0.05):
+    def __init__(self, port: str = "", marker_duration: float = 0.05):
         self.port = port
         self.marker_duration = marker_duration
 
@@ -14,3 +16,4 @@ class ButtonBoxBciMarkerClient(object):
 
     def sendMarker(self, val):
         self._buttonbox.sendMarker(val=val)
+

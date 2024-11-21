@@ -65,4 +65,3 @@ def get_log_level(log_level_str: str):
             return logging.CRITICAL
         case _:
             return None
-
