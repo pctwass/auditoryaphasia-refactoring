@@ -1,9 +1,10 @@
 import multiprocessing
 import multiprocessing.process
 
-import auditory_aphasia.acquisition.acquisition_interface as AcquisitionSystemInterface
 import auditory_aphasia.audio_stimulation.audio_stimulation_interface as audio_stimulation_interface
 import auditory_aphasia.visual_feedback.visual_feedback_interface as visual_feedback_interface
+from auditory_aphasia.acquisition.acquisition_interface import \
+    run_acqusition_interface
 from auditory_aphasia.barplot import run_barplot
 from auditory_aphasia.process_management.state_dictionaries import (
     init_acquisition_state_dict, init_audio_state_dict,
@@ -71,7 +72,7 @@ class ProcessManager:
             kwargs["live_barplot_state_dict"] = live_barplot_state_dict
 
         acquisition_process = multiprocessing.Process(
-            target=AcquisitionSystemInterface.interface, kwargs=kwargs
+            target=run_acqusition_interface, kwargs=kwargs
         )
         return (
             acquisition_process,

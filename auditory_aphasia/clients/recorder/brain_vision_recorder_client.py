@@ -22,9 +22,9 @@ class BrainVisionRecorderClient:
             import win32com.client as win32
 
             self.logger.debug("win32com.client was imported")
-        except:
+        except Exception as e:
             self.logger.debug(
-                "Error : loading package pywin32 was failed, try these commands 'python Scripts/pywin32_postinstall.py -install'"
+                f"Error : loading package pywin32 was failed, try these commands 'python Scripts/pywin32_postinstall.py -install' - {e=}"
             )
             print(
                 "Error : loading package pywin32 was failed, try these commands 'python Scripts/pywin32_postinstall.py -install'"
@@ -75,4 +75,3 @@ class BrainVisionRecorderClient:
     def stop_recording(self):
         self.recorder.Acquisition.StopRecording()
         # self.recorder.Acquisition.StopViewing()
-

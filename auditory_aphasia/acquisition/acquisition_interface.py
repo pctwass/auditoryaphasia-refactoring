@@ -17,7 +17,7 @@ from auditory_aphasia.process_management.state_dictionaries import \
 logger = get_logger()
 
 
-def interface(
+def run_acquisition_interface(
     name: str,
     state_dict: dict[str, any],
     live_barplot_state_dict: dict[str, any],
@@ -62,6 +62,7 @@ def interface(
                     # ------------------------------------
                     # command
                     if data[2].lower() == "init_recorder":
+                        # Init the BrainVision recorder -> control the GUI and spawn the LSL RDA
                         params["init_recorder"] = json.loads(data[3])
                         acquisition_local_client = RecorderClient(
                             logger=logger,

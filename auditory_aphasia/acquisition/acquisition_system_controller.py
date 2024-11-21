@@ -46,7 +46,7 @@ class AcquisitionSystemController:
         tmin: float,
         tmax: float,
         baseline: str,
-        filter_freq: enumerate[float],
+        filter_freq: enumerate[float],  # comes from classifier_config
         filter_order: int | float,
         ivals: enumerate[enumerate[float]],
         n_class: int,

@@ -176,4 +176,3 @@ def gen_eeg_fname(
 
     f_name = utils.check_file_exists_on_extenstion(f_name, extension)
     return f_name
-
