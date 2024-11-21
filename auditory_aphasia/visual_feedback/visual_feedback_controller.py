@@ -4,8 +4,8 @@ import sys
 from psychopy import core, visual
 
 from auditory_aphasia.config_builder import build_system_config
-from auditory_aphasia.visual_feedback.visual_objects.crosshair import Crosshair
-from auditory_aphasia.visual_feedback.visual_objects.speaker import Speakers
+from auditory_aphasia.visual_feedback.visual_objects.Crosshair import Crosshair
+from auditory_aphasia.visual_feedback.visual_objects.Speaker import Speakers
 
 
 class VisualFeedbackController(object):

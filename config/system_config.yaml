@@ -1,8 +1,8 @@
 {
     "data_dir" : "D:/home/bbci",
     "file_name_prefix" : "AuditoryAphasia",
-    "audio_files_dir_base" : "media/audio",
-    "visual_images_dir_base" : "media/images",
+    "audio_files_dir_base" : "auditory_aphasia/media/audio",
+    "visual_images_dir_base" : "auditory_aphasia/media/images",
 
     "len_shared_memory" : 8,
 

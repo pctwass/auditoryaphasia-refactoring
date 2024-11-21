@@ -2,7 +2,6 @@ import os
 import sys
 import time
 
-import config.temp_new_conf as temp_new_conf
 import pyscab
 from pylsl import StreamOutlet
 
@@ -14,8 +13,7 @@ from auditory_aphasia.config_builder import GeneralConfig, SystemConfig
 # conf_system.set_logger(True, True, level_file = 'debug', level_stdout = 'info')
 from auditory_aphasia.logging.logger import get_logger
 from auditory_aphasia.main_processes.main_process_functions import (
-    create_and_start_subprocesses, gen_eeg_fname, generate_meta_file,
-    open_audio_device)
+    create_and_start_subprocesses, generate_meta_file, open_audio_device)
 from auditory_aphasia.plans.run_plan import generate_run_plan
 from auditory_aphasia.plans.trial_plan import generate_trial_plan
 from auditory_aphasia.process_management.process_communication_enums import \
@@ -61,11 +59,12 @@ def run_offline(config: GeneralConfig, system_config: SystemConfig):
     open_audio_device(intermodule_comm_outlet, audio_stim_state_dict)
 
     # initiate recorder if managed locally
-    if temp_new_conf.init_recorder_locally:
-        logger.info("starting recorder")
-        intermodule_comm.send_cmd_LSL(
-            intermodule_comm_outlet, "acq", "init_recorder", {"session_type": "offline"}
-        )
+    # TODO: The whole temp_new_conf was dangling (no init ever @Peter, do you know how it was used?)
+    # if temp_new_conf.init_recorder_locally:
+    #     logger.info("starting recorder")
+    #     intermodule_comm.send_cmd_LSL(
+    #         intermodule_comm_outlet, "acq", "init_recorder", {"session_type": "offline"}
+    #     )
     time.sleep(1)
 
     # eyes open close, pre
@@ -172,20 +171,20 @@ def execute_run_for_each_condition(
             intermodule_comm_outlet, "audio", "marker", True
         )
 
-        f_name = gen_eeg_fname(
-            os.path.join(system_config.data_dir, system_config.save_folder_name),
-            config.callibration_file_name_prefix,
-            condition,
-            soa,
-            idx_run,
-            "eeg",
-            session_type=config.offline_session_type,
-        )
+        # f_name = gen_eeg_fname(
+        #     os.path.join(system_config.data_dir, system_config.save_folder_name),
+        #     config.callibration_file_name_prefix,
+        #     condition,
+        #     soa,
+        #     idx_run,
+        #     "eeg",
+        #     session_type=config.offline_session_type,
+        # )
 
-        if temp_new_conf.init_recorder_locally:
-            intermodule_comm.send_cmd_LSL(
-                intermodule_comm_outlet, "acq", "start_recording", f_name
-            )
+        # if temp_new_conf.init_recorder_locally:
+        #     intermodule_comm.send_cmd_LSL(
+        #         intermodule_comm_outlet, "acq", "start_recording", f_name
+        #     )
 
         execute_trial_for_each_word(
             config,
@@ -200,10 +199,10 @@ def execute_run_for_each_condition(
             number_of_words,
         )
 
-        if temp_new_conf.init_recorder_locally:
-            intermodule_comm.send_cmd_LSL(
-                intermodule_comm_outlet, "acq", "stop_recording"
-            )
+        # if temp_new_conf.init_recorder_locally:
+        #     intermodule_comm.send_cmd_LSL(
+        #         intermodule_comm_outlet, "acq", "stop_recording"
+        #     )
 
 
 def execute_trial_for_each_word(
@@ -299,4 +298,3 @@ def execute_trial_for_each_word(
             time.sleep(0.01)
 
         time.sleep(system_config.pause_between_trial)
-

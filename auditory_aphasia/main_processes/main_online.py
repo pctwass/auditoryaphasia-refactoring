@@ -2,7 +2,6 @@ import os
 import sys
 import time
 
-import config.temp_new_conf as temp_new_conf
 import matplotlib
 import numpy as np
 import pyscab
@@ -12,11 +11,12 @@ import auditory_aphasia.condition_params as condition_params
 import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
 from auditory_aphasia.common.eyes_open_close import run_eyes_open_close
 from auditory_aphasia.common.oddball import run_oddball
-from auditory_aphasia.config_builder import GeneralConfig, SystemConfig
+from auditory_aphasia.config_builder import (GeneralConfig, SystemConfig,
+                                             build_classifier_config)
 from auditory_aphasia.logging.logger import get_logger
 from auditory_aphasia.main_processes.main_process_functions import (
-    classifier_config, create_and_start_subprocesses, generate_meta_file,
-    launch_acquisition, open_audio_device)
+    create_and_start_subprocesses, generate_meta_file, launch_acquisition,
+    open_audio_device)
 from auditory_aphasia.plans.feedback_plan import generate_feedback_plan
 from auditory_aphasia.plans.run_plan import generate_run_plan
 from auditory_aphasia.plans.trial_plan import generate_trial_plan
@@ -27,7 +27,7 @@ matplotlib.use("tkagg")
 logger = get_logger()
 
 
-def run_main(config: GeneralConfig, system_config: SystemConfig):
+def run_online(config: GeneralConfig, system_config: SystemConfig):
     # make directory to save files
     isExist = os.path.exists(
         os.path.join(system_config.data_dir, system_config.save_folder_name)
@@ -66,11 +66,11 @@ def run_main(config: GeneralConfig, system_config: SystemConfig):
     ) = create_and_start_subprocesses()
     open_audio_device(intermodule_comm_outlet, audio_stim_state_dict)
 
-    if temp_new_conf.init_recorder_locally:
-        logger.info("starting recorder")
-        intermodule_comm.send_cmd_LSL(
-            intermodule_comm_outlet, "acq", "init_recorder", {"session_type": "online"}
-        )
+    # if temp_new_conf.init_recorder_locally:
+    #     logger.info("starting recorder")
+    #     intermodule_comm.send_cmd_LSL(
+    #         intermodule_comm_outlet, "acq", "init_recorder", {"session_type": "online"}
+    #     )
     time.sleep(1)
 
     # eyes open close, pre
@@ -194,10 +194,10 @@ def execute_runs(
         logger.info("plan_run : %s" % str(plan_run))
 
         # start acquisition for run
-        if temp_new_conf.init_recorder_locally:
-            intermodule_comm.send_cmd_LSL(
-                intermodule_comm_outlet, "acq", "start_recording", f_name
-            )
+        # if temp_new_conf.init_recorder_locally:
+        #     intermodule_comm.send_cmd_LSL(
+        #         intermodule_comm_outlet, "acq", "start_recording", f_name
+        #     )
         intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, "acq", "start")
 
         execute_trial_for_each_word(
@@ -220,10 +220,10 @@ def execute_runs(
 
         # stop acquisition
         acquisition_state_dict["acquire_trials"] = False
-        if temp_new_conf.init_recorder_locally:
-            intermodule_comm.send_cmd_LSL(
-                intermodule_comm_outlet, "acq", "stop_recording"
-            )
+        # if temp_new_conf.init_recorder_locally:
+        #     intermodule_comm.send_cmd_LSL(
+        #         intermodule_comm_outlet, "acq", "stop_recording"
+        #     )
 
 
 def execute_trial_for_each_word(
@@ -373,6 +373,7 @@ def provide_audiovisual_feeback(
     master_volume: float,
     words: list[str],
 ):
+    classifier_config = build_classifier_config()
     fb_type = acquisition_state_dict["trial_classification_status"]
 
     if fb_type == TrialClassificationStatus.UNDECODED:
@@ -430,4 +431,3 @@ def provide_audiovisual_feeback(
         intermodule_comm.send_cmd_LSL(
             intermodule_comm_outlet, "visual", "hide_" + visual_fb
         )
-

@@ -3,9 +3,9 @@ import time
 
 import pyscab
 
-import auditory_aphasia.config.config as config
-import auditory_aphasia.config.system_config as system_config
 import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
+from auditory_aphasia.config_builder import (build_general_config,
+                                             build_system_config)
 from auditory_aphasia.logging.logger import get_logger
 from auditory_aphasia.plans.stimulation_plan import generate_stimulation_plan
 from auditory_aphasia.process_management.process_communication_enums import \
@@ -15,6 +15,9 @@ logger = get_logger()
 
 
 def run_oddball(outlet, audio_state_dict, number_of_repetitions=None):
+    config = build_general_config()
+    system_config = build_system_config()
+
     if number_of_repetitions is None:
         number_of_repetitions = config.oddball_n_reps
 
@@ -136,4 +139,3 @@ def run_oddball(outlet, audio_state_dict, number_of_repetitions=None):
             or not user_input_repeat_procedure.lower() == "y"
         ):
             break
-
