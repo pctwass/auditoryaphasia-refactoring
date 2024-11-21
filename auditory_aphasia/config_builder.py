@@ -62,6 +62,15 @@ class SystemConfig:
             "nontarget": 1,
         }
     )
+
+    markers: dict = field(
+        default_factory=lambda: {
+            "target": [111, 112, 113, 114, 115, 116],
+            "nontarget": [101, 102, 103, 104, 105, 106],
+            "new-trial": [200, 201, 202, 203, 204, 205],
+        }
+    )
+    format: str = "INT16"
     oddball_channels: list = field(default_factory=lambda: [1])
     enable_pause_between_trial: bool = False
     pause_after_start_sound: float = 2
@@ -166,9 +175,6 @@ def build_system_config(config_file_path: str = Path("./config/system_config.yam
     config_dict = yaml.safe_load(open(config_file_path, "r"))
     config_dict["save_folder_name"] = config.subject_code + ISO_DATE
     config_dict["number_of_words"] = len(config.words)
-
-    # Potentially here needs to be changes about the directories for loading
-    # the auditory and visual stimuli
 
     system_config = SystemConfig(**config_dict)
     return system_config

@@ -1,10 +1,9 @@
 import multiprocessing
 import multiprocessing.process
 
-import audio_stimulation.audio_stimulation_interface as audio_stimulation_interface
-import visual_feedback.visual_feedback_interface as visual_feedback_interface
-
 import auditory_aphasia.acquisition.acquisition_interface as AcquisitionSystemInterface
+import auditory_aphasia.audio_stimulation.audio_stimulation_interface as audio_stimulation_interface
+import auditory_aphasia.visual_feedback.visual_feedback_interface as visual_feedback_interface
 from auditory_aphasia.barplot import run_barplot
 from auditory_aphasia.process_management.state_dictionaries import (
     init_acquisition_state_dict, init_audio_state_dict,

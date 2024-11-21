@@ -1,9 +1,8 @@
 import json
 
-from acquisition.acquisition_system_controller import \
-    AcquisitionSystemController
-
 import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
+from auditory_aphasia.acquisition.acquisition_system_controller import \
+    AcquisitionSystemController
 from auditory_aphasia.clients.recorder.brain_vision_recorder_client import \
     BrainVisionRecorderClient as RecorderClient
 from auditory_aphasia.config_builder import (GeneralConfig, SystemConfig,

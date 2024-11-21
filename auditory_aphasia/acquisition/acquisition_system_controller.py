@@ -12,26 +12,25 @@ from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
 
 from auditory_aphasia.logging.logger import get_logger
+from auditory_aphasia.process_management.process_communication_enums import \
+    TrialClassificationStatus
 
 matplotlib.use("tkagg")
-import acquisition.online_data_acquire as online_data_acquire
 import matplotlib.pyplot as plt
 
 import auditory_aphasia.acquisition.epoch_container as epoch_container
+import auditory_aphasia.acquisition.online_data_acquire as online_data_acquire
 import auditory_aphasia.common.LSL_streaming as streaming
 import auditory_aphasia.common.utils as utils
-import auditory_aphasia.config.classifier_config as classifier_config
-import auditory_aphasia.config.config as config
-import auditory_aphasia.config.system_config as system_config
 from auditory_aphasia.acquisition.acquisition_streaming_outlet_manager import \
     AcquisitionStreamingOutletManager
 from auditory_aphasia.common.pandas_save_utility import PandasSaveUtility
-from auditory_aphasia.config_builder import (build_classifier_config,
+from auditory_aphasia.config_builder import (GeneralConfig, SystemConfig,
+                                             build_classifier_config,
+                                             build_general_config,
                                              build_system_config)
 from auditory_aphasia.factories import (calibration_data_provider_factory,
                                         classification_pipeline_factory)
-from auditory_aphasia.process_management.process_communication_enums import *
-from auditory_aphasia.process_management.state_dictionaries import *
 
 logger = get_logger()
 
@@ -55,6 +54,8 @@ class AcquisitionSystemController:
         dynamic_stopping: bool = False,
         dynamic_stopping_params: dict[str, int | float] = None,
         max_n_stims: int = None,
+        config: GeneralConfig = build_general_config(),
+        system_config: SystemConfig = build_system_config(),
     ):
         self.state_dict = state_dict
         self.live_barplot_state_dict = live_barplot_state_dict
@@ -67,6 +68,8 @@ class AcquisitionSystemController:
         self.dynamic_stopping_params = dynamic_stopping_params
         self.max_n_stims = max_n_stims
         self.n_class = n_class
+        self.system_config = system_config
+        self.config = config
 
         # below function sets:
         # - self.eeg_stream
@@ -171,7 +174,7 @@ class AcquisitionSystemController:
     def _get_channel_indices_to_acquire(self) -> list[int]:
         channel_indices_to_acquire = list()
         for idx, channel in enumerate(self.channel_names):
-            if channel in config.channel_labels_online:
+            if channel in self.config.channel_labels_online:
                 channel_indices_to_acquire.append(idx)
 
         self.channels_to_acquire = np.array(channel_indices_to_acquire)
@@ -450,7 +453,9 @@ class AcquisitionSystemController:
 
                                     fig_feedback = plt.figure(num=2)
                                     plt.bar(
-                                        config.words, clf_out_mean, color=barplot_colors
+                                        self.config.words,
+                                        clf_out_mean,
+                                        color=barplot_colors,
                                     )
                                     plt.tick_params(
                                         left=False,
@@ -549,10 +554,10 @@ class AcquisitionSystemController:
             #    self.acq.stop()
             #    logger.info("asc controller was stopped.")
             #    raise e.with_traceback(sys.exc_info()[2])
-            except:
+            except Exception as e:
                 # tb = sys.exc_info()[2]
                 # logger.info("Error : \n%s" %(tb.format_exc()))
-                logger.error("Error : \n%s" % (traceback.format_exc()))
+                logger.error(f"Error {e} : \n%s" % (traceback.format_exc()))
                 # logger.info()
                 # sys.exit()
                 # logger.error(str(sys.exc_info()))
@@ -624,10 +629,10 @@ class AcquisitionSystemController:
         return distances_foreach_class
 
     def _plot_and_save_feedback_figure(
-        clf_out_mean: list[float], barplot_colors: list[str]
+        self, clf_out_mean: list[float], barplot_colors: list[str]
     ):
         fig_feedback = plt.figure(num=2)
-        plt.bar(config.words, clf_out_mean, color=barplot_colors)
+        plt.bar(self.config.words, clf_out_mean, color=barplot_colors)
         plt.tick_params(
             left=False,
             right=False,
@@ -673,4 +678,3 @@ if __name__ == "__main__":
 
     for k, v in testdict.items():
         print(k, v)
-

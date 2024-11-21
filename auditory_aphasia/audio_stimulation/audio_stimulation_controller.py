@@ -1,16 +1,15 @@
-from auditory_aphasia.logging.logger import get_logger
-
-logger = get_logger()
-
 import pyscab
 
-import auditory_aphasia.config.system_config as system_config
 from auditory_aphasia.audio_stimulation.pyscab_stimulation_controller import \
     PyscabStimulationController
 from auditory_aphasia.clients.marker.button_box_bci_marker_client import \
     ButtonBoxBciMarkerClient as MarkerClient
+from auditory_aphasia.config_builder import build_system_config
+from auditory_aphasia.logging.logger import get_logger
 from auditory_aphasia.process_management.process_communication_enums import \
     AudioStatus
+
+logger = get_logger()
 
 
 class AudioStimulationController(object):
@@ -22,6 +21,7 @@ class AudioStimulationController(object):
         self.psycab_stim_controller = None
 
     def open(self):
+        system_config = build_system_config()
         self.audio_device_interface = pyscab.AudioInterface(
             device_name=system_config.audio_device_name,
             n_ch=system_config.n_channels,
@@ -74,4 +74,4 @@ class AudioStimulationController(object):
         # logger.info("Marker Device closed")
         # logger.info("------------------------ Run ended ------------------------")
         self.state_dict["audio_status"] = AudioStatus.TERMINATED
-        logger.debug(f"changed audio status to TERMINATED")
+        logger.debug("changed audio status to TERMINATED")

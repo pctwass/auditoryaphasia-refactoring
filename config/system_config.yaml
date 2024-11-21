@@ -42,7 +42,7 @@
     "log_level_file" : "debug" ,
 
 
-    "marker_client_class" : "clients.marker.button_box_bci_marker_client:ButtonBoxBciMarkerClient",
+    # "marker_client_class" : "ButtonBoxBciMarkerClient",    << no longer used
     "markers" : 
     {
         "target" : [111,112,113,114,115,116],
@@ -75,8 +75,8 @@
 
 
     "init_recorder_locally" : true,
-    "recorder_client_class" : "clients.recorder.brain_vision_recorder_client:BrainVisionRecorderClient",
-    "formatting_client_class" : "clients.formatting.brain_vision_formatting_client:BrainVisionFromattingClient",
+    # "recorder_client_class" : "clients.recorder.brain_vision_recorder_client:BrainVisionRecorderClient",          # no longer used
+    # "formatting_client_class" : "clients.formatting.brain_vision_formatting_client:BrainVisionFromattingClient",      # no longer used
 
     "rda_lsl_dir" : "lsl/BrainVisionRDA_x64/BrainVisionRDA.exe",
     "rda_lsl_config_dir" : "lsl/BrainVisionRDA_x64/brainvision_config.cfg",
