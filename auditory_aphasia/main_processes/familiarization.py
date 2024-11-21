@@ -7,22 +7,23 @@ import pyscab
 
 import auditory_aphasia.common.directory_navigator as dir_navigator
 import auditory_aphasia.condition_params as condition_params
-import auditory_aphasia.config.config as config
-import auditory_aphasia.config.system_config as system_config
 import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
 from auditory_aphasia.common.sudoku_matrix import SudokuMarix
+from auditory_aphasia.config_builder import GeneralConfig, SystemConfig
 from auditory_aphasia.logging.logger import get_logger
 from auditory_aphasia.plans.audio_plan import generate_audio_plan
 from auditory_aphasia.plans.stimulation_plan import generate_stimulation_plan
-from auditory_aphasia.process_management.process_communication_enums import AudioStatus
+from auditory_aphasia.process_management.process_communication_enums import \
+    AudioStatus
 from auditory_aphasia.process_management.process_manager import ProcessManager
-from auditory_aphasia.process_management.state_dictionaries import init_audio_state_dict
+from auditory_aphasia.process_management.state_dictionaries import \
+    init_audio_state_dict
 
 logger = get_logger()
 
 
 def gen_plan_play_oddball(
-    soa: float = 1, num_reps: int = 10, volume: float = 1
+    system_config: SystemConfig, soa: float = 1, num_reps: int = 10, volume: float = 1
 ) -> tuple[list[any], pyscab.DataHandler]:
     oddball_base = os.path.join(
         system_config.repository_dir_base, "media", "audio", "oddball"
@@ -60,6 +61,7 @@ def gen_plan_play_oddball(
 
 
 def gen_plan_play_word(
+    config: GeneralConfig,
     word_idx_to_be_played: int,
     repo_base_dir: str,
     soa: float = 1.5,
@@ -83,6 +85,7 @@ def gen_plan_play_word(
 
 
 def gen_plan_sentence_and_word(
+    config: GeneralConfig,
     pyscab_audio_interface: pyscab.AudioInterface,
     word_idx_to_be_played: int,
     repo_base_dir: str,
@@ -227,6 +230,7 @@ def send_marker_visual(val: int):
 
 
 def load_audio_data(
+    config: GeneralConfig,
     data: pyscab.DataHandler,
     repo_base_dir: str,
     condition: str,
@@ -262,7 +266,7 @@ def load_audio_data(
         data.load(101, relax_file_path, volume=volume)
 
 
-def main():
+def run_familiarization(config: GeneralConfig, system_config: SystemConfig):
     familirization_args = parse_familirization_arguments()
     set_globals(familirization_args)
 
@@ -323,7 +327,9 @@ def main():
 
                 # play oddball
                 case 1:
-                    audio_plan, audio_data = gen_plan_play_oddball()
+                    audio_plan, audio_data = gen_plan_play_oddball(
+                        system_config=system_config
+                    )
 
                 # play each word
                 case 2:
@@ -331,7 +337,7 @@ def main():
                     print("Words : " + str(words_to_play))
                     selected_word = input()
                     audio_plan, audio_data = gen_plan_play_word(
-                        int(selected_word), repo_base_dir, volume=master_volume
+                        config, int(selected_word), repo_base_dir, volume=master_volume
                     )
 
                 # sentence and word
@@ -340,6 +346,7 @@ def main():
                     print("Words : " + str(words_to_play))
                     selected_word = input()
                     gen_plan_sentence_and_word(
+                        config,
                         pyscab_audio_interface,
                         int(selected_word),
                         repo_base_dir,
@@ -405,11 +412,11 @@ def main():
 
         except ValueError:
             print("ERROR : input value was invailed.")
-            main()
+            run_familiarization()
 
         except FileNotFoundError:
             print("ERROR : File was not found")
-            main()
+            run_familiarization()
 
     audio_state_dict["audio_status"] = AudioStatus.FINISHED_PLAYING
     if familirization_args.visual:

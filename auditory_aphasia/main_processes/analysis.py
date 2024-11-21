@@ -1,31 +1,19 @@
 import os
-import sys
-import json
-
-import mne
-import numpy as np
-
-import auditory_aphasia.config.system_config as system_config
-
-dir_base = system_config.data_dir
-save_dir = os.path.join(dir_base, "plots", system_config.save_folder_name)
-
-subject_code = None
-date = None
-
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
 
 import matplotlib
+import mne
+import numpy as np
+import pyclf
+import pyerp  # TODO: WHAT DO WE NEED PYERP FOR? << Replace this by a more standard solution
+
+from auditory_aphasia.config_builder import SystemConfig
 
 matplotlib.use("tkagg")
-import pyclf
-import pyerp
 
 
 def session_parser(data_dir, f_name_prefix, date, subject_code, extension):
 
-    folders = os.listdir(dir_base)
+    folders = os.listdir(data_dir)
     if date is None:
         import datetime
 
@@ -73,7 +61,7 @@ def session_parser(data_dir, f_name_prefix, date, subject_code, extension):
 def plot_erp(
     data_dir,
     save_dir,
-    f_name_prefix,
+    system_config: SystemConfig,
     marker,
     date=None,
     subject_code=None,
@@ -91,10 +79,8 @@ def plot_erp(
     extension = "vhdr"
 
     session, conditions, soas = session_parser(
-        data_dir, f_name_prefix, date, subject_code, extension=extension
+        data_dir, system_config.f_name_prefix, date, subject_code, extension=extension
     )
-
-    folders = os.listdir(dir_base)
 
     pyerp.utils.mkdir(os.path.join(save_dir, session, "erp"))
 
@@ -104,7 +90,7 @@ def plot_erp(
         for soa in soas:
             files_to_load = list()
             for file in files:
-                if f_name_prefix in file and extension in file:
+                if system_config.f_name_prefix in file and extension in file:
                     condition_file = file.split("_")[-3]
                     soa_file = file.split("_")[-2]
                     if condition == condition_file and soa == soa_file:
@@ -170,9 +156,7 @@ def plot_erp(
             fig = mne.combine_evoked(
                 [epochs["target"].average(), epochs["nontarget"].average()],
                 weights=[1, -1],
-            ).plot_topomap(
-                time_scalpmap, vlim=vlim, ch_type="eeg", nrows=8, show=False
-            )
+            ).plot_topomap(time_scalpmap, vlim=vlim, ch_type="eeg", nrows=8, show=False)
             fig.savefig(
                 os.path.join(
                     save_dir,
@@ -187,7 +171,7 @@ def plot_erp(
 def classify_erp(
     data_dir,
     save_dir,
-    f_name_prefix,
+    system_config: SystemConfig,
     marker,
     ivals,
     cv=4,
@@ -205,19 +189,15 @@ def classify_erp(
     extension = "vhdr"
 
     session, conditions, soas = session_parser(
-        data_dir, f_name_prefix, date, subject_code, extension=extension
+        data_dir, system_config.f_name_prefix, date, subject_code, extension=extension
     )
-
-    folders = os.listdir(dir_base)
 
     pyerp.utils.mkdir(os.path.join(save_dir, session, "classification"))
 
     files = os.listdir(os.path.join(data_dir, session))
 
     pd = pyerp.utils.pd.quickSave(
-        file_dir=os.path.join(
-            save_dir, session, "classification", "classification"
-        ),
+        file_dir=os.path.join(save_dir, session, "classification", "classification"),
         delete_if_exists=True,
     )
 
@@ -225,7 +205,7 @@ def classify_erp(
         for soa in soas:
             files_to_load = list()
             for file in files:
-                if f_name_prefix in file and extension in file:
+                if system_config.f_name_prefix in file and extension in file:
                     condition_file = file.split("_")[-3]
                     soa_file = file.split("_")[-2]
                     if condition == condition_file and soa == soa_file:
@@ -256,9 +236,7 @@ def classify_erp(
                 epochs.set_channel_types({eog_channel: "eog"})
             epochs.pick_types(eeg=True)
 
-            clf = pyclf.lda.classification.ToeplitzLDA(
-                n_channels=len(epochs.ch_names)
-            )
+            clf = pyclf.lda.classification.ToeplitzLDA(n_channels=len(epochs.ch_names))
 
             print("analyzing....")
             score = pyerp.classify_binary(
@@ -303,21 +281,33 @@ def classify_erp(
             )
             pd.save_html()
 
-def main():
-    marker = list()
-    marker.append([101, "nontarget", "word1"])
-    marker.append([102, "nontarget", "word2"])
-    marker.append([103, "nontarget", "word3"])
-    marker.append([104, "nontarget", "word4"])
-    marker.append([105, "nontarget", "word5"])
-    marker.append([106, "nontarget", "word6"])
-    marker.append([111, "target", "word1"])
-    marker.append([112, "target", "word2"])
-    marker.append([113, "target", "word3"])
-    marker.append([114, "target", "word4"])
-    marker.append([115, "target", "word5"])
-    marker.append([116, "target", "word6"])
-    marker.append([210, "new-trial/disable", ""])
+
+def run_analysis(system_config: SystemConfig):
+
+    data_dir = system_config.data_dir
+    save_dir = os.path.join(data_dir, "plots", system_config.save_folder_name)
+
+    subject_code = None  # TODO: Where would those acutally be set?
+    date = None
+
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    marker = [
+        [101, "nontarget", "word1"],
+        [102, "nontarget", "word2"],
+        [103, "nontarget", "word3"],
+        [104, "nontarget", "word4"],
+        [105, "nontarget", "word5"],
+        [106, "nontarget", "word6"],
+        [111, "target", "word1"],
+        [112, "target", "word2"],
+        [113, "target", "word3"],
+        [114, "target", "word4"],
+        [115, "target", "word5"],
+        [116, "target", "word6"],
+        [210, "new-trial/disable", ""],
+    ]
 
     ivals = [
         [0.08, 0.15],
@@ -333,9 +323,9 @@ def main():
     ]
 
     plot_erp(
-        dir_base,
+        data_dir=data_dir,
         save_dir=save_dir,
-        f_name_prefix=system_config.file_name_prefix,
+        system_config=system_config,
         marker=marker,
         eog_channel=None,
         subject_code=subject_code,
@@ -343,7 +333,7 @@ def main():
     )
 
     classify_erp(
-        dir_base,
+        data_dir=data_dir,
         save_dir=save_dir,
         f_name_prefix=system_config.file_name_prefix,
         marker=marker,
@@ -352,3 +342,4 @@ def main():
         subject_code=subject_code,
         date=date,
     )
+
