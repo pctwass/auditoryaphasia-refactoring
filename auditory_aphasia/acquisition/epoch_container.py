@@ -6,7 +6,7 @@ from auditory_aphasia.logging.logger import get_logger
 logger = get_logger()
 
 
-class EpochContainerNew:
+class EpochContainer:
     def __init__(
         self,
         n_channels: int,
@@ -292,4 +292,3 @@ class EpochContainerOld:
 
                 self.new_data = np.append(self.new_data, new_data_tmp)
                 self.new_data_available = True
-

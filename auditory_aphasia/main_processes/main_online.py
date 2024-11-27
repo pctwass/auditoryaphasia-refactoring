@@ -8,7 +8,7 @@ import pyscab
 from pylsl import StreamOutlet
 
 import auditory_aphasia.condition_params as condition_params
-import auditory_aphasia.process_management.intermodule_communication as intermodule_comm
+import auditory_aphasia.process_management.intermodule_communication
 from auditory_aphasia.common.eyes_open_close import run_eyes_open_close
 from auditory_aphasia.common.oddball import run_oddball
 from auditory_aphasia.config_builder import (GeneralConfig, SystemConfig,
@@ -20,6 +20,8 @@ from auditory_aphasia.main_processes.main_process_functions import (
 from auditory_aphasia.plans.feedback_plan import generate_feedback_plan
 from auditory_aphasia.plans.run_plan import generate_run_plan
 from auditory_aphasia.plans.trial_plan import generate_trial_plan
+from auditory_aphasia.process_management.intermodule_communication import (
+    create_intermodule_communication_outlet, send_cmd_LSL, send_params_LSL)
 from auditory_aphasia.process_management.process_communication_enums import (
     AudioStatus, TrialClassificationStatus)
 
@@ -51,7 +53,7 @@ def run_online(config: GeneralConfig, system_config: SystemConfig):
     # start stimulation
 
     # set up intermodule communication LSL, subprocess modules, and open the audio device
-    intermodule_comm_outlet = intermodule_comm.create_intermodule_communication_outlet(
+    intermodule_comm_outlet = create_intermodule_communication_outlet(
         "main", channel_count=4, source_id="auditory_aphasia_main"
     )
     (
@@ -68,7 +70,7 @@ def run_online(config: GeneralConfig, system_config: SystemConfig):
 
     # if temp_new_conf.init_recorder_locally:
     #     logger.info("starting recorder")
-    #     intermodule_comm.send_cmd_LSL(
+    #     send_cmd_LSL(
     #         intermodule_comm_outlet, "acq", "init_recorder", {"session_type": "online"}
     #     )
     time.sleep(1)
@@ -96,7 +98,7 @@ def run_online(config: GeneralConfig, system_config: SystemConfig):
     launch_acquisition(intermodule_comm_outlet, condition, soa)
 
     # run calibration
-    intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, "acq", "start_calibration")
+    send_cmd_LSL(intermodule_comm_outlet, "acq", "start_calibration")
     while acquisition_state_dict["trial_completed"] is False:
         time.sleep(0.1)
 
@@ -122,7 +124,7 @@ def run_online(config: GeneralConfig, system_config: SystemConfig):
         run_eyes_open_close(intermodule_comm_outlet, "post")
 
     # close audio device
-    intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, "audio", "close")
+    send_cmd_LSL(intermodule_comm_outlet, "audio", "close")
     time.sleep(3)
 
     # terminate subprocesses
@@ -195,10 +197,10 @@ def execute_runs(
 
         # start acquisition for run
         # if temp_new_conf.init_recorder_locally:
-        #     intermodule_comm.send_cmd_LSL(
+        #     send_cmd_LSL(
         #         intermodule_comm_outlet, "acq", "start_recording", f_name
         #     )
-        intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, "acq", "start")
+        send_cmd_LSL(intermodule_comm_outlet, "acq", "start")
 
         execute_trial_for_each_word(
             config,
@@ -221,7 +223,7 @@ def execute_runs(
         # stop acquisition
         acquisition_state_dict["acquire_trials"] = False
         # if temp_new_conf.init_recorder_locally:
-        #     intermodule_comm.send_cmd_LSL(
+        #     send_cmd_LSL(
         #         intermodule_comm_outlet, "acq", "stop_recording"
         #     )
 
@@ -283,17 +285,11 @@ def execute_trial_for_each_word(
 
         logger.info("plan_trial : %s" % str(plan_trial))
         play_plan = plan_trial["play_plan"]
-        intermodule_comm.send_params_LSL(
-            intermodule_comm_outlet, "audio", "audio_info", audio_info
-        )
-        intermodule_comm.send_params_LSL(
-            intermodule_comm_outlet, "audio", "marker", True
-        )
+        send_params_LSL(intermodule_comm_outlet, "audio", "audio_info", audio_info)
+        send_params_LSL(intermodule_comm_outlet, "audio", "marker", True)
 
-        # intermodule_comm.send_cmd_LSL(outlet, 'acq','start_recording', os.path.join('D:/','data','test_2209'))
-        intermodule_comm.send_cmd_LSL(
-            intermodule_comm_outlet, "audio", "play", play_plan
-        )
+        # send_cmd_LSL(outlet, 'acq','start_recording', os.path.join('D:/','data','test_2209'))
+        send_cmd_LSL(intermodule_comm_outlet, "audio", "play", play_plan)
         acquisition_state_dict["trial_completed"] = False
 
         marker = int(audio_stim_state_dict["trial_marker"])
@@ -309,7 +305,7 @@ def execute_trial_for_each_word(
             ):
                 marker = int(audio_stim_state_dict["trial_marker"])
                 if marker in system_config.markers["new-trial"]:
-                    intermodule_comm.send_cmd_LSL(
+                    send_cmd_LSL(
                         intermodule_comm_outlet,
                         "visual",
                         "highlight_speaker",
@@ -319,14 +315,12 @@ def execute_trial_for_each_word(
                         },
                     )
                 elif marker == 210:
-                    intermodule_comm.send_cmd_LSL(
-                        intermodule_comm_outlet, "visual", "show_speaker"
-                    )
+                    send_cmd_LSL(intermodule_comm_outlet, "visual", "show_speaker")
             time.sleep(0.01)
 
         if audio_stim_state_dict["audio_status"].value == AudioStatus.PLAYING.value:
             audio_stim_state_dict["audio_status"] = AudioStatus.FINISHED_PLAYING
-        # intermodule_comm.send_cmd_LSL(outlet, 'audio', 'stop')
+        # send_cmd_LSL(outlet, 'audio', 'stop')
 
         # wait until the audio has finished playing
         while True:
@@ -352,7 +346,7 @@ def execute_trial_for_each_word(
         )
 
         logger.info("Trial ended, observed by main module")
-        # intermodule_comm.send_cmd_LSL(outlet, 'acq', 'stop_recording')
+        # send_cmd_LSL(outlet, 'acq', 'stop_recording')
         audio_stim_state_dict["audio_status"] = (
             AudioStatus.INITIAL
         )  # reinitialize status
@@ -405,7 +399,7 @@ def provide_audiovisual_feeback(
         master_volume,
     )
 
-    intermodule_comm.send_params_LSL(
+    send_params_LSL(
         intermodule_comm_outlet, "audio", "audio_info", fb_plan["audio_info"]
     )
     # utils.send_params_LSL(outlet, 'audio', 'marker', False)
@@ -413,21 +407,15 @@ def provide_audiovisual_feeback(
     time.sleep(system_config.pause_before_feedback)
 
     if visual_fb == "show_gif":
-        intermodule_comm.send_cmd_LSL(intermodule_comm_outlet, "visual", "show_gif")
+        send_cmd_LSL(intermodule_comm_outlet, "visual", "show_gif")
     else:
-        intermodule_comm.send_cmd_LSL(
-            intermodule_comm_outlet, "visual", "show_" + visual_fb
-        )
+        send_cmd_LSL(intermodule_comm_outlet, "visual", "show_" + visual_fb)
 
-    intermodule_comm.send_cmd_LSL(
-        intermodule_comm_outlet, "audio", "play", fb_plan["play_plan"]
-    )
+    send_cmd_LSL(intermodule_comm_outlet, "audio", "play", fb_plan["play_plan"])
     audio_stim_state_dict["audio_status"] = AudioStatus.INITIAL
 
     while audio_stim_state_dict["audio_status"] != AudioStatus.TERMINATED:
         time.sleep(0.1)
     # time.sleep(3)
     if visual_fb != "show_gif":
-        intermodule_comm.send_cmd_LSL(
-            intermodule_comm_outlet, "visual", "hide_" + visual_fb
-        )
+        send_cmd_LSL(intermodule_comm_outlet, "visual", "hide_" + visual_fb)

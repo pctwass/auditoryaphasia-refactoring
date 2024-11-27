@@ -120,7 +120,8 @@ def init_acquisition(
     classifier_config = build_classifier_config()
 
     classifier = classification_pipeline_factory(
-        classifier_config.classification_pipeline_name
+        pipeline_name=classifier_config.classification_pipeline_name,
+        n_channels=5,  # MD: TODO --> Understand how this was set before?
     )
 
     acquisition_sys_controller = AcquisitionSystemController(

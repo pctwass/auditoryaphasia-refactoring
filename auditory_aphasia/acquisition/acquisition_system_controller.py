@@ -6,6 +6,7 @@ import matplotlib
 import mne
 import numpy as np
 import pylsl
+from dareplane_utils.stream_watcher.lsl_stream_watcher import StreamWatcher
 from pyclf.lda.classification import EpochsVectorizer
 from scipy import stats
 from sklearn.metrics import accuracy_score
@@ -72,13 +73,13 @@ class AcquisitionSystemController:
         self.config = config
 
         # below function sets:
-        # - self.eeg_stream
-        # - self.eeg_inlet
+        # - self.eeg_sw
         # - self.sampling_freq
         # - self.channel_names
         # - self.channels_to_acquire
         # - self.n_channels
-        self._connect_LSL_acquisition_inlet()
+        # - self.marker_sw
+        self._connect_LSL_acquisition_stream_watchers()
 
         # TODO find a way to pass the number of features and classes so that the outlets can be initalized alongside the manager
         # NOTE at the moment the outlets are initialized the first time features or distances/classifications are pushed to them
@@ -102,8 +103,8 @@ class AcquisitionSystemController:
         formatting_client = system_config.FormattingClient()
         self.online_data_acquisitioner = online_data_acquire.OnlineDataAcquire(
             self.epochs,
-            self.eeg_inlet,
-            self.marker_inlet,
+            self.eeg_sw,
+            self.marker_sw,
             self.channels_to_acquire,
             self.n_channels,
             self.sampling_freq,
@@ -136,21 +137,25 @@ class AcquisitionSystemController:
             markers_to_epoch=markers_to_epoch,
         )
 
-    def _connect_LSL_acquisition_inlet(self):
+    def _connect_LSL_acquisition_stream_watchers(self):
         # ------------------------------------------------------------------------------------------------
         # find/connect eeg outlet
 
         logger.info("looking for an EEG stream...")
 
-        self.eeg_stream, self.eeg_inlet = streaming.init_LSL_inlet(
-            stream_name=system_config.eeg_acquisition_stream_name,
-            stream_type=system_config.eeg_acquisition_stream_type,
-            await_stream=True,
-            timeout=system_config.stream_await_timeout_ms,
+        # self.eeg_stream, self.eeg_inlet = streaming.init_LSL_inlet(
+        #     stream_name=system_config.eeg_acquisition_stream_name,
+        #     stream_type=system_config.eeg_acquisition_stream_type,
+        #     await_stream=True,
+        #     timeout=system_config.stream_await_timeout_ms,
+        # )
+        self.eeg_sw = StreamWatcher(
+            name=system_config.eeg_acquisition_stream_name, buffer_size_s=10
         )
+        self.eeg_sw.connect_to_stream()
 
-        self.sampling_freq = self.eeg_stream[0].nominal_srate()
-        self.channel_names = streaming.get_LSL_channel_names(self.eeg_inlet)
+        self.sampling_freq = self.eeg_sw.inlet.nominal_srate()
+        self.channel_names = streaming.get_LSL_channel_names(self.eeg_sw.inlet)
 
         channel_indices_to_acquire = self._get_channel_indices_to_acquire()
         self.n_channels = len(channel_indices_to_acquire)
@@ -162,13 +167,17 @@ class AcquisitionSystemController:
         # find/connect marker outlet
 
         logger.info("looking for a marker stream...")
-        self.marker_stream, self.marker_inlet = streaming.init_LSL_inlet(
-            stream_name=system_config.marker_acquisition_stream_name,
-            stream_type=system_config.marker_acquisition_stream_type,
-            stream_name_keyword=system_config.marker_stream_name_keyword,
-            await_stream=True,
-            timeout=system_config.stream_await_timeout_ms,
+        # self.marker_stream, self.marker_inlet = streaming.init_LSL_inlet(
+        #     stream_name=system_config.marker_acquisition_stream_name,
+        #     stream_type=system_config.marker_acquisition_stream_type,
+        #     stream_name_keyword=system_config.marker_stream_name_keyword,
+        #     await_stream=True,
+        #     timeout=system_config.stream_await_timeout_ms,
+        # )
+        self.marker_sw = StreamWatcher(
+            name=system_config.marker_acquisition_stream_name, buffer_size_s=10
         )
+
         logger.info("Configuration Done.")
 
     def _get_channel_indices_to_acquire(self) -> list[int]:

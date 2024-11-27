@@ -1,4 +1,4 @@
-numpy==1.23.3 # specific version required due to PsychoPy
+numpy==1.23.3 # specific version required due to PsychoPy, and for moabb -> conflict with np.int otherwise
 mne>=1.8.0
 scikit-learn>=1.5.1
 markerbci==0.0.7

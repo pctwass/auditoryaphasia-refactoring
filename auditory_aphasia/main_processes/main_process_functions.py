@@ -46,6 +46,9 @@ def create_and_start_subprocesses() -> tuple[
     dict[str, any],
     dict[str, any],
 ]:
+    # MD: This is thre factory for the subprocesses, which receive controlls via
+    #     LSL.
+
     # create process manager
     process_manager = ProcessManager()
 

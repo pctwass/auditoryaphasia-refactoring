@@ -4,7 +4,7 @@ from logging import getLogger
 
 import numpy as np
 from dareplane_utils.signal_processing.filtering import FilterBank
-from dareplane_utils.stream_watcher.lsl_stream_watcher import LSLStreamWatcher
+from dareplane_utils.stream_watcher.lsl_stream_watcher import StreamWatcher
 from pylsl.pylsl import LostError
 from scipy import signal
 
@@ -17,8 +17,8 @@ class OnlineDataAcquire(object):
     def __init__(
         self,
         epoch_container: EpochContainer,
-        eeg_sw: LSLStreamWatcher,
-        marker_sw: LSLStreamWatcher,
+        eeg_sw: StreamWatcher,
+        marker_sw: StreamWatcher,
         channels_to_acquire: list[list[int]],  # np.array[list[int]]
         n_eeg_channels: int,
         sample_freq_eeg: float,
@@ -118,6 +118,8 @@ class OnlineDataAcquire(object):
                 # only process if a new marker (potentially for epoching arrives)
                 if self.marker_sw.n_new > 0:
                     markers = self.marker_sw.unfold_buffer()[-self.marker_sw.n_new :]
+                    # TODO: WE will have a stop to try here
+                    breakpoint()
                     if any([m in self.new_trial_markers for m in markers]):
 
                         # MD: Up to here, we could rather use the Dareplane utilities
@@ -151,4 +153,3 @@ class OnlineDataAcquire(object):
             logger.error(f"Error : \n {traceback.format_exc()} - {e}")
 
         logger.info("stop receiving data.")
-
