@@ -136,7 +136,7 @@ def init_acquisition(
         filter_order=classifier_config.filter_order,
         ivals=classifier_config.ivals,
         n_class=classifier_config.n_class,
-        adaptation=classifier_config.adaptation,
+        do_adaptation=classifier_config.adaptation,
         dynamic_stopping=classifier_config.dynamic_stopping,
         dynamic_stopping_params=classifier_config.dynamic_stopping_params,
         max_n_stims=classifier_config.n_stimulus,

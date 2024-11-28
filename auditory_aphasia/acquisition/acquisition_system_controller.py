@@ -51,7 +51,7 @@ class AcquisitionSystemController:
         filter_order: int | float,
         ivals: enumerate[enumerate[float]],
         n_class: int,
-        adaptation: bool = False,
+        do_adaptation: bool = False,
         dynamic_stopping: bool = False,
         dynamic_stopping_params: dict[str, int | float] = None,
         max_n_stims: int = None,
@@ -61,9 +61,10 @@ class AcquisitionSystemController:
         self.state_dict = state_dict
         self.live_barplot_state_dict = live_barplot_state_dict
         self.clf = clf
+        self.adaptation_clf = clf[0]
         self.markers = markers
         self.ivals = ivals
-        self.adaptation = adaptation
+        self.do_adaptation = do_adaptation
         self.adaptation_available_new = False
         self.dynamic_stopping = dynamic_stopping
         self.dynamic_stopping_params = dynamic_stopping_params
@@ -230,7 +231,7 @@ class AcquisitionSystemController:
     def main(self):
         logger.info("Acquisition System Controller was started.")
 
-        if self.adaptation:
+        if self.do_adaptation:
             pandas_save_utility = self._prepare_panda_save_util_for_adaptation()
 
         labels = list()
@@ -314,7 +315,7 @@ class AcquisitionSystemController:
                     if classifier_config.adaptation:
                         # this function will calclate new set of w and b.
                         # And it's not overwritten yet. It will be overwritten after trial.
-                        classifier_config.adaptation_clf.adaptation(
+                        self.adaptation_clf.adaptation(
                             vectorized_epoch,
                             true_class_labels,
                             eta_cov=classifier_config.adaptation_eta_cov,
@@ -538,16 +539,16 @@ class AcquisitionSystemController:
 
                 if self.state_dict["trial_completed"] and self.adaptation_available_new:
                     # overwrite w and b with new set.
-                    classifier_config.adaptation_clf.apply_adaptation()
+                    self.adaptation_clf.apply_adaptation()
                     logger.info("classifier was updated.")
                     pandas_save_utility.add(
                         data=[
                             [
-                                classifier_config.adaptation_clf.coef_,
-                                classifier_config.adaptation_clf.intercept_,
-                                classifier_config.adaptation_clf.cl_mean,
-                                classifier_config.adaptation_clf.C_inv,
-                                classifier_config.adaptation_clf.classes_,
+                                self.adaptation_clf.coef_,
+                                self.adaptation_clf.intercept_,
+                                self.adaptation_clf.cl_mean,
+                                self.adaptation_clf.C_inv,
+                                self.adaptation_clf.classes_,
                                 datetime.datetime.now().strftime("%y/%m/%d-%H:%M:%S"),
                             ]
                         ],
@@ -593,11 +594,11 @@ class AcquisitionSystemController:
         pandas_save_utility.add(
             data=[
                 [
-                    classifier_config.adaptation_clf.coef_,
-                    classifier_config.adaptation_clf.intercept_,
-                    classifier_config.adaptation_clf.cl_mean,
-                    classifier_config.adaptation_clf.C_inv,
-                    classifier_config.adaptation_clf.classes_,
+                    self.adaptation_clf.coef_,
+                    self.adaptation_clf.intercept_,
+                    self.adaptation_clf.cl_mean,
+                    self.adaptation_clf.C_inv,
+                    self.adaptation_clf.classes_,
                     datetime.datetime.now().strftime("%y/%m/%d-%H:%M:%S"),
                 ]
             ],
