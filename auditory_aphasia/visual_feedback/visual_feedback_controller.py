@@ -8,7 +8,7 @@ from auditory_aphasia.visual_feedback.visual_objects.Crosshair import Crosshair
 from auditory_aphasia.visual_feedback.visual_objects.Speaker import Speakers
 
 
-class VisualFeedbackController(object):
+class VisualFeedbackController():
 
     def __init__(
         self,

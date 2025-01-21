@@ -3,6 +3,8 @@ import os
 import traceback
 
 import matplotlib
+# matplotlib.use("tkagg")
+import matplotlib.pyplot as plt
 import mne
 import numpy as np
 import pylsl
@@ -11,13 +13,6 @@ from pyclf.lda.classification import EpochsVectorizer
 from scipy import stats
 from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
-
-from auditory_aphasia.logging.logger import get_logger
-from auditory_aphasia.process_management.process_communication_enums import \
-    TrialClassificationStatus
-
-matplotlib.use("tkagg")
-import matplotlib.pyplot as plt
 
 import auditory_aphasia.acquisition.epoch_container as epoch_container
 import auditory_aphasia.acquisition.online_data_acquire as online_data_acquire
@@ -32,6 +27,9 @@ from auditory_aphasia.config_builder import (GeneralConfig, SystemConfig,
                                              build_system_config)
 from auditory_aphasia.factories import (calibration_data_provider_factory,
                                         classification_pipeline_factory)
+from auditory_aphasia.logging.logger import get_logger
+from auditory_aphasia.process_management.process_communication_enums import \
+    TrialClassificationStatus
 
 logger = get_logger()
 

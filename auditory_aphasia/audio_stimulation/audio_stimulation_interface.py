@@ -14,7 +14,7 @@ from auditory_aphasia.process_management.state_dictionaries import \
 logger = get_logger()
 
 
-def interface(
+def run_audio_interface(
     name: str, name_main_outlet: str = "main", state_dict: dict[str, any] = None
 ):
     # ==============================================

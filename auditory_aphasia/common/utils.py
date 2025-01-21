@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from pathlib import Path
 
 
 def increment_file_name_if_exists(file_path: Path) -> Path:
@@ -154,8 +155,4 @@ def _sort_list(data: enumerate) -> enumerate | dict:
 
 
 def _natural_keys(text: str) -> str:
-    return [_text_to_digit_if_digit(c) for c in re.split(r"(\d+)", text)]
-
-
-def _text_to_digit_if_digit(text: str) -> int | str:
-    return int(text) if text.isdigit() else text
+    return [int(text) if text.isdigit() else text for c in re.split(r"(\d+)", text)]

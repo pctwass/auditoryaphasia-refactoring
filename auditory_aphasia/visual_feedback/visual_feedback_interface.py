@@ -1,3 +1,4 @@
+# NOTE: this stuff should run with the general paradigm flow, not was a separate subprocess IMO
 import json
 import time
 
@@ -11,7 +12,7 @@ from auditory_aphasia.visual_feedback.visual_feedback_controller import \
 logger = get_logger()
 
 
-def interface(name: str, name_main_outlet: str = "main", state_dict: str = None):
+def run_visual_interface(name: str='', name_main_outlet: str = "main", state_dict: dict = None):
     # ==============================================
     # This function is called from main module.
     # It opens LSL and communicate with main module.
@@ -25,6 +26,7 @@ def interface(name: str, name_main_outlet: str = "main", state_dict: str = None)
     config = build_general_config()
     system_config = build_system_config()
 
+    state_dict = state_dict or dict()
     state_dict["LSL_inlet_connected"] = False
 
     # status.value = 0
@@ -44,6 +46,7 @@ def interface(name: str, name_main_outlet: str = "main", state_dict: str = None)
     # print('LSL connected, %s' %name)
 
     while True:
+        # TODO: very nested programme flow -> refactor
         data, _ = inlet.pull_sample(timeout=0.01)
         if data is not None:
             if data[0].lower() == name:

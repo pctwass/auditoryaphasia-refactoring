@@ -192,12 +192,6 @@ def test_acquisition_controller_initiation(
         n_channels=5,
     )
 
-    # The __init__ is trying to connect the stream watches for eeg and markers
-    #
-
-    # system_config.eeg_acquisition_stream_name
-    # system_config.marker_acquisition_stream_name
-
     acquisition_sys_controller = AcquisitionSystemController(
         state_dict=state_dict,
         live_barplot_state_dict=live_barplot_state_dict,
@@ -215,4 +209,5 @@ def test_acquisition_controller_initiation(
         dynamic_stopping_params=classifier_config.dynamic_stopping_params,
         max_n_stims=classifier_config.n_stimulus,
     )
+
     assert acquisition_sys_controller is not None

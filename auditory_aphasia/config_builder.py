@@ -134,6 +134,7 @@ class SystemConfig:
     marker_acquisition_stream_name: str = "marker_stream"
     marker_acquisition_stream_type: str = "markers"
     marker_stream_name_keyword: str = "RDA"
+    classifier_pipeline_name: str = "classifier_pipeline_name_placeholder"
 
 
 @dataclass
@@ -164,6 +165,7 @@ class ClassifierConfig:
 def build_general_config(config_file_path: str = Path("./config/general_config.yaml")):
     config_dict = yaml.safe_load(open(config_file_path, "r"))
     general_config = GeneralConfig(**config_dict)
+
     return general_config
 
 
@@ -177,6 +179,7 @@ def build_system_config(config_file_path: str = Path("./config/system_config.yam
     config_dict["number_of_words"] = len(config.words)
 
     system_config = SystemConfig(**config_dict)
+
     return system_config
 
 

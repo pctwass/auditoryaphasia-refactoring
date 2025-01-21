@@ -1,3 +1,4 @@
+import auditory_aphasia.audio_stimulation.audio_stimulation_interface as run_audio_interface
 from auditory_aphasia.audio_stimulation.audio_stimulation_controller import \
     AudioStimulationController
 
@@ -19,4 +20,11 @@ def test_fallback_to_system_audio():
         else:
             raise
 
+    pass
+
+
+def test_interface():
+    """
+    Check that the audio interface can be run
+    """
     pass

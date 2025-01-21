@@ -1,22 +1,21 @@
 import multiprocessing
 import multiprocessing.process
 
-import auditory_aphasia.audio_stimulation.audio_stimulation_interface as audio_stimulation_interface
-import auditory_aphasia.visual_feedback.visual_feedback_interface as visual_feedback_interface
 from auditory_aphasia.acquisition.acquisition_interface import \
     run_acquisition_interface
+from auditory_aphasia.audio_stimulation.audio_stimulation_interface import \
+    run_audio_interface
 from auditory_aphasia.barplot import run_barplot
 from auditory_aphasia.process_management.state_dictionaries import (
     init_acquisition_state_dict, init_audio_state_dict,
     init_live_barplot_state_dict, init_visual_fb_state_dict)
+from auditory_aphasia.visual_feedback.visual_feedback_interface import \
+    run_visual_interface
 
 
 class ProcessManager:
     def __init__(self) -> None:
         self._manager = multiprocessing.Manager()
-
-    def create_subprocess(self, target, args: list = None) -> multiprocessing.Process:
-        return multiprocessing.Process(target=target, args=args)
 
     def create_audio_stim_process(
         self, kwargs: dict[str, any] = None
@@ -29,7 +28,7 @@ class ProcessManager:
             kwargs["state_dict"] = audio_stim_state_dict
 
         audio_process = multiprocessing.Process(
-            target=audio_stimulation_interface.interface, kwargs=kwargs
+            target=run_audio_interface, kwargs=kwargs
         )
         return audio_process, audio_stim_state_dict
 
@@ -47,7 +46,7 @@ class ProcessManager:
             kwargs["state_dict"] = visual_fb_state_dict
 
         visual_fb_process = multiprocessing.Process(
-            target=visual_feedback_interface.interface, kwargs=kwargs
+            target=run_visual_interface, kwargs=kwargs
         )
         return visual_fb_process, visual_fb_state_dict
 
@@ -77,8 +76,6 @@ class ProcessManager:
         return (
             acquisition_process,
             acquisition_state_dict,
-            live_barplot_process,
-            live_barplot_state_dict,
         )
 
     def create_live_barplot_process(

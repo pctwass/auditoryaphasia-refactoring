@@ -1,6 +1,6 @@
 import pytest
 
-from src.common.utils import increment_file_name_if_exists
+from auditory_aphasia.common.utils import increment_file_name_if_exists
 
 
 def test_increment_file_name_if_exists(
