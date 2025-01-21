@@ -1,11 +1,11 @@
-numpy==1.23.3 # specific version required due to PsychoPy
+numpy==1.23.3 # specific version required due to PsychoPy, and for moabb -> conflict with np.int otherwise
 mne>=1.8.0
 scikit-learn>=1.5.1
 markerbci==0.0.7
 pylsl>=1.16.0
 pyscab>=1.0.1
 pyencoder>=0.0.4
-dareplane-utils=0.0.8
+dareplane-utils>=0.0.8
 fire==0.6.0
 mne>=1.8.0
 seaborn>=0.13.2
